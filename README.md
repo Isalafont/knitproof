@@ -3,11 +3,60 @@
 > **Le modèle propose, le moteur prouve, la personne arbitre.**
 > Generate, verify and validate knitting patterns with AI.
 
-Un patron de tricot est un programme : chaque rang transforme un nombre de mailles en un autre. Une seule maille perdue, et le bonnet ne se ferme plus. Les LLM savent lire et rédiger des patrons, mais ils inventent volontiers des nombres.
+Demandez à un LLM un bonnet pour un enfant de 3 ans, en lui donnant le tour de tête, la laine, l’échantillon et la taille des aiguilles : il peut vous répondre avec un nombre de mailles de bonnet adulte. Le modèle ne calcule pas, il propose un nombre plausible. Et il ignore qu’un coton, peu élastique, ne se tricote pas avec la même aisance qu’un mérinos.
 
-**knitproof ne fait pas confiance au modèle pour compter.** Le modèle lit le patron ; un moteur déterministe recalcule chaque rang ; ce qui ne peut pas être prouvé revient à une personne.
+**knitproof ne fait pas confiance au modèle pour compter.** Le modèle comprend la demande ; un moteur déterministe calcule les mailles à partir de la mesure, de l’échantillon et du comportement de la fibre ; ce qui ne peut pas être calculé avec certitude revient à une personne.
 
 ## Ce que ça donne
+
+### Calculer un patron
+
+La demande :
+
+```text
+Bonnet pour un enfant de 3 ans
+Tour de tête : 48 cm (mesuré)
+Fil : 100 % mérinos superwash
+Mon échantillon, aiguilles 4 mm, en jersey :
+  avant blocage : 22 m pour 10 cm
+  après blocage : 20 m pour 10 cm
+Bord : côtes 2/2
+```
+
+Le calcul de knitproof :
+
+```text
+Échantillon  20 m / 10 cm, après blocage              source : votre échantillon
+Aisance      −10 % : fibre élastique (mérinos)        source : bibliothèque de fibres
+Tour visé    43,2 cm (48 × 0,90)
+Montage      86,4 m calculées (43,2 × 20 / 10) → 88 m, multiple de 4 pour les côtes 2/2
+             Tour fini réel : 44 cm
+
+ATTENTION    Avec l’échantillon avant blocage (22 m), on monterait 96 m.
+             Après lavage, le superwash se détend : 96 m donneraient 48 cm,
+             sans aisance. Le bonnet glisserait.
+             Décidé par : le moteur (calcul vérifiable)
+
+REJETÉ       Proposition d’un LLM seul : 120 m
+             Après blocage, 120 m donnent 60 cm (120 × 10 / 20) : un bonnet adulte.
+             Décidé par : le moteur (calcul vérifiable)
+```
+
+*Résultat cible du jalon M1 ; valeurs d’aisance à valider dans la bibliothèque de fibres.*
+
+### Vos échantillons d’abord
+
+Le moteur ne calcule qu’avec des valeurs dont il connaît l’origine, dans cet ordre de confiance :
+
+1. **Votre échantillon**, mesuré avant et après blocage, avec la composition du fil et la taille des aiguilles. C’est la seule mesure qui reflète votre fil, vos aiguilles et votre main.
+2. **L’étiquette du fil** : composition, échantillon et aiguilles conseillés par le fabricant, métrage, consignes de lavage. Une photo de l’étiquette suffit : le modèle la lit, le moteur s’en sert.
+3. **La bibliothèque de fibres**, pour ce que l’échantillon et l’étiquette ne disent pas : aisance conseillée, élasticité, détente au lavage (forte pour un superwash).
+4. **Les mesures de référence** par âge et par taille, quand la personne n’a pas pu être mesurée (par exemple 46 à 48 cm de tour de tête à 3 ans).
+5. **Rien d’autre.** Une valeur manquante est demandée, jamais inventée.
+
+Vos échantillons sont enregistrés et réutilisables d’un projet à l’autre.
+
+### Vérifier un patron existant
 
 Un extrait de patron de bonnet, avec une erreur glissée au rang 33 :
 
@@ -39,18 +88,22 @@ OK          Montage — 108 m compatibles avec les côtes 2/2 (multiple de 4)
 
 ```mermaid
 flowchart LR
-    PDF["Patron<br/>PDF ou texte"]:::data
-    EXT["MODÈLE<br/>extrait la structure"]:::model
+    PDF["Demande<br/>ou patron existant"]:::data
+    EXT["MODÈLE<br/>comprend la demande<br/>ou lit le patron"]:::model
     SPEC[("Structure typée<br/>+ provenance de<br/>chaque valeur")]:::data
+    SWA[("Vos échantillons<br/>avant et après blocage<br/>+ étiquettes des fils")]:::data
+    FIB[("Bibliothèque de fibres<br/>et mesures de référence")]:::data
     LIB[("Bibliothèque<br/>de points")]:::data
-    CALC["MOTEUR<br/>recalcule chaque rang"]:::engine
+    CALC["MOTEUR<br/>calcule les mailles<br/>de chaque rang"]:::engine
     VAL["MOTEUR<br/>vérifie les invariants"]:::engine
     DEC{"Résultat"}:::engine
-    OK["Rapport<br/>patron vérifié"]:::data
+    OK["Patron<br/>calculé ou vérifié"]:::data
     ERR["Rapport<br/>erreur prouvée et localisée"]:::data
     HUM["PERSONNE<br/>arbitre l’ambiguïté"]:::human
 
     PDF --> EXT --> SPEC --> CALC --> VAL --> DEC
+    SWA --> CALC
+    FIB --> CALC
     LIB --> VAL
     DEC -- "cohérent" --> OK
     DEC -- "incohérent" --> ERR
@@ -62,27 +115,27 @@ flowchart LR
     classDef data fill:#F5F5F5,stroke:#616161,color:#1A1A1A
 ```
 
-En violet, le **modèle** : il lit le patron et produit une structure typée, jamais un verdict. En vert, le **moteur** : du Python pur, sans IA, qui recalcule chaque rang et vérifie les invariants (mailles avant et après, divisibilité des motifs, cohérence avec l’échantillon). En orange, la **personne** : elle tranche ce qu’aucun calcul ne peut prouver.
+En violet, le **modèle** : il comprend la demande ou lit le patron et produit une structure typée, jamais un nombre de mailles. En vert, le **moteur** : du Python pur, sans IA, qui calcule les mailles à partir de votre échantillon bloqué, de la mesure et de l’aisance propre à chaque fibre, puis vérifie les invariants (mailles avant et après, divisibilité des motifs). En orange, la **personne** : elle tranche ce qu’aucun calcul ne peut prouver.
+
+La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger) et l’aisance qui en découle. Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
 
 ## Pourquoi on peut lui faire confiance
 
-Parce qu’on le mesure. knitproof est évalué sur un jeu de patrons dans lesquels des erreurs ont été injectées volontairement (augmentation oubliée, mauvais rang, répétition qui ne tombe pas juste) :
+Parce qu’on le mesure. Le calcul ne dépend d’aucun modèle : à demande identique, le résultat est identique. Ce qui varie d’un modèle à l’autre, c’est la compréhension de la demande et la lecture du patron, et c’est cela qu’on évalue, sur un jeu de demandes et de patrons dans lesquels des erreurs ont été injectées volontairement (taille confondue, augmentation oubliée, répétition qui ne tombe pas juste) :
 
-| Mesure | Résultat |
-|---|---|
-| Erreurs détectées | à venir (M2) |
-| Fausses alertes | à venir (M2) |
-| Coût et temps par patron | à venir (M2) |
+| Modèle | Lecture juste | Erreurs détectées | Fausses alertes | Stabilité | Coût et temps |
+|---|---|---|---|---|---|
+| à venir (M2) | | | | | |
 
-Les valeurs attendues des évaluations ne sont jamais modifiées pour faire passer un résultat.
+Quand deux modèles, ou deux passages du même modèle, ne lisent pas la même valeur, le point passe en « À VÉRIFIER ». Les valeurs attendues des évaluations ne sont jamais modifiées pour faire passer un résultat.
 
 ## Feuille de route
 
 | Jalon | Livrable |
 |---|---|
 | M0 — Cadrage | Plan détaillé, architecture, décisions documentées |
-| M1 — Moteur | Calcul et vérification d’un bonnet, sans IA |
-| M2 — Lecture et mesure | Extraction depuis un PDF par un modèle, évaluation chiffrée |
+| M1 — Moteur | Calcul d’un bonnet à partir de la mesure, de vos échantillons (avant et après blocage) et de la fibre ; vérification d’un patron ; sans IA |
+| M2 — Lecture et mesure | Compréhension de la demande et lecture de patrons par un modèle, évaluation chiffrée par modèle |
 | M3 — Démo | Interface web accessible (RGAA), API, conteneur, intégration continue |
 
 Ensuite : reconnaissance des points par photo, bibliothèque de points complète, génération de patrons, pulls raglan, gradation multi-tailles.
