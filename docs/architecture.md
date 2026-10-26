@@ -105,13 +105,13 @@ sequenceDiagram
         APP->>APP: conversion vers le domaine, provenance model_inference
     end
     APP->>LIB: fibres, points, mesures de référence
-    APP->>ENG: resolve_hat_inputs(spec, échantillons, fil, bibliothèque)
+    APP->>ENG: resolve_beanie_inputs(spec, échantillons, fil, bibliothèque)
     ENG-->>APP: paramètres résolus + questions en attente
     alt Une question bloque le calcul
         APP-->>P: question (ex. « échantillon non bloqué sur un superwash »)
         P->>APP: Decision
     end
-    APP->>ENG: plan_hat(paramètres)
+    APP->>ENG: plan_beanie(paramètres)
     ENG-->>APP: montage, tours, calotte, constats
     APP-->>P: rapport
 ```
@@ -151,11 +151,11 @@ Une flèche signifie « dépend de ».
 | `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source |
 | `llm` | Objets d’extraction, appels aux modèles, conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
-| `app` | Cas d’usage : `verify_pattern`, `plan_hat` | Seul point d’entrée pour `cli`, `api` et `web` |
+| `app` | Cas d’usage : `verify_pattern`, `plan_beanie` | Seul point d’entrée pour `cli`, `api` et `web` |
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
 | `evals` | Jeux d’évaluation et mesures | Voir [`evaluation.md`](evaluation.md) |
 
-Les dépendances entre couches sont vérifiées par import-linter (CLA-57) ; les contrats sont dans `[tool.importlinter]` de `pyproject.toml`. `cli`, `api`, `web` et `evals` peuvent importer `domain` pour typer ce qu’ils affichent ; ils n’atteignent `engine`, `library`, `llm` et `sources` qu’en passant par `app` (et `llm` pour `evals`). L’API JSON et l’interface web sont deux portes vers le même cœur : une interface React séparée reste possible sans toucher au moteur.
+Les dépendances entre couches sont vérifiées par import-linter (CLA-57) ; les contrats sont dans `[tool.importlinter]` de `pyproject.toml`. `cli`, `api`, `web` et `evals` peuvent importer `domain` pour typer ce qu’ils affichent ; ils n’atteignent `engine`, `library`, `llm` et `sources` qu’en passant par `app` (et `llm` pour `evals`). L’API JSON et l’interface web sont deux portes vers le même cœur : l’interface React s’ajoute sans toucher au moteur ([ADR 0006](adr/0006-portes-http-fastapi-et-react-aria.md)).
 
 ## 6. Modèles de données
 
@@ -196,16 +196,16 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 | Modèle | Champs clés | Invariants |
 |---|---|---|
-| `HatSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `crown_sectors`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
+| `BeanieSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `crown_sectors`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
 | `Ease` | `value`, `unit` (% ou cm) | — |
-| `ResolvedHatInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
+| `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `ssk`, `k3tog`, `sk2p`, `m1`, `finish` ; `consumes` et `produces` dérivés | `consumes ≥ 0`, `produces ≥ 0` |
 | `Repeat` | `body`, `times` (entier ou `to_end`) | `to_end` consomme exactement le reste |
 | `Round` | `start`, `end`, `ops`, `stated_count`, `section`, `location` | les opérations consomment exactement les mailles du tour précédent |
 | `Pattern` | `cast_on`, `rounds`, `provenance` | tours contigus et croissants |
 | `CastOnResult` | `target_cm`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm`, `adjustment_round` | compatible avec tous les multiples, ou tour d’ajustement explicite |
 | `CrownPlan` | `sectors`, `rounds`, `depth_cm` | fin à 0 maille ou fermeture déclarée |
-| `HatPlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
+| `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
 | `Finding` | `status` (`error`, `warning`, `ok`, `needs_review`), `code`, `location`, `message`, `expected`, `actual`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
 | `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
 | `Report` | `findings`, `inputs`, `decisions`, `result`, `engine_version`, `library_version` | déterministe : même entrée, même rapport |
@@ -286,21 +286,21 @@ En V0, le bonnet se tricote en rond : `Round` suffit. Les patrons français dise
 
 Aucun calcul ne remplace un tricot-test : le tombé, le confort, la tenue et l’esthétique restent à juger par une personne. knitproof garantit la cohérence des nombres, pas la réussite du vêtement.
 
-## 12. Décisions à documenter
+## 12. Décisions d’architecture
 
-Les décisions structurantes font l’objet d’un ADR dans [`adr/`](adr/) (CLA-51). L’ADR 0001 porte sur le typage ; ceux de CLA-51 commencent à 0002 :
+Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 
-- vérification des types : mypy strict (ADR 0001) ;
-- Python, uv et les conventions d’OpenGateLLM ;
-- format intermédiaire typé avant tout calcul ;
-- moteur déterministe, modèle limité à l’extraction ;
-- accès aux modèles par une API compatible OpenAI via pydanticAI ;
-- `Decimal` et règles d’arrondi ;
-- provenance et résolution par grandeur ;
-- découpage en couches ;
-- mélanges de fibres ;
-- interface web : HTMX ou React avec React Aria ;
-- contraintes de la licence de l’API Ravelry.
+- [ADR 0001 — Vérifier les types avec mypy strict](adr/0001-verifier-les-types-avec-mypy-strict.md)
+- [ADR 0002 — Python et uv](adr/0002-python-et-uv.md)
+- [ADR 0003 — Format intermédiaire typé avant tout calcul](adr/0003-format-intermediaire-type.md)
+- [ADR 0004 — Moteur de calcul déterministe sans LLM](adr/0004-moteur-deterministe-sans-llm.md)
+- [ADR 0005 — Accès aux modèles via pydanticAI](adr/0005-acces-aux-modeles-via-pydanticai.md)
+- [ADR 0006 — Portes HTTP : FastAPI, React et React Aria Components](adr/0006-portes-http-fastapi-et-react-aria.md)
+- [ADR 0007 — Decimal et arrondi unique](adr/0007-decimal-et-arrondis.md)
+- [ADR 0008 — Provenance et résolution par grandeur](adr/0008-provenance-et-resolution.md)
+- [ADR 0009 — Découpage en couches](adr/0009-decoupage-en-couches.md)
+- [ADR 0010 — Mélanges de fibres](adr/0010-melanges-de-fibres.md)
+- [ADR 0011 — Licence de l’API Ravelry](adr/0011-licence-api-ravelry.md)
 
 ## 13. Projets proches
 

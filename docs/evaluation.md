@@ -14,7 +14,7 @@ Le calcul ne dépend d’aucun modèle : à entrée identique, le moteur donne l
 | Ligne de base « LLM seul » | Demande complète de bonnet (tour de tête, échantillon, fil, bord) | Nombre de mailles à monter |
 | knitproof | Même demande | Montage calculé par le moteur, après lecture par le modèle |
 | Lecture d’étiquette | Photo d’étiquette | `YarnLabel` champ par champ |
-| Compréhension de la demande | Demande en texte libre | `HatSpecification` champ par champ |
+| Compréhension de la demande | Demande en texte libre | `BeanieSpecification` champ par champ |
 | Signal de désaccord | Plusieurs modèles ou plusieurs passages | Points marqués « À VÉRIFIER » |
 
 ## Jeux de données
