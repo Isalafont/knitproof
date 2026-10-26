@@ -231,7 +231,11 @@ L’ordre de confiance dépend de la grandeur :
 | Aisance | saisie > bibliothèque de fibres validée | question en attente |
 | Hauteur | saisie > mesure de référence par âge | question en attente |
 
-Une étiquette et une fiche Ravelry qui divergent produisent un constat `needs_review`. La provenance permet aussi d’effacer sur demande toutes les données venues d’une source, comme l’exige la licence de l’API Ravelry.
+Une étiquette et une fiche Ravelry qui divergent produisent un constat `needs_review`.
+
+Quand l’échantillon de la personne et la jauge de l’étiquette coexistent, le calcul suit toujours l’échantillon : la jauge de l’étiquette est celle de la marque, pas celle de la personne. Le moteur compare tout de même les deux et produit un constat `gauge_differs_from_label`. Sous un seuil à trancher, ce constat est `ok` et note seulement l’écart, normal selon la tension de chacune. Au-dessus, il devient `warning` : erreur de mesure, échantillon non bloqué ou autres aiguilles sont possibles. Si l’échantillon a été tricoté avec les aiguilles de l’étiquette, le constat suggère d’en changer la taille pour retrouver la jauge visée. Le moteur ne fait que suggérer : c’est la personne qui décide.
+
+La provenance permet aussi d’effacer sur demande toutes les données venues d’une source, comme l’exige la licence de l’API Ravelry.
 
 ## 8. Nombres et arrondis
 

@@ -15,7 +15,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 | 0. Outillage | Pydantic, PyYAML, hypothesis, import-linter ; contrats de couches ; deux tests d’acceptation (exemples du README) en `xfail(strict=True)` | — |
 | 1. Vérifier | `Op`, `Repeat`, `Round`, `Pattern`, `simulate`, `verify` ; exemple « erreur au rang 33 » et cas « répétition qui ne tombe pas juste » | aucune question métier |
 | 2. Montage, valeurs saisies | `Length` (cm et pouces), `NeedleSize`, `Needle` (droites, circulaires avec longueur de câble, double pointe ; matière optionnelle), méthode à plat ou en rond distincte de l’outil, avertissement `swatch_needle_mismatch`, `SwatchMeasurement` (demi-mailles admises), `stitches_for_width`, `cast_on` avec multiples combinés, contrôle d’un nombre proposé ; tests de propriétés (multiple respecté, monotonie, aucun `float`) | question 4 |
-| 3. Échantillon et résolution | `Swatch` avant et après blocage, table de résolution par grandeur, constat « échantillon non bloqué » (96 m contre 88 m), questions en attente | questions 2, 3, 7, 9 |
+| 3. Échantillon et résolution | `Swatch` avant et après blocage, table de résolution par grandeur, constat « échantillon non bloqué » (96 m contre 88 m), constat `gauge_differs_from_label` (échantillon comparé à la jauge de l’étiquette), questions en attente | questions 2, 3, 7, 9, 14 |
 | 4. Bibliothèque | Chargeur YAML, `FiberProfile`, `StitchPattern`, `ReferenceMeasurement`, table de correspondance des aiguilles ; chaque valeur sourcée et validée ; bibliothèque versionnée | questions 1, 8, 10 |
 | 5. Hauteur et calotte | `rounds_for_height`, `crown_plan`, `HatPlan`, changement d’aiguilles dans la calotte (`needle_change`) | questions 5, 6, 12 |
 | 6. Rendu et CLI | `knitproof calc` et `knitproof verify`, fichiers de sortie de référence, test qui empêche le README de dériver | — |
@@ -71,6 +71,7 @@ Ces questions ne sont pas tranchées par le code : chacune bloque une tranche ju
 | 11 | Quelle table de correspondance des tailles d’aiguilles (mm, US, UK, japonaises) fait référence ? | tranche 4 |
 | 12 | Aiguilles circulaires : quelle longueur de câble pour quelle circonférence, et à partir de quand passer aux aiguilles double pointe ou au magic loop dans la calotte ? | tranche 5 |
 | 13 | ~~Aiguilles du projet différentes de celles de l’échantillon : un changement de matière seul mérite-t-il un avertissement ?~~ **Tranché le 25/10/2026 par Isabelle** : oui, la matière joue sur la tension et sur la glisse du fil. Un changement de taille **ou** de matière déclenche l’avertissement. | — |
+| 14 | Échantillon de la personne comparé à la jauge de l’étiquette : à partir de quel écart avertir (en mailles, en %, selon la fibre) ? Faut-il alors suggérer une taille d’aiguilles au-dessus ou en dessous ? | tranche 3 |
 
 ## Risques
 
