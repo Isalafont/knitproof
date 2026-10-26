@@ -29,7 +29,7 @@ Le calcul de knitproof :
 
 ```text
 Échantillon  20 m / 10 cm, après blocage              source : votre échantillon
-Aisance      −10 % : fibre élastique (mérinos)        source : bibliothèque de fibres
+Aisance      −10 % : saisie, bonnet ajusté (à confirmer, question 1)
 Tour visé    43,2 cm (48 × 0,90)
 Montage      86,4 m calculées (43,2 × 20 / 10) → 88 m, multiple de 4 pour les côtes 2/2
              Tour fini réel : 44 cm
@@ -44,7 +44,7 @@ REJETÉ       Proposition d’un LLM seul : 120 m
              Décidé par : le moteur (calcul vérifiable)
 ```
 
-*Résultat cible du jalon M1 ; valeurs d’aisance à valider dans la bibliothèque de fibres.*
+*Résultat cible du jalon M1 ; valeur d’aisance saisie, à confirmer (question tricot 1).*
 
 ### Vos échantillons d’abord
 
@@ -52,7 +52,7 @@ Le moteur ne calcule qu’avec des valeurs dont il connaît l’origine, dans ce
 
 1. **Votre échantillon**, mesuré avant et après blocage, avec la composition du fil et la taille des aiguilles. C’est la seule mesure qui reflète votre fil, vos aiguilles et votre main.
 2. **L’étiquette du fil** : composition, échantillon et aiguilles conseillés par le fabricant, métrage, consignes de lavage. Une photo de l’étiquette suffit : le modèle la lit, le moteur s’en sert.
-3. **La bibliothèque de fibres**, pour ce que l’échantillon et l’étiquette ne disent pas : aisance conseillée, élasticité, détente au lavage (forte pour un superwash).
+3. **La bibliothèque de fibres**, pour ce que l’échantillon et l’étiquette ne disent pas : élasticité, détente au lavage (forte pour un superwash).
 4. **Les mesures de référence** par âge et par taille, quand la personne n’a pas pu être mesurée (par exemple, pour un tour de tête à 3 ans : environ 48 cm selon [Knit Picks](https://www.knitpicks.com/learning-center/hat-size-chart), 41 à 46 cm selon le [Craft Yarn Council](https://craftyarncouncil.com/node/39) ; les tableaux divergent, d’où l’intérêt de mesurer).
 5. **Rien d’autre.** Une valeur manquante est demandée, jamais inventée.
 
@@ -117,9 +117,9 @@ flowchart LR
     classDef data fill:#F5F5F5,stroke:#616161,color:#1A1A1A
 ```
 
-En violet, le **modèle** : il comprend la demande ou lit le patron et produit une structure typée, jamais un nombre de mailles. En vert, le **moteur** : du Python pur, sans IA, qui calcule les mailles à partir de votre échantillon bloqué, de la mesure et de l’aisance propre à chaque fibre, puis vérifie les invariants (mailles avant et après, divisibilité des motifs). En orange, la **personne** : elle tranche ce qu’aucun calcul ne peut prouver.
+En violet, le **modèle** : il comprend la demande ou lit le patron et produit une structure typée, jamais un nombre de mailles. En vert, le **moteur** : du Python pur, sans IA, qui calcule les mailles à partir de votre échantillon bloqué, de la mesure et de l’aisance selon le point et la fibre, puis vérifie les invariants (mailles avant et après, divisibilité des motifs). En orange, la **personne** : elle tranche ce qu’aucun calcul ne peut prouver.
 
-La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger) et l’aisance qui en découle. Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
+La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger) et sa part dans l’aisance, qui dépend aussi du point. Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
 
 Pour aller plus loin : [l’architecture](docs/architecture.md) (qui décide quoi, couches, modèles de données, provenance), [le plan de réalisation](docs/plan.md) et [le protocole d’évaluation](docs/evaluation.md).
 
@@ -168,7 +168,7 @@ uv run lint-imports
 uv run mypy
 ```
 
-Les paquets de `src/knitproof/` sont vides pour l’instant : ils fixent les contrats de couches, que `uv run lint-imports` vérifie.
+Les paquets de `src/knitproof/` sont vides pour l’instant : ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs tests d’acceptation sont marqués en échec attendu jusqu’à ce que la commande `knitproof` existe, et la CI casse le jour où ils passent sans qu’on retire le marqueur.
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
 

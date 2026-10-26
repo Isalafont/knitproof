@@ -1,0 +1,13 @@
+# Exemple « Vérifier un patron existant » du README.
+# Format provisoire, d’après docs/architecture.md (section 9) : la tranche 1 le fige.
+cast_on: 108
+rounds:
+  - {start: 1, end: 30, ops: [{work: 108}]}
+  - start: 31
+    ops: [{repeat: {body: [{work: 10}, k2tog], times: 9}}]
+    stated_count: 99
+  - {start: 32, ops: [{work: 99}]}
+  - start: 33
+    ops: [{repeat: {body: [{work: 9}, k2tog], times: 9}}]
+    stated_count: 89
+    location: {page: 2, line: 14}

@@ -1,0 +1,15 @@
+# Exemple « Calculer un patron » du README.
+# Format provisoire : les tranches 2 à 6 le figent.
+garment: beanie
+age_years: 3
+head_circumference: {value: "48", unit: cm, provenance: measured}
+yarn:
+  composition: [{fiber: merino_superwash, percent: 100}]
+swatch:
+  stitch: stockinette
+  needle: {size: {value: "4", unit: mm}}
+  before_blocking: {stitches: "22", width: {value: "10", unit: cm}}
+  after_blocking: {stitches: "20", width: {value: "10", unit: cm}}
+edge: {stitch: rib_2x2}
+ease: {value: "-10", unit: percent, provenance: entered}
+proposed_cast_on: {stitches: 120, origin: llm_only}

@@ -8,7 +8,10 @@ authors = [
     { name = "Isabelle Lafont", email = "isalafont@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pydantic>=2.14.1",
+    "pyyaml>=6.0.3",
+]
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]
@@ -22,10 +25,12 @@ dev = [
     "pre-commit>=4.7.0",
     "pytest>=9.1.1",
     "ruff>=0.17.2",
+    "types-pyyaml>=6.0.12.20260906",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+xfail_strict = true
 
 [tool.ruff]
 line-length = 100
@@ -37,6 +42,12 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 python_version = "3.13"
 strict = true
 files = ["src", "tests"]
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
 [tool.importlinter]
 root_package = "knitproof"
