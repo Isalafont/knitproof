@@ -155,7 +155,7 @@ Une flèche signifie « dépend de ».
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
 | `evals` | Jeux d’évaluation et mesures | Voir [`evaluation.md`](evaluation.md) |
 
-Les dépendances entre couches sont vérifiées par import-linter (CLA-57) ; les contrats sont dans `[tool.importlinter]` de `pyproject.toml`. `cli`, `api`, `web` et `evals` peuvent importer `domain` pour typer ce qu’ils affichent ; ils n’atteignent `engine`, `library`, `llm` et `sources` qu’en passant par `app` (et `llm` pour `evals`). L’API JSON et l’interface web sont deux portes vers le même cœur : une interface React séparée reste possible sans toucher au moteur.
+Les dépendances entre couches sont vérifiées par import-linter (CLA-57) ; les contrats sont dans `[tool.importlinter]` de `pyproject.toml`. `cli`, `api`, `web` et `evals` peuvent importer `domain` pour typer ce qu’ils affichent ; ils n’atteignent `engine`, `library`, `llm` et `sources` qu’en passant par `app` (et `llm` pour `evals`). L’API JSON et l’interface web sont deux portes vers le même cœur : l’interface React s’ajoute sans toucher au moteur ([ADR 0006](adr/0006-portes-http-fastapi-et-react-aria.md)).
 
 ## 6. Modèles de données
 
@@ -286,21 +286,21 @@ En V0, le bonnet se tricote en rond : `Round` suffit. Les patrons français dise
 
 Aucun calcul ne remplace un tricot-test : le tombé, le confort, la tenue et l’esthétique restent à juger par une personne. knitproof garantit la cohérence des nombres, pas la réussite du vêtement.
 
-## 12. Décisions à documenter
+## 12. Décisions d’architecture
 
-Les décisions structurantes font l’objet d’un ADR dans [`adr/`](adr/) (CLA-51). L’ADR 0001 porte sur le typage ; ceux de CLA-51 commencent à 0002 :
+Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 
-- vérification des types : mypy strict (ADR 0001) ;
-- Python, uv et les conventions d’OpenGateLLM ;
-- format intermédiaire typé avant tout calcul ;
-- moteur déterministe, modèle limité à l’extraction ;
-- accès aux modèles par une API compatible OpenAI via pydanticAI ;
-- `Decimal` et règles d’arrondi ;
-- provenance et résolution par grandeur ;
-- découpage en couches ;
-- mélanges de fibres ;
-- interface web : HTMX ou React avec React Aria ;
-- contraintes de la licence de l’API Ravelry.
+- [ADR 0001 — Vérifier les types avec mypy strict](adr/0001-verifier-les-types-avec-mypy-strict.md)
+- [ADR 0002 — Python et uv](adr/0002-python-et-uv.md)
+- [ADR 0003 — Format intermédiaire typé avant tout calcul](adr/0003-format-intermediaire-type.md)
+- [ADR 0004 — Moteur de calcul déterministe sans LLM](adr/0004-moteur-deterministe-sans-llm.md)
+- [ADR 0005 — Accès aux modèles via pydanticAI](adr/0005-acces-aux-modeles-via-pydanticai.md)
+- [ADR 0006 — Portes HTTP : FastAPI, React et React Aria Components](adr/0006-portes-http-fastapi-et-react-aria.md)
+- [ADR 0007 — Decimal et arrondi unique](adr/0007-decimal-et-arrondis.md)
+- [ADR 0008 — Provenance et résolution par grandeur](adr/0008-provenance-et-resolution.md)
+- [ADR 0009 — Découpage en couches](adr/0009-decoupage-en-couches.md)
+- [ADR 0010 — Mélanges de fibres](adr/0010-melanges-de-fibres.md)
+- [ADR 0011 — Licence de l’API Ravelry](adr/0011-licence-api-ravelry.md)
 
 ## 13. Projets proches
 
