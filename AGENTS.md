@@ -54,6 +54,7 @@ Détail et schéma dans `docs/architecture.md`, section 5. Les contrats vivent d
 - Aucun nombre venu d’un modèle sans passage par le moteur.
 - Ne jamais assouplir un contrat import-linter ou une option mypy pour faire passer un changement.
 - Dans `.claude/`, seuls `skills/` et `settings.json` sont versionnés ; jamais `.claude/plans/`.
+- `.claude/settings.json` pré-autorise les lectures, les cinq contrôles et les commandes git locales ; pousser, ouvrir ou merger une PR et écrire dans Linear demandent toujours un accord.
 - Isabelle merge elle-même les pull requests.
 - Commits sans mention d’un agent de code (Claude, Codex…).
 
