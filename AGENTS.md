@@ -64,6 +64,7 @@ Détail et schéma dans `docs/architecture.md`, section 5. Les contrats vivent d
 - Chaque ticket a sa branche, créée depuis `develop` et nommée comme la branche du ticket Linear.
 - Une branche de travail revient sur `develop` par une PR ; `develop` passe sur `main` par une PR.
 - Jamais de commit ni de push direct sur `main` ou `develop` : un ruleset GitHub le refuse.
+- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>`.
 - Une PR ne merge que si la CI (`.github/workflows/ci.yml`) est verte ; `main` n’accepte que des PR depuis `develop`.
 - Vérifier la branche courante (`git branch --show-current`) juste avant chaque commit.
 

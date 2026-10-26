@@ -177,6 +177,7 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 - `main` est la production, `develop` l’intégration déployée sur la sandbox.
 - Chaque changement part de `develop` sur sa propre branche et y revient par une pull request ; `develop` passe sur `main` par une pull request.
 - `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`, `lint-imports`, `mypy`). `main` n’accepte que des pull requests depuis `develop`.
+- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>`.
 - Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
 
 Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commit. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
