@@ -105,13 +105,13 @@ sequenceDiagram
         APP->>APP: conversion vers le domaine, provenance model_inference
     end
     APP->>LIB: fibres, points, mesures de référence
-    APP->>ENG: resolve_hat_inputs(spec, échantillons, fil, bibliothèque)
+    APP->>ENG: resolve_beanie_inputs(spec, échantillons, fil, bibliothèque)
     ENG-->>APP: paramètres résolus + questions en attente
     alt Une question bloque le calcul
         APP-->>P: question (ex. « échantillon non bloqué sur un superwash »)
         P->>APP: Decision
     end
-    APP->>ENG: plan_hat(paramètres)
+    APP->>ENG: plan_beanie(paramètres)
     ENG-->>APP: montage, tours, calotte, constats
     APP-->>P: rapport
 ```
@@ -151,7 +151,7 @@ Une flèche signifie « dépend de ».
 | `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source |
 | `llm` | Objets d’extraction, appels aux modèles, conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
-| `app` | Cas d’usage : `verify_pattern`, `plan_hat` | Seul point d’entrée pour `cli`, `api` et `web` |
+| `app` | Cas d’usage : `verify_pattern`, `plan_beanie` | Seul point d’entrée pour `cli`, `api` et `web` |
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
 | `evals` | Jeux d’évaluation et mesures | Voir [`evaluation.md`](evaluation.md) |
 
@@ -196,16 +196,16 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 | Modèle | Champs clés | Invariants |
 |---|---|---|
-| `HatSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `crown_sectors`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
+| `BeanieSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `crown_sectors`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
 | `Ease` | `value`, `unit` (% ou cm) | — |
-| `ResolvedHatInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
+| `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `ssk`, `k3tog`, `sk2p`, `m1`, `finish` ; `consumes` et `produces` dérivés | `consumes ≥ 0`, `produces ≥ 0` |
 | `Repeat` | `body`, `times` (entier ou `to_end`) | `to_end` consomme exactement le reste |
 | `Round` | `start`, `end`, `ops`, `stated_count`, `section`, `location` | les opérations consomment exactement les mailles du tour précédent |
 | `Pattern` | `cast_on`, `rounds`, `provenance` | tours contigus et croissants |
 | `CastOnResult` | `target_cm`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm`, `adjustment_round` | compatible avec tous les multiples, ou tour d’ajustement explicite |
 | `CrownPlan` | `sectors`, `rounds`, `depth_cm` | fin à 0 maille ou fermeture déclarée |
-| `HatPlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
+| `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
 | `Finding` | `status` (`error`, `warning`, `ok`, `needs_review`), `code`, `location`, `message`, `expected`, `actual`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
 | `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
 | `Report` | `findings`, `inputs`, `decisions`, `result`, `engine_version`, `library_version` | déterministe : même entrée, même rapport |

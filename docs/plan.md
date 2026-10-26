@@ -19,7 +19,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 | 2. Montage, valeurs saisies | `Length` (cm et pouces), `NeedleSize`, `Needle` (droites, circulaires avec longueur de câble, double pointe ; matière optionnelle), méthode à plat ou en rond distincte de l’outil, avertissement `swatch_needle_mismatch`, `SwatchMeasurement` (demi-mailles admises), `stitches_for_width`, `cast_on` avec multiples combinés, contrôle d’un nombre proposé ; tests de propriétés (multiple respecté, monotonie, aucun `float`) | question 4 |
 | 3. Échantillon et résolution | `Swatch` avant et après blocage, table de résolution par grandeur, constat « échantillon non bloqué » (96 m contre 88 m), constat `gauge_differs_from_label` (échantillon comparé à la jauge de l’étiquette), questions en attente | questions 2, 3, 7, 9, 14 |
 | 4. Bibliothèque | Chargeur YAML, `FiberProfile`, `StitchPattern`, `ReferenceMeasurement`, table de correspondance des aiguilles ; chaque valeur sourcée et validée ; bibliothèque versionnée | questions 1, 8, 10 |
-| 5. Hauteur et calotte | `rounds_for_height`, `crown_plan`, `HatPlan`, changement d’aiguilles dans la calotte (`needle_change`) | questions 5, 6, 12 |
+| 5. Hauteur et calotte | `rounds_for_height`, `crown_plan`, `BeaniePlan`, changement d’aiguilles dans la calotte (`needle_change`) | questions 5, 6, 12 |
 | 6. Rendu et CLI | `knitproof calc` et `knitproof verify`, fichiers de sortie de référence, test qui empêche le README de dériver | — |
 
 **Critère de fin**
@@ -34,7 +34,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 2. Adaptateur `llm` sur pydanticAI, fournisseurs compatibles OpenAI, dont au moins un modèle ouvert ou souverain.
 3. Ligne de base « LLM seul » sur les demandes de bonnet.
 4. Étiquette en photo → `YarnLabel` (photos personnelles, sans EXIF).
-5. Demande en texte → `HatSpecification`.
+5. Demande en texte → `BeanieSpecification`.
 6. Source Ravelry : recherche d’un fil, fiche pré-remplie, divergence avec l’étiquette signalée.
 7. Plusieurs modèles, plusieurs passages ; désaccord ⇒ « À VÉRIFIER », avec mesure de ce que ce signal attrape.
 8. Cas d’injection de prompt.
