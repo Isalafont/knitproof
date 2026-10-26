@@ -31,7 +31,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 ## M2 — Lecture et évaluation
 
 1. Protocole d’évaluation ([`evaluation.md`](evaluation.md)) figé avant tout prompt.
-2. Adaptateur `llm` sur pydanticAI, fournisseurs compatibles OpenAI, dont au moins un modèle ouvert ou souverain.
+2. Adaptateur `llm` sur pydanticAI ([ADR 0005](adr/0005-acces-aux-modeles-via-pydanticai.md)), dont au moins un modèle ouvert ou souverain.
 3. Ligne de base « LLM seul » sur les demandes de bonnet.
 4. Étiquette en photo → `YarnLabel` (photos personnelles, sans EXIF).
 5. Demande en texte → `BeanieSpecification`.
