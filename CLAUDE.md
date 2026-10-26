@@ -13,6 +13,14 @@
 - Une valeur déduite d’un modèle ou d’une photo est une hypothèse, avec sa provenance.
 - Ne jamais modifier une valeur attendue d’un test ou d’une évaluation pour faire passer un résultat.
 
+## Branches
+
+- `main` est la production, `develop` l’intégration déployée sur la sandbox.
+- Chaque ticket a sa branche, créée depuis `develop` et nommée comme la branche du ticket Linear.
+- Une branche de travail revient sur `develop` par une PR ; `develop` passe sur `main` par une PR.
+- Jamais de commit ni de push direct sur `main` ou `develop`.
+- Vérifier la branche courante (`git branch --show-current`) juste avant chaque commit.
+
 ## Conventions
 
 - TDD : un test qui échoue avant chaque comportement.
