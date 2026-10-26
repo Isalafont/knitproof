@@ -14,11 +14,11 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 
 | Tranche | Contenu | Dépend de |
 |---|---|---|
-| 0. Outillage | Pydantic, PyYAML ; plugin mypy Pydantic (`plugins = ["pydantic.mypy"]`) ; deux tests d’acceptation (exemples du README) en `xfail(strict=True)` | — |
+| 0. Outillage | Pydantic, PyYAML (`types-PyYAML` en développement) ; plugin `pydantic.mypy` activé (ADR 0001), avec `[tool.pydantic-mypy]` ; `examples/bonnet-erreur-rang-33.yaml` et `examples/bonnet-3-ans.yaml`, formats provisoires ; deux tests d’acceptation qui lancent la commande `knitproof`, en `xfail(raises=FileNotFoundError, strict=True)` ; `xfail_strict = true` | — |
 | 1. Vérifier | `Op`, `Repeat`, `Round`, `Pattern`, `simulate`, `verify` ; exemple « erreur au rang 33 » et cas « répétition qui ne tombe pas juste » | aucune question métier |
 | 2. Montage, valeurs saisies | `Length` (cm et pouces), `NeedleSize`, `Needle` (droites, circulaires avec longueur de câble, double pointe ; matière optionnelle), méthode à plat ou en rond distincte de l’outil, avertissement `swatch_needle_mismatch`, `SwatchMeasurement` (demi-mailles admises), `stitches_for_width`, `cast_on` avec multiples combinés, contrôle d’un nombre proposé ; tests de propriétés (multiple respecté, monotonie, aucun `float`) | question 4 |
 | 3. Échantillon et résolution | `Swatch` avant et après blocage, table de résolution par grandeur, constat « échantillon non bloqué » (96 m contre 88 m), constat `gauge_differs_from_label` (échantillon comparé à la jauge de l’étiquette), questions en attente | questions 2, 3, 7, 9, 14 |
-| 4. Bibliothèque | Chargeur YAML, `FiberProfile`, `StitchPattern`, `ReferenceMeasurement`, table de correspondance des aiguilles ; chaque valeur sourcée et validée ; bibliothèque versionnée | questions 1, 8, 10 |
+| 4. Bibliothèque | Chargeur YAML, `FiberProfile`, `StitchPattern`, `ReferenceMeasurement`, table de correspondance des aiguilles ; chaque valeur sourcée et validée ; bibliothèque versionnée | questions 1, 10, 11 |
 | 5. Hauteur et calotte | `rounds_for_height`, `crown_plan`, `BeaniePlan`, changement d’aiguilles dans la calotte (`needle_change`) | questions 5, 6, 12 |
 | 6. Rendu et CLI | `knitproof calc` et `knitproof verify`, fichiers de sortie de référence, test qui empêche le README de dériver | — |
 
@@ -60,7 +60,7 @@ Ces questions ne sont pas tranchées par le code : chacune bloque une tranche ju
 
 | # | Question | Bloque |
 |---|---|---|
-| 1 | L’aisance dépend-elle d’abord de l’ajustement voulu et du point, la fibre ne faisant que la moduler ? En % ou en cm ? Quelles sources ? | tranche 4 |
+| 1 | L’aisance dépend-elle d’abord de l’ajustement voulu et du point, la fibre ne faisant que la moduler ? En % ou en cm ? Quelles sources ? **Tranché en partie le 26/10/2026 par Isabelle** : l’aisance dépend du point, de la fibre, des aiguilles et de l’ajustement voulu (ajusté ou ample) ; la fibre n’est pas une simple modulation. Restent ouverts : la règle de combinaison, l’unité (l’Oslo plaide pour le %) et les sources. Bonnet Oslo (Petite Knit, bonnet ajusté) : −15,5 % en jersey, constant en % du bébé à l’adulte. Mélèze (patron personnel, bonnet ample à bord replié) : ne sert pas de référence pour un bonnet ajusté. −10 % paraît faible face à l’Oslo, mais aucune source en côtes 2/2 pour l’instant. | tranche 4 |
 | 2 | Bord en côtes : échantillon en côtes obligatoire, ou même montage que le corps avec un avertissement ? | tranche 3 |
 | 3 | Échantillon tricoté à plat, bonnet tricoté en rond : un écart à prendre en compte ? | tranche 3 |
 | 4 | Arrondi du montage : au plus proche, en dessous ou au-dessus ? Tour d’ajustement entre bord et corps accepté ? | tranche 2 |
