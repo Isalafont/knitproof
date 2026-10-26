@@ -1,5 +1,5 @@
 import knitproof
 
 
-def test_package_exposes_its_version():
+def test_package_exposes_its_version() -> None:
     assert knitproof.__version__ == "0.1.0"

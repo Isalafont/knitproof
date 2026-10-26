@@ -155,7 +155,7 @@ Une flèche signifie « dépend de ».
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
 | `evals` | Jeux d’évaluation et mesures | Voir [`evaluation.md`](evaluation.md) |
 
-Ces règles sont vérifiées automatiquement par import-linter (CLA-53). L’API JSON et l’interface web sont deux portes vers le même cœur : une interface React séparée reste possible sans toucher au moteur.
+Les dépendances entre couches sont vérifiées par import-linter (CLA-57) ; les contrats sont dans `[tool.importlinter]` de `pyproject.toml`. `cli`, `api`, `web` et `evals` peuvent importer `domain` pour typer ce qu’ils affichent ; ils n’atteignent `engine`, `library`, `llm` et `sources` qu’en passant par `app` (et `llm` pour `evals`). L’API JSON et l’interface web sont deux portes vers le même cœur : une interface React séparée reste possible sans toucher au moteur.
 
 ## 6. Modèles de données
 
@@ -288,8 +288,9 @@ Aucun calcul ne remplace un tricot-test : le tombé, le confort, la tenue et l�
 
 ## 12. Décisions à documenter
 
-Les décisions structurantes font l’objet d’un ADR dans [`adr/`](adr/) (CLA-51) :
+Les décisions structurantes font l’objet d’un ADR dans [`adr/`](adr/) (CLA-51). L’ADR 0001 porte sur le typage ; ceux de CLA-51 commencent à 0002 :
 
+- vérification des types : mypy strict (ADR 0001) ;
 - Python, uv et les conventions d’OpenGateLLM ;
 - format intermédiaire typé avant tout calcul ;
 - moteur déterministe, modèle limité à l’extraction ;

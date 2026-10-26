@@ -161,9 +161,14 @@ Seul [uv](https://docs.astral.sh/uv/getting-started/installation/) est nécessai
 git clone https://github.com/Isalafont/knitproof.git
 cd knitproof
 uv sync
+uv run pre-commit install
 uv run pytest
 uv run ruff check .
+uv run lint-imports
+uv run mypy
 ```
+
+Les paquets de `src/knitproof/` sont vides pour l’instant : ils fixent les contrats de couches, que `uv run lint-imports` vérifie.
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
 
@@ -171,10 +176,10 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 
 - `main` est la production, `develop` l’intégration déployée sur la sandbox.
 - Chaque changement part de `develop` sur sa propre branche et y revient par une pull request ; `develop` passe sur `main` par une pull request.
-- `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`). `main` n’accepte que des pull requests depuis `develop`.
+- `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`, `lint-imports`, `mypy`). `main` n’accepte que des pull requests depuis `develop`.
 - Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
 
-Python 3.13, uv, pytest, ruff. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
+Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commit. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
 
 ## Licence
 

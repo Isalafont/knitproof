@@ -8,13 +8,13 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 - Décisions d’architecture (ADR).
 - Conventions Python et d’architecture, vérifiées automatiquement.
 - Flow de branches : `main` (production), `develop` (sandbox), branches de travail depuis `develop`, une pull request à chaque étape.
-- Intégration continue : tests, ruff et contrats de couches sur chaque pull request ; `main` et `develop` protégées. Le déploiement continu (`develop` vers la sandbox, `main` vers la production) arrive en M3, avec l’image Docker.
+- Intégration continue : tests, ruff, typage (mypy strict) et contrats de couches sur chaque pull request ; `main` et `develop` protégées. Le déploiement continu (`develop` vers la sandbox, `main` vers la production) arrive en M3, avec l’image Docker.
 
 ## M1 — Moteur, sans IA
 
 | Tranche | Contenu | Dépend de |
 |---|---|---|
-| 0. Outillage | Pydantic, PyYAML, hypothesis, import-linter ; contrats de couches ; deux tests d’acceptation (exemples du README) en `xfail(strict=True)` | — |
+| 0. Outillage | Pydantic, PyYAML ; plugin mypy Pydantic (`plugins = ["pydantic.mypy"]`) ; deux tests d’acceptation (exemples du README) en `xfail(strict=True)` | — |
 | 1. Vérifier | `Op`, `Repeat`, `Round`, `Pattern`, `simulate`, `verify` ; exemple « erreur au rang 33 » et cas « répétition qui ne tombe pas juste » | aucune question métier |
 | 2. Montage, valeurs saisies | `Length` (cm et pouces), `NeedleSize`, `Needle` (droites, circulaires avec longueur de câble, double pointe ; matière optionnelle), méthode à plat ou en rond distincte de l’outil, avertissement `swatch_needle_mismatch`, `SwatchMeasurement` (demi-mailles admises), `stitches_for_width`, `cast_on` avec multiples combinés, contrôle d’un nombre proposé ; tests de propriétés (multiple respecté, monotonie, aucun `float`) | question 4 |
 | 3. Échantillon et résolution | `Swatch` avant et après blocage, table de résolution par grandeur, constat « échantillon non bloqué » (96 m contre 88 m), constat `gauge_differs_from_label` (échantillon comparé à la jauge de l’étiquette), questions en attente | questions 2, 3, 7, 9, 14 |
@@ -26,7 +26,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 
 - `uv run knitproof verify examples/bonnet-erreur-rang-33.yaml` sort en code 1 avec un constat `count_mismatch` au tour 33 (attendu 90, annoncé 89).
 - `uv run knitproof calc examples/bonnet-3-ans.yaml` (aisance saisie) donne la sortie de référence : 88 m, alerte à 96 m, rejet de 120 m, plan complet du bonnet.
-- `uv run pytest`, `uv run ruff check .` et `uv run lint-imports` passent.
+- `uv run pytest`, `uv run ruff check .`, `uv run lint-imports` et `uv run mypy` passent.
 
 ## M2 — Lecture et évaluation
 

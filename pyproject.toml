@@ -16,6 +16,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.170.11",
+    "import-linter>=2.15",
+    "mypy>=2.4.0",
+    "pre-commit>=4.7.0",
     "pytest>=9.1.1",
     "ruff>=0.17.2",
 ]
@@ -28,3 +32,45 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["src", "tests"]
+
+[tool.importlinter]
+root_package = "knitproof"
+
+[[tool.importlinter.contracts]]
+id = "layers"
+name = "Couches de knitproof"
+type = "layers"
+containers = ["knitproof"]
+layers = [
+    "cli | api | web | evals",
+    "app",
+    "engine | library | llm | sources",
+    "domain",
+]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+id = "entry-points-through-app"
+name = "cli, api et web passent par app"
+type = "forbidden"
+source_modules = ["knitproof.cli", "knitproof.api", "knitproof.web"]
+forbidden_modules = [
+    "knitproof.engine",
+    "knitproof.library",
+    "knitproof.llm",
+    "knitproof.sources",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+id = "evals-through-app-and-llm"
+name = "evals passe par app et llm"
+type = "forbidden"
+source_modules = ["knitproof.evals"]
+forbidden_modules = ["knitproof.engine", "knitproof.library", "knitproof.sources"]
+allow_indirect_imports = true
