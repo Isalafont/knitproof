@@ -119,13 +119,17 @@ En violet, le **modèle** : il comprend la demande ou lit le patron et produit u
 
 La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger) et l’aisance qui en découle. Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
 
+Pour aller plus loin : [l’architecture](docs/architecture.md) (qui décide quoi, couches, modèles de données, provenance), [le plan de réalisation](docs/plan.md) et [le protocole d’évaluation](docs/evaluation.md).
+
 ## Pourquoi on peut lui faire confiance
 
-Parce qu’on le mesure. Le calcul ne dépend d’aucun modèle : à demande identique, le résultat est identique. Ce qui varie d’un modèle à l’autre, c’est la compréhension de la demande et la lecture du patron, et c’est cela qu’on évalue, sur un jeu de demandes et de patrons dans lesquels des erreurs ont été injectées volontairement (taille confondue, augmentation oubliée, répétition qui ne tombe pas juste) :
+Parce qu’on le mesure. Sur les mêmes demandes, on compare un LLM seul et knitproof. Le calcul ne dépend d’aucun modèle : à demande identique, le résultat est identique. Ce qui varie d’un modèle à l’autre, c’est la lecture de la demande ou de l’étiquette, et c’est cela qu’on évalue, sur un jeu de cas dans lesquels des erreurs ont été injectées volontairement (taille confondue, échantillon non bloqué, répétition qui ne tombe pas juste, information absente) :
 
-| Modèle | Lecture juste | Erreurs détectées | Fausses alertes | Stabilité | Coût et temps |
-|---|---|---|---|---|---|
-| à venir (M2) | | | | | |
+| Modèle | Montage correct, LLM seul | Montage correct, knitproof | Lecture juste | Champs inventés | Stabilité | Coût et temps |
+|---|---|---|---|---|---|---|
+| à venir (M2) | | | | | | |
+
+Résultats publiés en k/N, sur un jeu de test jamais utilisé pour mettre au point les prompts ([protocole](docs/evaluation.md)).
 
 Quand deux modèles, ou deux passages du même modèle, ne lisent pas la même valeur, le point passe en « À VÉRIFIER ». Les valeurs attendues des évaluations ne sont jamais modifiées pour faire passer un résultat.
 
@@ -135,10 +139,10 @@ Quand deux modèles, ou deux passages du même modèle, ne lisent pas la même v
 |---|---|
 | M0 — Cadrage | Plan détaillé, architecture, décisions documentées |
 | M1 — Moteur | Calcul d’un bonnet à partir de la mesure, de vos échantillons (avant et après blocage) et de la fibre ; vérification d’un patron ; sans IA |
-| M2 — Lecture et mesure | Compréhension de la demande et lecture de patrons par un modèle, évaluation chiffrée par modèle |
+| M2 — Lecture et mesure | Lecture d’étiquettes en photo et de demandes par un modèle, fils recherchés sur Ravelry, évaluation chiffrée par modèle face à un LLM seul |
 | M3 — Démo | Interface web accessible (RGAA), API, conteneur, intégration continue |
 
-Ensuite : reconnaissance des points par photo, bibliothèque de points complète, génération de patrons, pulls raglan, gradation multi-tailles.
+Ensuite : lecture de patrons PDF, reconnaissance des points par photo, bibliothèque de points complète, génération de patrons, pulls raglan, gradation multi-tailles. Détail dans [le plan](docs/plan.md).
 
 ## Projets proches
 
