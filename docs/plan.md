@@ -67,7 +67,7 @@ Ces questions ne sont pas tranchées par le code : chacune bloque une tranche ju
 | 5 | Calotte : nombre de secteurs, rythme des diminutions, profondeur ; comment la mesurer ? | tranche 5 |
 | 6 | Hauteur par âge et bord replié : quelles sources ? | tranche 5 |
 | 7 | Échantillon non bloqué sur une fibre à forte détente : refuser, ou estimer et marquer « À VÉRIFIER » ? | tranche 3 |
-| 8 | Mélanges de fibres : pondérer selon la composition, ou retenir la fibre dominante ? | tranche 4 |
+| 8 | ~~Mélanges de fibres : pondérer selon la composition, ou retenir la fibre dominante ?~~ **Tranché le 26/10/2026 par Isabelle** : pondérer selon la composition ([ADR 0010](adr/0010-melanges-de-fibres.md)). | — |
 | 9 | Jauge de l’étiquette : toujours « À VÉRIFIER », faute de savoir si l’échantillon du fabricant est bloqué ? | tranche 3 |
 | 10 | Plage plausible d’un tour de tête par âge, et conduite à tenir quand les tableaux divergent (41–46 cm contre 48 cm à 3 ans) | tranche 4 |
 | 11 | Quelle table de correspondance des tailles d’aiguilles (mm, US, UK, japonaises) fait référence ? | tranche 4 |
