@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.13.5"
+          enable-cache: true
+          cache-python: true
+      - run: uv sync --locked
+      - run: uv run pytest
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  develop-vers-main:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Vérifier que la pull request vient de develop
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ "$HEAD_REF" != "develop" ] || [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::main ne reçoit que des pull requests depuis develop (reçu : $HEAD_REPO:$HEAD_REF)."
+            exit 1
+          fi

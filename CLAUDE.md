@@ -4,7 +4,7 @@
 
 - Installer : `uv sync`
 - Tests : `uv run pytest`
-- Lint : `uv run ruff check .` (corriger : `uv run ruff check --fix .`, formater : `uv run ruff format .`)
+- Lint : `uv run ruff check .` et `uv run ruff format --check .` (corriger : `uv run ruff check --fix .`, formater : `uv run ruff format .`)
 
 ## Principes d’architecture
 
@@ -18,7 +18,8 @@
 - `main` est la production, `develop` l’intégration déployée sur la sandbox.
 - Chaque ticket a sa branche, créée depuis `develop` et nommée comme la branche du ticket Linear.
 - Une branche de travail revient sur `develop` par une PR ; `develop` passe sur `main` par une PR.
-- Jamais de commit ni de push direct sur `main` ou `develop`.
+- Jamais de commit ni de push direct sur `main` ou `develop` : un ruleset GitHub le refuse.
+- Une PR ne merge que si la CI (`.github/workflows/ci.yml`) est verte ; `main` n’accepte que des PR depuis `develop`.
 - Vérifier la branche courante (`git branch --show-current`) juste avant chaque commit.
 
 ## Conventions

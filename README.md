@@ -1,5 +1,7 @@
 # knitproof
 
+[![CI](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
+
 > **Le modèle propose, le moteur prouve, la personne arbitre.**
 > Generate, verify and validate knitting patterns with AI.
 
@@ -169,6 +171,7 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 
 - `main` est la production, `develop` l’intégration déployée sur la sandbox.
 - Chaque changement part de `develop` sur sa propre branche et y revient par une pull request ; `develop` passe sur `main` par une pull request.
+- `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`). `main` n’accepte que des pull requests depuis `develop`.
 - Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
 
 Python 3.13, uv, pytest, ruff. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
