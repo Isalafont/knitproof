@@ -44,7 +44,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 ## M3 — Démo
 
 1. API JSON (FastAPI, OpenAPI) au-dessus de `app`.
-2. Interface accessible (choix en ADR : HTMX ou React avec React Aria).
+2. Interface accessible en React et React Aria Components ([ADR 0006](adr/0006-portes-http-fastapi-et-react-aria.md)).
 3. Docker ; déploiement continu de `develop` sur la sandbox et de `main` en production ; la CI ajoute le manifeste et le rejeu de l’évaluation, sans appel payant.
 4. Audit RGAA publié ; axe-core en CI.
 
