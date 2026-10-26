@@ -28,3 +28,4 @@
 - Apostrophe typographique (’) et guillemets français (« ») dans tout texte.
 - Commits courts, à l’impératif, 72 caractères maximum, sans mention de Claude.
 - Décisions structurantes : un ADR dans `docs/adr/`.
+- Chaque PR met à jour le README et `docs/` quand elle change un comportement, une commande, une installation, un process ou une décision. Une doc en retard sur le code est un bug.

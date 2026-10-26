@@ -137,10 +137,10 @@ Quand deux modèles, ou deux passages du même modèle, ne lisent pas la même v
 
 | Jalon | Livrable |
 |---|---|
-| M0 — Cadrage | Plan détaillé, architecture, décisions documentées |
+| M0 — Cadrage | Plan détaillé, architecture, décisions documentées, conventions, intégration continue |
 | M1 — Moteur | Calcul d’un bonnet à partir de la mesure, de vos échantillons (avant et après blocage) et de la fibre ; vérification d’un patron ; sans IA |
 | M2 — Lecture et mesure | Lecture d’étiquettes en photo et de demandes par un modèle, fils recherchés sur Ravelry, évaluation chiffrée par modèle face à un LLM seul |
-| M3 — Démo | Interface web accessible (RGAA), API, conteneur, intégration continue |
+| M3 — Démo | Interface web accessible (RGAA), API, conteneur, déploiement continu |
 
 Ensuite : lecture de patrons PDF, reconnaissance des points par photo, bibliothèque de points complète, génération de patrons, pulls raglan, gradation multi-tailles. Détail dans [le plan](docs/plan.md).
 
@@ -151,13 +151,27 @@ Ensuite : lecture de patrons PDF, reconnaissance des points par photo, biblioth�
 
 ## Développement
 
+### Installer
+
+Seul [uv](https://docs.astral.sh/uv/getting-started/installation/) est nécessaire : il installe lui-même Python 3.13 (fixé par `.python-version`) et les dépendances exactes de `uv.lock`.
+
 ```sh
+git clone https://github.com/Isalafont/knitproof.git
+cd knitproof
 uv sync
 uv run pytest
 uv run ruff check .
 ```
 
-Python 3.13, [uv](https://docs.astral.sh/uv/), pytest, ruff. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
+Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
+
+### Contribuer
+
+- `main` est la production, `develop` l’intégration déployée sur la sandbox.
+- Chaque changement part de `develop` sur sa propre branche et y revient par une pull request ; `develop` passe sur `main` par une pull request.
+- Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
+
+Python 3.13, uv, pytest, ruff. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
 
 ## Licence
 
