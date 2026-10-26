@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(uv run pytest *)",
+      "Bash(uv run --locked pytest *)",
+      "Bash(uv run ruff *)",
+      "Bash(uv run --locked ruff *)",
+      "Bash(uv run lint-imports *)",
+      "Bash(uv run --locked lint-imports *)",
+      "Bash(uv run mypy *)",
+      "Bash(uv run --locked mypy *)",
+      "Bash(uv run --locked pre-commit run *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch)",
+      "Bash(git branch --show-current)",
+      "Bash(git branch -d *)",
+      "Bash(git switch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git fetch *)",
+      "Bash(git pull --ff-only *)",
+      "Bash(git rebase *)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(git add -A *)",
+      "Bash(git add --all *)",
+      "Bash(git add . *)",
+      "Bash(git add -f *)",
+      "Bash(git add --force *)",
+      "Bash(git commit *--no-verify*)",
+      "Bash(git commit -n *)",
+      "Bash(git commit * -n)", "Bash(git commit * -n *)"
+    ]
+  }
+}

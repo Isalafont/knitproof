@@ -177,9 +177,17 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 - `main` est la production, `develop` l’intégration déployée sur la sandbox.
 - Chaque changement part de `develop` sur sa propre branche et y revient par une pull request ; `develop` passe sur `main` par une pull request.
 - `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`, `lint-imports`, `mypy`). `main` n’accepte que des pull requests depuis `develop`.
+- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>`.
 - Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
 
 Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commit. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
+
+### Travailler avec les agents
+
+- Les règles de tous les agents sont dans [`AGENTS.md`](AGENTS.md), que `CLAUDE.md` importe.
+- Avec Claude Code, `/plan-ticket CLA-XX` prépare le contexte et le plan d’un ticket (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code.
+- `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie et ouvre la PR en brouillon après accord.
+- Les plans restent locaux dans `.claude/plans/` ; `.claude/settings.json` pré-autorise les commandes courantes (détail dans `AGENTS.md`).
 
 ## Licence
 

@@ -13,3 +13,8 @@ wheels/
 .env
 .env.*
 !.env.example
+
+# Claude Code : seuls les skills et les permissions partagées sont versionnés
+.claude/*
+!.claude/skills/
+!.claude/settings.json
