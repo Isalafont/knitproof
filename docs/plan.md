@@ -7,6 +7,8 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 - Architecture, plan et protocole d’évaluation (ce document et ses voisins).
 - Décisions d’architecture (ADR).
 - Conventions Python et d’architecture, vérifiées automatiquement.
+- Flow de branches : `main` (production), `develop` (sandbox), branches de travail depuis `develop`, une pull request à chaque étape.
+- Intégration continue : tests, ruff et contrats de couches sur chaque pull request ; `main` et `develop` protégées. Le déploiement continu (`develop` vers la sandbox, `main` vers la production) arrive en M3, avec l’image Docker.
 
 ## M1 — Moteur, sans IA
 
@@ -43,7 +45,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 
 1. API JSON (FastAPI, OpenAPI) au-dessus de `app`.
 2. Interface accessible (choix en ADR : HTMX ou React avec React Aria).
-3. Docker ; CI : tests, imports, manifeste, rejeu de l’évaluation, aucun appel payant.
+3. Docker ; déploiement continu de `develop` sur la sandbox et de `main` en production ; la CI ajoute le manifeste et le rejeu de l’évaluation, sans appel payant.
 4. Audit RGAA publié ; axe-core en CI.
 
 **Critère de fin** : URL publique ; `docker run` démarre l’API ; CI verte ; audit RGAA sans non-conformité bloquante sur le parcours de calcul.
