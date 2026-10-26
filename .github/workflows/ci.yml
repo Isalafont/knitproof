@@ -28,9 +28,11 @@ jobs:
           enable-cache: true
           cache-python: true
       - run: uv sync --locked
-      - run: uv run pytest
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
+      - run: uv run --locked pytest
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked lint-imports --no-logo
+      - run: uv run --locked mypy
 
   develop-vers-main:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
