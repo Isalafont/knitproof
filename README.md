@@ -168,7 +168,7 @@ uv run lint-imports
 uv run mypy
 ```
 
-`domain` et `engine` portent le modèle de patron et la vérification des comptes de mailles ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs tests d’acceptation sont marqués en échec attendu jusqu’à ce que la commande `knitproof` existe, et la CI casse le jour où ils passent sans qu’on retire le marqueur.
+`domain` et `engine` portent le modèle de patron et la vérification des comptes de mailles ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs tests d’acceptation sont marqués en échec attendu jusqu’à ce que la commande `knitproof` existe, et la CI casse le jour où ils passent sans qu’on retire le marqueur. Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
 
