@@ -46,9 +46,9 @@ Chaque sous-agent : outil Agent, `subagent_type: general-purpose`, avec le `mode
 
 Rédige `<id>-linear.md` au template de son type, aligné sur le contexte validé, et montre-le à Isabelle. Ne le publie avec l’outil Linear de la session qu’après son accord explicite.
 
-- Templates : `~/.claude/templates/side-projects/` (`us.md`, `ts.md`, `bug.md`, `cadrage.md`). Lis d’abord `README.md` du dossier, puis le template du type.
+- Templates : `${CLAUDE_SKILL_DIR}/templates/` — `us.md` (fonctionnalité), `ts.md` (technique, outillage, dette), `bug.md` (anomalie), `cadrage.md` (question à trancher, sans code). Titre au préfixe du type : `US — …`, `TS — …`, `Bug — …`, `[Cadrage] … — …`.
 - Toutes les sections du template restent, une ligne sans objet porte « aucune » ou « sans objet ».
-- Les critères d’acceptation reprennent ceux du contexte validé, en tableau `Étant donné | Quand | Alors`, cases d’état décochées.
+- Les critères d’acceptation reprennent ceux du contexte validé, en tableau `Étant donné | Quand | Alors`, cases d’état décochées. État producteur : coché par l’implémenteur ; état testeur : par la revérification de la session, puis par Isabelle.
 - Priorité, estimation, labels et relations vont dans les champs Linear, pas dans la description.
 
 ## Conditions d’arrêt
