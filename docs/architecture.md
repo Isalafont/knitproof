@@ -257,7 +257,7 @@ Invariant central, vérifié par le moteur et non par Pydantic (les comptes dép
 
 Une plage de tours répète les mêmes opérations à chaque tour ; le compte annoncé porte sur le dernier tour de la plage. Une plage dont les opérations changent le nombre de mailles échoue donc dès son deuxième tour.
 
-Format YAML (figé par CLA-64), chargé par `yaml.safe_load` puis `Pattern.model_validate` ; `k2tog` et `m1` s’écrivent nus. Les exemples vivent dans [`examples/`](../examples/).
+Format YAML (figé par CLA-64), chargé par `yaml.safe_load` puis `Pattern.model_validate` ; `k2tog` et `m1` s’écrivent nus. Les exemples vivent dans [`examples/`](../examples/) ; les patrons synthétiques justes, dans `examples/synthetiques/`, que la CI parcourt récursivement. Pour vérifier un fichier, voir la section « Vérifier un patron YAML » du README.
 
 ```yaml
 cast_on: 108

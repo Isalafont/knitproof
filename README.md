@@ -168,9 +168,36 @@ uv run lint-imports
 uv run mypy
 ```
 
-`domain` et `engine` portent le modèle de patron et la vérification des comptes de mailles ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs tests d’acceptation sont marqués en échec attendu jusqu’à ce que la commande `knitproof` existe, et la CI casse le jour où ils passent sans qu’on retire le marqueur.
+`domain` et `engine` portent le modèle de patron et la vérification des comptes de mailles ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs tests d’acceptation sont marqués en échec attendu jusqu’à ce que la commande `knitproof` existe, et la CI casse le jour où ils passent sans qu’on retire le marqueur. Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
+
+### Vérifier un patron YAML
+
+En attendant la commande `knitproof verify` (CLA-76), un test à la demande vérifie les comptes de mailles d’un ou plusieurs fichiers au format décrit dans [`docs/architecture.md`](docs/architecture.md), section 9. Un patron réel se range dans `local-patterns/`, que git ignore : il ne quitte pas votre machine et aucun test de la CI ne le lit.
+
+Depuis la racine du dépôt, un fichier, puis tous ceux d’un dossier (motif glob, entre apostrophes pour que le shell ne le développe pas) :
+
+```sh
+KNITPROOF_PATTERNS=local-patterns/mon-bonnet.yaml uv run pytest tests/test_pattern_files.py
+KNITPROOF_PATTERNS='local-patterns/*.yaml' uv run pytest tests/test_pattern_files.py
+```
+
+Lire le résultat :
+
+- `1 passed` : aucun constat, chaque compte annoncé est celui que calcule le moteur.
+- `1 failed` : une ligne par constat, avec le fichier et le tour. Par exemple, sur `examples/bonnet-erreur-rang-33.yaml` : `tour 33 — count_mismatch : calculé 90 m, annoncé 89 m`. Pour un `repeat_not_fitting`, la ligne donne les mailles laissées par le tour précédent et celles que consomment les opérations ; la simulation s’arrête à ce tour.
+- Un motif qui ne trouve aucun fichier, ou un fichier invalide (opération inconnue, clé en trop), échoue avec la raison.
+- Sans la variable, le test est sauté (`1 skipped`) : `uv run pytest` ne lit jamais `local-patterns/`. Préfixer la commande, ne pas exporter la variable.
+
+Limites :
+
+- Seules `work`, `k2tog`, `m1` et `repeat` sont prises en charge ; les diminutions des patrons synthétiques sont toutes écrites en `k2tog`. Un fichier qui emploie une autre opération est rejeté, et ce rejet ne prouve pas une erreur de calcul.
+- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande compte les mailles, elle ne contrôle pas le montage. Le montage aux multiples combinés, arrondi au multiple le plus proche (en dessous en cas d’égalité), tour d’ajustement entre bord et corps accepté, est l’objet de CLA-65.
+- Après un `repeat_not_fitting`, les comptes annoncés suivants ne sont pas comparés ([ADR 0013](docs/adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)).
+- Seuls les comptes de mailles sont vérifiés : ni mesures, ni échantillon.
+
+Les patrons synthétiques justes de `examples/synthetiques/` sont vérifiés par la CI à chaque `uv run pytest`, sans variable.
 
 ### Contribuer
 
@@ -186,8 +213,8 @@ Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commi
 ### Travailler avec les agents
 
 - Les règles de tous les agents sont dans [`AGENTS.md`](AGENTS.md), que `CLAUDE.md` importe.
-- Avec Claude Code, `/plan-ticket CLA-XX` prépare le contexte et le plan d’un ticket (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code ; le rédacteur et le vérificateur lisent aussi les tickets directement liés. Le ticket réaligné suit le template de son type (US, TS, Bug, Cadrage), versionné dans `.claude/skills/plan-ticket/templates/`.
-- `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie, pousse, ouvre la PR et la merge après le « ok » d’Isabelle sur le test.
+- Avec Claude Code, `/plan-ticket CLA-XX` prépare le contexte et le plan d’un ticket (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code ; le rédacteur et le vérificateur lisent aussi les tickets directement liés. Le ticket réaligné suit le template de son type (US, TS, Bug, Cadrage), versionné dans `.claude/skills/plan-ticket/templates/` ; à la publication, il coche la DOR.
+- `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie, coche les cases producteur du ticket Linear, pousse et ouvre la PR, puis, après le « ok » d’Isabelle sur le test, coche les cases testeur et la DOD et merge. Chaque case est cochée sur preuve, et toute écriture dans Linear attend l’accord d’Isabelle.
 - Les plans restent locaux dans `.claude/plans/` ; `.claude/settings.json` pré-autorise les commandes courantes (détail dans `AGENTS.md`).
 
 ## Licence

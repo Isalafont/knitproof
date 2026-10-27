@@ -1,0 +1,17 @@
+# Bonnet synthétique, écrit pour knitproof : aucun patron réel.
+# Taille S : 72 m, côtes 2/2 sur 14 tours, jersey jusqu’au tour 40.
+# Calotte en 4 secteurs, 8 diminutions par tour : un tour sur deux jusqu’à 48 m, puis à chaque tour.
+cast_on: 72
+rounds:
+  - {start: 1, end: 14, ops: [{work: 72}]}
+  - {start: 15, end: 40, ops: [{work: 72}]}
+  - {start: 41, ops: [{repeat: {body: [{work: 7}, k2tog, {work: 7}, k2tog], times: 4}}], stated_count: 64}
+  - {start: 42, ops: [{work: 64}]}
+  - {start: 43, ops: [{repeat: {body: [{work: 6}, k2tog, {work: 6}, k2tog], times: 4}}], stated_count: 56}
+  - {start: 44, ops: [{work: 56}]}
+  - {start: 45, ops: [{repeat: {body: [{work: 5}, k2tog, {work: 5}, k2tog], times: 4}}], stated_count: 48}
+  - {start: 46, ops: [{repeat: {body: [{work: 4}, k2tog, {work: 4}, k2tog], times: 4}}], stated_count: 40}
+  - {start: 47, ops: [{repeat: {body: [{work: 3}, k2tog, {work: 3}, k2tog], times: 4}}], stated_count: 32}
+  - {start: 48, ops: [{repeat: {body: [{work: 2}, k2tog, {work: 2}, k2tog], times: 4}}], stated_count: 24}
+  - {start: 49, ops: [{repeat: {body: [{work: 1}, k2tog, {work: 1}, k2tog], times: 4}}], stated_count: 16}
+  - {start: 50, ops: [{repeat: {body: [k2tog], times: 8}}], stated_count: 8}

@@ -77,11 +77,11 @@ def test_stated_count_after_the_halt_is_not_compared() -> None:
 
 
 def test_right_synthetic_beanie_has_no_finding() -> None:
-    assert verify(_load("bonnet-synthetique.yaml")) == []
+    assert verify(_load("synthetiques/bonnets/bonnet-synthetique.yaml")) == []
 
 
 def test_right_synthetic_beanie_ends_on_eight_stitches() -> None:
-    simulation = simulate(_load("bonnet-synthetique.yaml"))
+    simulation = simulate(_load("synthetiques/bonnets/bonnet-synthetique.yaml"))
 
     assert len(simulation.counts) == 56
     assert simulation.counts[-1].stitches == 8
