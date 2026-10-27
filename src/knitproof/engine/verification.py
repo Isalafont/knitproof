@@ -5,6 +5,30 @@ from knitproof.domain.pattern import Pattern
 from knitproof.domain.simulation import RoundCount, Simulation
 
 
+def verify(pattern: Pattern) -> list[Finding]:
+    """Constats d’un patron : comptes annoncés faux, puis répétition qui ne tombe pas juste."""
+    simulation = simulate(pattern)
+    simulated = {count.round: count.stitches for count in simulation.counts}
+    findings: list[Finding] = []
+    for round_ in pattern.rounds:
+        expected = simulated.get(round_.last)
+        if expected is None or round_.stated_count in (None, expected):
+            continue
+        findings.append(
+            Finding(
+                status=FindingStatus.ERROR,
+                code=FindingCode.COUNT_MISMATCH,
+                round=round_.last,
+                expected=expected,
+                actual=round_.stated_count,
+                location=round_.location,
+            )
+        )
+    if simulation.halted is not None:
+        findings.append(simulation.halted)
+    return findings
+
+
 def simulate(pattern: Pattern) -> Simulation:
     """Compte les mailles tour par tour, jusqu’au premier tour qui ne tombe pas juste."""
     stitches = pattern.cast_on
