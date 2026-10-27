@@ -81,5 +81,5 @@ Ces questions ne sont pas tranchées par le code : chacune bloque une tranche ju
 - **Exactitude métier** : aucune valeur de bibliothèque sans source ni validation.
 - **Questions bloquantes** : la tranche « vérifier » avance sans elles.
 - **Fuite d’évaluation** : le jeu `test` ne sert jamais à mettre au point les prompts.
-- **Droits et données** : pas de patron du commerce dans le dépôt ; photos sans EXIF ; patrons Ravelry en usage privé ; patrons réels (Oslo Hue, DROPS) transcrits seulement dans `local-patterns/`, ignoré par git, pour des essais privés : aucun test ni code n’en dépend, et un échec dû à une opération hors périmètre ne prouve pas une erreur de calcul.
+- **Droits et données** : pas de patron du commerce dans le dépôt ; photos sans EXIF ; patrons Ravelry en usage privé ; patrons réels (Oslo Hue, DROPS) transcrits seulement dans `local-patterns/`, ignoré par git, pour des essais privés, vérifiables à la demande par `KNITPROOF_PATTERNS` (README, « Vérifier un patron YAML ») : la CI n’en dépend pas, et un échec dû à une opération hors périmètre ne prouve pas une erreur de calcul.
 - **Sur-modélisation** : chaque modèle naît d’un test qui échoue.

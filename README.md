@@ -172,6 +172,33 @@ uv run mypy
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
 
+### Vérifier un patron YAML
+
+En attendant la commande `knitproof verify` (CLA-76), un test à la demande vérifie les comptes de mailles d’un ou plusieurs fichiers au format décrit dans [`docs/architecture.md`](docs/architecture.md), section 9. Un patron réel se range dans `local-patterns/`, que git ignore : il ne quitte pas votre machine et aucun test de la CI ne le lit.
+
+Depuis la racine du dépôt, un fichier, puis tous ceux d’un dossier (motif glob, entre apostrophes pour que le shell ne le développe pas) :
+
+```sh
+KNITPROOF_PATTERNS=local-patterns/mon-bonnet.yaml uv run pytest tests/test_pattern_files.py
+KNITPROOF_PATTERNS='local-patterns/*.yaml' uv run pytest tests/test_pattern_files.py
+```
+
+Lire le résultat :
+
+- `1 passed` : aucun constat, chaque compte annoncé est celui que calcule le moteur.
+- `1 failed` : une ligne par constat, avec le fichier et le tour. Par exemple, sur `examples/bonnet-erreur-rang-33.yaml` : `tour 33 — count_mismatch : calculé 90 m, annoncé 89 m`. Pour un `repeat_not_fitting`, la ligne donne les mailles laissées par le tour précédent et celles que consomment les opérations ; la simulation s’arrête à ce tour.
+- Un motif qui ne trouve aucun fichier, ou un fichier invalide (opération inconnue, clé en trop), échoue avec la raison.
+- Sans la variable, le test est sauté (`1 skipped`) : `uv run pytest` ne lit jamais `local-patterns/`. Préfixer la commande, ne pas exporter la variable.
+
+Limites :
+
+- Seules `work`, `k2tog`, `m1` et `repeat` sont prises en charge ; les diminutions des patrons synthétiques sont toutes écrites en `k2tog`. Un fichier qui emploie une autre opération est rejeté, et ce rejet ne prouve pas une erreur de calcul.
+- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande compte les mailles, elle ne contrôle pas le montage. Le montage aux multiples combinés, arrondi au multiple le plus proche (en dessous en cas d’égalité), tour d’ajustement entre bord et corps accepté, est l’objet de CLA-65.
+- Après un `repeat_not_fitting`, les comptes annoncés suivants ne sont pas comparés ([ADR 0013](docs/adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)).
+- Seuls les comptes de mailles sont vérifiés : ni mesures, ni échantillon.
+
+Les patrons synthétiques justes de `examples/synthetiques/` sont vérifiés par la CI à chaque `uv run pytest`, sans variable.
+
 ### Contribuer
 
 - `main` est la production, `develop` l’intégration déployée sur la sandbox.
