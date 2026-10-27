@@ -1,6 +1,6 @@
 ---
 name: implement-slice
-description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, montre le diff et ouvre la PR en brouillon après accord.
+description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, pousse, ouvre la PR et la merge après le « ok » d’Isabelle sur le test.
 argument-hint: "[CLA-XX]"
 disable-model-invocation: true
 allowed-tools:
@@ -16,7 +16,7 @@ Tu es la session principale. Un sous-agent Sonnet écrit le code ; tu revérifie
 ## Avant de déléguer
 
 1. `.claude/plans/<id>-plan.md` existe et Isabelle l’a validé ; sinon, arrête-toi et propose `/plan-ticket $0`.
-2. La branche du frontmatter du plan existe, créée depuis `develop` à jour (`AGENTS.md`, « Branches ») ; sinon, crée-la après accord d’Isabelle.
+2. La branche du frontmatter du plan existe, créée depuis `develop` à jour (`AGENTS.md`, « Branches ») ; sinon, crée-la.
 3. `git status --short` est propre.
 
 ## Phase 5 — Implémentation
@@ -29,14 +29,15 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 2. Lance toi-même les cinq contrôles d’`AGENTS.md` (« Commandes ») ; tous verts.
 3. `git log --oneline develop..` : un commit par étape, aux messages du plan, conformes aux « Conventions ».
 4. `git diff develop...` : rien hors du plan ; README et `docs/` à jour selon les « Conventions ».
-5. Montre à Isabelle le diff, les commits et les contrôles, et dis ce qui n’a pas été vérifié. Attends son accord.
-6. Après accord : `git push -u origin <branche>` (jamais `HEAD`), puis PR en brouillon vers `develop`. Attends la CI et donne son état.
+5. `git push -u origin <branche>` (jamais `HEAD`), puis PR prête (pas de brouillon) vers `develop`, avec une section « Tester ». Attends la CI.
+6. Donne à Isabelle le lien de la PR, l’état de la CI, les commits, les contrôles et ce qui n’a pas été vérifié. Attends son « ok » sur le test.
+7. Après son « ok », CI verte : `gh pr merge <numéro> --merge`, puis `git switch develop`, `git pull --ff-only` et `git branch -d <branche>`.
 
 ## Conditions d’arrêt
 
-- Jamais de push ni de PR sans accord explicite d’Isabelle ; jamais de merge.
+- Jamais de merge sans le « ok » d’Isabelle sur le test, ni avec une CI rouge ; jamais de merge vers `main`.
 - Un contrôle rouge à la revérification : corrige avec Isabelle, dans le respect des « Règles pour tous les agents ».
-- Fin : PR en brouillon et état de la CI. Isabelle merge.
+- Fin : PR mergée dans `develop`, branche locale supprimée.
 
 ## Brief de l’implémenteur
 
