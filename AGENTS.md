@@ -62,7 +62,7 @@ Ce que ruff et mypy ne vérifient pas :
 - Ne jamais assouplir un contrat import-linter ou une option mypy pour faire passer un changement.
 - Dans `.claude/`, seuls `skills/` et `settings.json` sont versionnés ; jamais `.claude/plans/`.
 - `.claude/settings.json` pré-autorise les lectures, les cinq contrôles, les commandes git locales, le push d’une branche de travail et les PR vers `develop`.
-- L’agent commite sans validation, pousse et ouvre une PR prête (pas de brouillon) vers `develop`. Il la merge dès qu’Isabelle a lancé le test de la PR et dit « ok », CI verte.
+- L’agent commite sans validation, pousse et ouvre une PR prête (pas de brouillon) vers `develop`. Il la merge dès qu’Isabelle a lancé le test de la PR et dit « ok », CI verte. Avant le merge, les cases producteur du ticket sont cochées dans Linear ; les cases testeur et la DOD le sont après le « ok » d’Isabelle (voir `implement-slice`).
 - Écrire dans Linear demande toujours un accord.
 - Commits sans mention d’un agent de code (Claude, Codex…).
 

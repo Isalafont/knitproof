@@ -48,7 +48,8 @@ Rédige `<id>-linear.md` au template de son type, aligné sur le contexte valid�
 
 - Templates : `${CLAUDE_SKILL_DIR}/templates/` — `us.md` (fonctionnalité), `ts.md` (technique, outillage, dette), `bug.md` (anomalie), `cadrage.md` (question à trancher, sans code). Titre au préfixe du type : `US — …`, `TS — …`, `Bug — …`, `[Cadrage] … — …`.
 - Toutes les sections du template restent, une ligne sans objet porte « aucune » ou « sans objet ».
-- Les critères d’acceptation reprennent ceux du contexte validé, en tableau `Étant donné | Quand | Alors`, cases d’état décochées. État producteur : coché par l’implémenteur ; état testeur : par la revérification de la session, puis par Isabelle.
+- Les critères d’acceptation reprennent ceux du contexte validé, en tableau `Étant donné | Quand | Alors`, cases d’état décochées. L’implémenteur n’écrit jamais dans Linear : `/implement-slice` coche l’état producteur après sa revérification, puis l’état testeur et la DOD après le « ok » d’Isabelle.
+- La DOR est cochée à la publication du ticket réaligné, chaque case vérifiée sur le contexte et le plan validés.
 - Priorité, estimation, labels et relations vont dans les champs Linear, pas dans la description.
 
 ## Conditions d’arrêt
