@@ -187,7 +187,7 @@ Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commi
 
 - Les règles de tous les agents sont dans [`AGENTS.md`](AGENTS.md), que `CLAUDE.md` importe.
 - Avec Claude Code, `/plan-ticket CLA-XX` prépare le contexte et le plan d’un ticket (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code ; le rédacteur et le vérificateur lisent aussi les tickets directement liés.
-- `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie et ouvre la PR en brouillon après accord.
+- `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie, pousse, ouvre la PR et la merge après le « ok » d’Isabelle sur le test.
 - Les plans restent locaux dans `.claude/plans/` ; `.claude/settings.json` pré-autorise les commandes courantes (détail dans `AGENTS.md`).
 
 ## Licence
