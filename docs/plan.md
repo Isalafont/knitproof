@@ -15,7 +15,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 | Tranche | Contenu | Dépend de |
 |---|---|---|
 | 0. Outillage | Pydantic, PyYAML (`types-PyYAML` en développement) ; plugin `pydantic.mypy` activé (ADR 0001), avec `[tool.pydantic-mypy]` ; `examples/bonnet-erreur-rang-33.yaml` et `examples/bonnet-3-ans.yaml`, formats provisoires ; deux tests d’acceptation qui lancent la commande `knitproof`, en `xfail(raises=FileNotFoundError, strict=True)` ; `xfail_strict = true` | — |
-| 1. Vérifier | `Op`, `Repeat`, `Round`, `Pattern`, `simulate`, `verify` ; exemple « erreur au rang 33 » et cas « répétition qui ne tombe pas juste » | aucune question métier |
+| 1. Vérifier | `Op`, `Repeat`, `Round`, `Pattern`, `simulate`, `verify` ; format YAML figé, `examples/bonnet-synthetique.yaml` ; exemple « erreur au rang 33 » et cas « répétition qui ne tombe pas juste » | aucune question métier |
 | 2. Montage, valeurs saisies | `Length` (cm et pouces), `NeedleSize`, `Needle` (droites, circulaires avec longueur de câble, double pointe ; matière optionnelle), méthode à plat ou en rond distincte de l’outil, avertissement `swatch_needle_mismatch`, `SwatchMeasurement` (demi-mailles admises), `stitches_for_width`, `cast_on` avec multiples combinés, contrôle d’un nombre proposé ; tests de propriétés (multiple respecté, monotonie, aucun `float`) | question 4 |
 | 3. Échantillon et résolution | `Swatch` avant et après blocage, table de résolution par grandeur, constat « échantillon non bloqué » (96 m contre 88 m), constat `gauge_differs_from_label` (échantillon comparé à la jauge de l’étiquette), questions en attente | questions 2, 3, 7, 9, 14 |
 | 4. Bibliothèque | Chargeur YAML, `FiberProfile`, `StitchPattern`, `ReferenceMeasurement`, table de correspondance des aiguilles ; chaque valeur sourcée et validée ; bibliothèque versionnée | questions 1, 10, 11 |
@@ -81,5 +81,5 @@ Ces questions ne sont pas tranchées par le code : chacune bloque une tranche ju
 - **Exactitude métier** : aucune valeur de bibliothèque sans source ni validation.
 - **Questions bloquantes** : la tranche « vérifier » avance sans elles.
 - **Fuite d’évaluation** : le jeu `test` ne sert jamais à mettre au point les prompts.
-- **Droits et données** : pas de patron du commerce dans le dépôt ; photos sans EXIF ; patrons Ravelry en usage privé.
+- **Droits et données** : pas de patron du commerce dans le dépôt ; photos sans EXIF ; patrons Ravelry en usage privé ; patrons réels (Oslo Hue, DROPS) transcrits seulement dans `local-patterns/`, ignoré par git, pour des essais privés : aucun test ni code n’en dépend, et un échec dû à une opération hors périmètre ne prouve pas une erreur de calcul.
 - **Sur-modélisation** : chaque modèle naît d’un test qui échoue.

@@ -1,5 +1,5 @@
 # Exemple « Vérifier un patron existant » du README.
-# Format provisoire, d’après docs/architecture.md (section 9) : la tranche 1 le fige.
+# Format figé par CLA-64 (docs/architecture.md, section 9).
 cast_on: 108
 rounds:
   - {start: 1, end: 30, ops: [{work: 108}]}

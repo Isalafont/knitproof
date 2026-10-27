@@ -166,7 +166,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | Modèle | Champs clés | Invariants |
 |---|---|---|
 | `SourceKind` | `user_swatch`, `user_measurement`, `user_input`, `yarn_label`, `ravelry`, `fiber_library`, `reference_measurement`, `model_inference`, `person_decision`, `engine` | pas d’ordre global (voir section 7) |
-| `SourceLocation` | `document`, `page`, `line`, `round` | au moins un champ renseigné |
+| `SourceLocation` | `page`, `line` (tranche 1) ; à venir : `document`, `round` | au moins un champ renseigné |
 | `Provenance` | `kind`, `reference`, `location`, `extracted_by` (modèle, version, prompt), `note` | `reference` obligatoire pour `fiber_library`, `reference_measurement`, `yarn_label`, `ravelry` |
 | `Sourced[T]` | `value`, `provenance` | réservé aux paramètres résolus et aux constats |
 
@@ -199,14 +199,14 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `BeanieSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `crown_sectors`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
 | `Ease` | `value`, `unit` (% ou cm) | — |
 | `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
-| `Op` | `work(n)`, `k2tog`, `ssk`, `k3tog`, `sk2p`, `m1`, `finish` ; `consumes` et `produces` dérivés | `consumes ≥ 0`, `produces ≥ 0` |
-| `Repeat` | `body`, `times` (entier ou `to_end`) | `to_end` consomme exactement le reste |
-| `Round` | `start`, `end`, `ops`, `stated_count`, `section`, `location` | les opérations consomment exactement les mailles du tour précédent |
-| `Pattern` | `cast_on`, `rounds`, `provenance` | tours contigus et croissants |
+| `Op` | `work(n)`, `k2tog`, `m1` (tranche 1) ; à venir : `ssk`, `k3tog`, `sk2p`, `finish` ; `consumes` et `produces` dérivés | `n ≥ 1`, `consumes ≥ 0`, `produces ≥ 1` |
+| `Repeat` | `body`, `times` (entier ; `to_end` à venir) | `body` non vide, `times ≥ 1` |
+| `Round` | `start`, `end`, `ops`, `stated_count`, `location` (`section` à venir) | `start ≤ end` ; le moteur vérifie que les opérations consomment les mailles du tour précédent (section 9) |
+| `Pattern` | `cast_on`, `rounds` (`provenance` à venir) | tours contigus et croissants depuis le tour 1 |
 | `CastOnResult` | `target_cm`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm`, `adjustment_round` | compatible avec tous les multiples, ou tour d’ajustement explicite |
 | `CrownPlan` | `sectors`, `rounds`, `depth_cm` | fin à 0 maille ou fermeture déclarée |
 | `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
-| `Finding` | `status` (`error`, `warning`, `ok`, `needs_review`), `code`, `location`, `message`, `expected`, `actual`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
+| `Finding` | `status` (`error` en tranche 1 ; `warning`, `ok`, `needs_review` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `message`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
 | `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
 | `Report` | `findings`, `inputs`, `decisions`, `result`, `engine_version`, `library_version` | déterministe : même entrée, même rapport |
 
@@ -251,11 +251,13 @@ La provenance permet aussi d’effacer sur demande toutes les données venues d�
 
 ## 9. Représentation d’un patron
 
-Chaque opération déclare les mailles qu’elle consomme et produit : `k2tog` consomme 2 mailles et en produit 1. Une répétition indique son nombre de passages ou `to_end`. Un tour peut couvrir une plage (« côtes 2/2 sur 20 rangs ») et porte sa localisation dans le document source.
+Chaque opération déclare les mailles qu’elle consomme et produit : `k2tog` consomme 2 mailles et en produit 1. Une répétition indique son nombre de passages (`to_end` viendra plus tard). Un tour peut couvrir une plage (« côtes 2/2 sur 20 rangs ») et porte sa localisation dans le document source.
 
-Invariant central : les opérations d’un tour consomment exactement les mailles produites par le tour précédent. Sinon, le moteur produit un constat `repeat_not_fitting`. Un compte annoncé qui diffère de la simulation produit un constat `count_mismatch`.
+Invariant central, vérifié par le moteur et non par Pydantic (les comptes dépendent du contexte d’exécution) : les opérations d’un tour consomment exactement les mailles produites par le tour précédent. Sinon, le moteur produit un constat `repeat_not_fitting` au tour fautif et arrête la simulation. Un compte annoncé qui diffère de la simulation produit un constat `count_mismatch` ; la simulation continue alors sur le compte calculé, pas sur l’annoncé (ADR 0013). Un compte annoncé situé après l’arrêt n’est pas comparé.
 
-Esquisse du format YAML (fixé en M1) :
+Une plage de tours répète les mêmes opérations à chaque tour ; le compte annoncé porte sur le dernier tour de la plage. Une plage dont les opérations changent le nombre de mailles échoue donc dès son deuxième tour.
+
+Format YAML (figé par CLA-64), chargé par `yaml.safe_load` puis `Pattern.model_validate` ; `k2tog` et `m1` s’écrivent nus. Les exemples vivent dans [`examples/`](../examples/).
 
 ```yaml
 cast_on: 108
@@ -270,6 +272,16 @@ rounds:
     stated_count: 89
     location: {page: 2, line: 14}
 ```
+
+Opérations prises en charge. `k2tog`, `m1` et `p2tog` suivent la [liste standard du Craft Yarn Council](https://www.craftyarncouncil.com/standards/knitting-abbreviations) (lue le 27/10/2026 : « knit 2 stitches together; single right-leaning decrease », « make one stitch knitwise; single knit increase », « purl 2 stitches together; single decrease ») ; `work n` est propre à knitproof :
+
+| Opération | Anglais | En français | Consomme | Produit |
+|---|---|---|---|---|
+| `work n` | work n stitches | tricoter n mailles comme elles se présentent | n | n |
+| `k2tog` | knit 2 together | 2 mailles ensemble à l’endroit | 2 | 1 |
+| `m1` | make 1 | 1 augmentation intercalaire | 0 | 1 |
+
+À venir, sans comptes pour l’instant : `p2tog` (purl 2 together, 2 mailles ensemble à l’envers), `ssk`, `k3tog`, `sk2p`…
 
 En V0, le bonnet se tricote en rond : `Round` suffit. Les patrons français disent souvent « rang » pour un tour.
 
@@ -302,6 +314,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0010 — Mélanges de fibres](adr/0010-melanges-de-fibres.md)
 - [ADR 0011 — Licence de l’API Ravelry](adr/0011-licence-api-ravelry.md)
 - [ADR 0012 — Interdire `Any` avec mypy](adr/0012-interdire-any-avec-mypy.md)
+- [ADR 0013 — Format YAML figé et poursuite sur le compte calculé](adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)
 
 ## 13. Projets proches
 
