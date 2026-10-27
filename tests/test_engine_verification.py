@@ -7,7 +7,7 @@ import yaml
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
 from knitproof.domain.pattern import Pattern, Round, Work
-from knitproof.engine.verification import verify
+from knitproof.engine.verification import simulate, verify
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 
@@ -74,3 +74,14 @@ def test_stated_count_after_the_halt_is_not_compared() -> None:
     findings = verify(pattern)
 
     assert [f.code for f in findings] == [FindingCode.REPEAT_NOT_FITTING]
+
+
+def test_right_synthetic_beanie_has_no_finding() -> None:
+    assert verify(_load("bonnet-synthetique.yaml")) == []
+
+
+def test_right_synthetic_beanie_ends_on_eight_stitches() -> None:
+    simulation = simulate(_load("bonnet-synthetique.yaml"))
+
+    assert len(simulation.counts) == 56
+    assert simulation.counts[-1].stitches == 8
