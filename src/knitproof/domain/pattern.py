@@ -1,9 +1,20 @@
 """Opérations d’un tour : mailles consommées et produites."""
 
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Self
 
-from pydantic import BaseModel, ConfigDict, Discriminator, Field, PositiveInt, Tag
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Discriminator,
+    Field,
+    NonNegativeInt,
+    PositiveInt,
+    Tag,
+    model_validator,
+)
+
+from knitproof.domain.location import SourceLocation
 
 
 class Stitch(StrEnum):
@@ -85,3 +96,51 @@ type Op = Annotated[
     | Annotated[Repeat, Tag("repeat")],
     Discriminator(_op_kind),
 ]
+
+
+class Round(BaseModel):
+    """Un tour, ou une plage de tours qui répètent les mêmes opérations."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    start: PositiveInt
+    end: PositiveInt | None = None
+    ops: tuple[Op, ...] = Field(min_length=1)
+    stated_count: NonNegativeInt | None = None
+    location: SourceLocation | None = None
+
+    @property
+    def last(self) -> int:
+        return self.start if self.end is None else self.end
+
+    @property
+    def consumes(self) -> int:
+        return sum(op.consumes for op in self.ops)
+
+    @property
+    def produces(self) -> int:
+        return sum(op.produces for op in self.ops)
+
+    @model_validator(mode="after")
+    def _ends_after_start(self) -> Self:
+        if self.end is not None and self.end < self.start:
+            raise ValueError(f"le tour {self.start} se termine avant son début ({self.end})")
+        return self
+
+
+class Pattern(BaseModel):
+    """Un patron : montage et tours contigus à partir du tour 1."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    cast_on: PositiveInt
+    rounds: tuple[Round, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _rounds_are_contiguous(self) -> Self:
+        expected = 1
+        for round_ in self.rounds:
+            if round_.start != expected:
+                raise ValueError(f"tour {round_.start} : le tour attendu est le tour {expected}")
+            expected = round_.last + 1
+        return self

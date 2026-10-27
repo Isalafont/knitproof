@@ -1,9 +1,15 @@
 """Opérations, tours et patron : invariants structurels (CLA-64)."""
 
+from pathlib import Path
+
 import pytest
+import yaml
 from pydantic import TypeAdapter, ValidationError
 
-from knitproof.domain.pattern import Op, Repeat, RepeatBlock, Stitch, Work
+from knitproof.domain.location import SourceLocation
+from knitproof.domain.pattern import Op, Pattern, Repeat, RepeatBlock, Round, Stitch, Work
+
+EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 
 OP_ADAPTER: TypeAdapter[Op] = TypeAdapter(Op)
 
@@ -72,3 +78,85 @@ def test_unrecognised_shape_has_no_tag(raw: object) -> None:
         OP_ADAPTER.validate_python(raw)
 
     assert error.value.errors()[0]["type"] == "union_tag_not_found"
+
+
+def test_round_ending_before_its_start_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        Round(start=5, end=4, ops=(Work(work=10),))
+
+
+def test_round_last_is_end_or_start() -> None:
+    assert Round(start=1, end=30, ops=(Work(work=10),)).last == 30
+    assert Round(start=7, ops=(Work(work=10),)).last == 7
+
+
+def test_round_without_operations_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        Round(start=1, ops=())
+
+
+def test_round_sums_its_operations() -> None:
+    round_ = Round(start=1, ops=(Work(work=8), Stitch.K2TOG, Stitch.M1))
+
+    assert (round_.consumes, round_.produces) == (10, 10)
+
+
+def test_round_count_and_location_are_optional() -> None:
+    round_ = Round(start=1, ops=(Work(work=8),))
+
+    assert (round_.stated_count, round_.location) == (None, None)
+
+
+def test_pattern_must_start_at_round_one() -> None:
+    with pytest.raises(ValidationError, match="tour 2"):
+        Pattern(cast_on=10, rounds=(Round(start=2, ops=(Work(work=10),)),))
+
+
+def test_pattern_with_a_gap_is_rejected() -> None:
+    with pytest.raises(ValidationError, match="tour 3"):
+        Pattern(
+            cast_on=10,
+            rounds=(
+                Round(start=1, ops=(Work(work=10),)),
+                Round(start=3, ops=(Work(work=10),)),
+            ),
+        )
+
+
+def test_pattern_with_overlapping_rounds_is_rejected() -> None:
+    with pytest.raises(ValidationError, match="tour 2"):
+        Pattern(
+            cast_on=10,
+            rounds=(
+                Round(start=1, end=3, ops=(Work(work=10),)),
+                Round(start=2, ops=(Work(work=10),)),
+            ),
+        )
+
+
+def test_pattern_without_rounds_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        Pattern(cast_on=10, rounds=())
+
+
+def test_pattern_with_an_unknown_operation_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        Pattern.model_validate({"cast_on": 10, "rounds": [{"start": 1, "ops": ["ssk"]}]})
+
+
+def test_pattern_with_an_extra_key_in_work_is_rejected() -> None:
+    raw = {"cast_on": 10, "rounds": [{"start": 1, "ops": [{"work": 10, "extra": 1}]}]}
+
+    with pytest.raises(ValidationError):
+        Pattern.model_validate(raw)
+
+
+def test_example_with_error_at_round_33_is_a_pattern() -> None:
+    text = (EXAMPLES / "bonnet-erreur-rang-33.yaml").read_text(encoding="utf-8")
+
+    pattern = Pattern.model_validate(yaml.safe_load(text))
+
+    assert len(pattern.rounds) == 4
+    assert pattern.rounds[-1].start == 33
+    assert pattern.rounds[-1].stated_count == 89
+    assert pattern.rounds[-1].location == SourceLocation(page=2, line=14)
