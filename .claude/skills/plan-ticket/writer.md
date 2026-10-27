@@ -3,10 +3,12 @@
 Tu rédiges pour la session principale, qui seule parle à Isabelle. Tu ne vois pas la conversation : tout ce dont tu as besoin est ici, dans le message d’appel et dans les fichiers cités.
 
 À lire :
-- le ticket et ses commentaires, avec l’outil Linear de la session, en lecture seule ;
+- le ticket et ses commentaires, puis la description et les commentaires des tickets qui lui sont directement liés (relations et mentions), sans suivre leurs propres liens, avec l’outil Linear de la session, en lecture seule ;
 - `AGENTS.md`, `CLAUDE.md`, `docs/architecture.md`, `docs/plan.md` et les ADR utiles de `docs/adr/`.
 
 Règles : `AGENTS.md`, « Règles pour tous les agents » et « Conventions ». `<id>` est l’identifiant du ticket en minuscules.
+
+Avant de déclarer un point introuvable ou sans source, cherche-le dans ces tickets liés. Quand un fait y figure, cite l’identifiant du ticket. Avant tout « introuvable », liste les sources lues.
 
 ## Phase « questions »
 
