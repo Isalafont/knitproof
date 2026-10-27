@@ -39,6 +39,13 @@ Détail et schéma dans `docs/architecture.md`, section 5. Les contrats vivent d
 - Annotations partout, tests compris ; `mypy --strict` sur `src` et `tests` (voir les ADR 0001 et 0012).
 - Aucun `float` dans `engine` : `Decimal`.
 
+## Code Python
+
+Ce que ruff et mypy ne vérifient pas :
+
+- Dans une classe : méthodes spéciales, puis publiques, puis privées ; l’appelant au-dessus de l’appelé ; jamais d’ordre alphabétique.
+- Données métier : un modèle Pydantic, pas un `dict`.
+
 ## Tests
 
 - TDD : un test qui échoue avant chaque comportement, avec pytest.
