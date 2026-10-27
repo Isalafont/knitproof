@@ -18,3 +18,4 @@ mypy `--strict` vérifie `src` et `tests`, en pre-commit et dans le job `tests` 
 - Toute fonction est annotée, tests compris.
 - Le plugin `pydantic.mypy` sera activé à la tranche 0 de M1, avec Pydantic (`plugins = ["pydantic.mypy"]`).
 - Un changement de configuration mypy qui assouplit la vérification demande un nouvel ADR.
+- `Any` est interdit par deux options ajoutées à `--strict` ([ADR 0012](0012-interdire-any-avec-mypy.md)).

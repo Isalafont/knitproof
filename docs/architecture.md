@@ -301,6 +301,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0009 — Découpage en couches](adr/0009-decoupage-en-couches.md)
 - [ADR 0010 — Mélanges de fibres](adr/0010-melanges-de-fibres.md)
 - [ADR 0011 — Licence de l’API Ravelry](adr/0011-licence-api-ravelry.md)
+- [ADR 0012 — Interdire `Any` avec mypy](adr/0012-interdire-any-avec-mypy.md)
 
 ## 13. Projets proches
 

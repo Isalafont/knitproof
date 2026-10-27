@@ -11,6 +11,7 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
 RUFF = BIN / "ruff"
+MYPY = BIN / "mypy"
 RUFF_LINE = re.compile(r"^(?P<path>[^:]+):\d+:\d+: (?P<code>[A-Z]+[0-9]+) ", re.MULTILINE)
 
 MAGIC_IN_SRC = "src/knitproof/engine/sample.py"
@@ -31,6 +32,30 @@ RUFF_SOURCES = {
         '        int("a")\n'
     ),
 }
+
+
+ANY_IN_SRC = "src/knitproof/sources/sample.py"
+
+ANY_SOURCE = (
+    "from typing import Any\n\n"
+    "from untyped_lib import Session\n\n\n"
+    "def identity(value: Any) -> int:\n"
+    "    return 1\n\n\n"
+    "def close(session: Session) -> None:\n"
+    "    return None\n"
+)
+
+ANY_IN_TESTS = "tests/test_any_sample.py"
+
+ANY_IN_TESTS_SOURCE = (
+    "from typing import Any\n\n\ndef test_any(value: Any) -> None:\n    return None\n"
+)
+
+MYPY_LINE = re.compile(r"^(?P<path>[^:]+):\d+: error: .*\[(?P<code>[a-z-]+)\]$", re.MULTILINE)
+
+UNTYPED_LIB_OVERRIDE = (
+    '\n[[tool.mypy.overrides]]\nmodule = ["untyped_lib"]\nignore_missing_imports = true\n'
+)
 
 
 def copy_config(project: Path) -> Path:
@@ -69,6 +94,29 @@ def ruff_codes(tmp_path_factory: pytest.TempPathFactory) -> dict[str, set[str]]:
     return codes
 
 
+@pytest.fixture(scope="module")
+def mypy_output(tmp_path_factory: pytest.TempPathFactory) -> str:
+    project = tmp_path_factory.mktemp("mypy")
+    pyproject = copy_config(project)
+    pyproject.write_text(
+        pyproject.read_text(encoding="utf-8") + UNTYPED_LIB_OVERRIDE, encoding="utf-8"
+    )
+    write(project, ANY_IN_SRC, ANY_SOURCE)
+    write(project, ANY_IN_TESTS, ANY_IN_TESTS_SOURCE)
+    return run(
+        [
+            str(MYPY),
+            "--config-file",
+            str(pyproject),
+            "--cache-dir",
+            str(project / ".mypy_cache"),
+            ANY_IN_SRC,
+            ANY_IN_TESTS,
+        ],
+        project,
+    )
+
+
 def test_magic_number_in_src_is_reported(ruff_codes: dict[str, set[str]]) -> None:
     assert "PLR2004" in ruff_codes[MAGIC_IN_SRC]
 
@@ -83,3 +131,15 @@ def test_broad_pytest_raises_is_reported(ruff_codes: dict[str, set[str]]) -> Non
 
 def test_french_typography_is_allowed(ruff_codes: dict[str, set[str]]) -> None:
     assert not {"RUF001", "RUF002", "RUF003"} & ruff_codes[TYPOGRAPHY_IN_SRC]
+
+
+@pytest.mark.parametrize("relative", [ANY_IN_SRC, ANY_IN_TESTS])
+def test_explicit_any_is_reported(mypy_output: str, relative: str) -> None:
+    reported = {(match["path"], match["code"]) for match in MYPY_LINE.finditer(mypy_output)}
+    assert (relative, "explicit-any") in reported
+
+
+def test_any_from_unfollowed_import_is_reported(mypy_output: str) -> None:
+    assert "[import-not-found]" not in mypy_output
+    assert "[import-untyped]" not in mypy_output
+    assert "[no-any-unimported]" in mypy_output

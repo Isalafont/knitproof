@@ -36,7 +36,7 @@ Détail et schéma dans `docs/architecture.md`, section 5. Les contrats vivent d
 
 ## Typage
 
-- Annotations partout, tests compris ; `mypy --strict` sur `src` et `tests` (ADR 0001).
+- Annotations partout, tests compris ; `mypy --strict` sur `src` et `tests` (voir les ADR 0001 et 0012).
 - Aucun `float` dans `engine` : `Decimal`.
 
 ## Tests
