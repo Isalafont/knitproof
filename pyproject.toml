@@ -36,13 +36,19 @@ xfail_strict = true
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM"]
+select = ["E", "F", "I", "B", "UP", "SIM", "N", "PT", "RUF", "PLR2004"]
+allowed-confusables = ["’", "\u00a0", "\u202f"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR2004"]
 
 [tool.mypy]
 python_version = "3.13"
 strict = true
 files = ["src", "tests"]
 plugins = ["pydantic.mypy"]
+disallow_any_explicit = true
+disallow_any_unimported = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

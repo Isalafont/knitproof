@@ -29,7 +29,7 @@ Chaque sous-agent : outil Agent, `subagent_type: general-purpose`, avec le `mode
 3. Montre le contexte à Isabelle. Rien ne continue sans sa validation explicite.
 4. Phase « plan », dans un même message :
    - le même rédacteur, ou un neuf avec le même repli, rédige `<id>-plan.md` et marque « à vérifier » chaque version, option ou syntaxe d’outil qu’il affirme ;
-   - un vérificateur de doc neuf (`model: sonnet`) reçoit la section « Brief du vérificateur de doc » ci-dessous et le chemin du contexte.
+   - un vérificateur de doc neuf (`model: sonnet`) reçoit la section « Brief du vérificateur de doc » ci-dessous, l’identifiant `$0` et le chemin du contexte.
 5. Quand les deux sont revenus, transmets au rédacteur les constats du vérificateur, URL comprises. Si des marques « à vérifier » restent sans constat, relance d’abord le vérificateur sur cette liste. Le rédacteur finalise alors le plan sans refaire ces vérifications.
 
 ## Phase 3 — Deux relectures en parallèle (deux agents neufs)
@@ -79,11 +79,11 @@ Priorité: … · Estimate: … pts · Labels: … · Lié à: … · Référenc
 
 ## Brief du vérificateur de doc
 
-> Tu vérifies dans la doc officielle, et seulement là, les versions, options et syntaxes des outils nommés par le contexte reçu, par `AGENTS.md` et par la liste « à vérifier » si tu en reçois une. Tu peux essayer une syntaxe sur une copie dans le scratchpad, jamais dans le dépôt.
+> Tu vérifies les faits du contexte reçu, d’`AGENTS.md` et de la liste « à vérifier » si tu en reçois une. Un fait sur un outil (option, comportement, version) se vérifie dans sa documentation officielle, et seulement là. Un fait sur le projet se vérifie dans le ticket et dans les tickets qui lui sont directement liés, sans suivre leurs propres liens. Avant de répondre « introuvable », indiquer quelles sources ont été lues. Quand un fait est trouvé, citer sa source (URL de la doc ou identifiant du ticket). Tu lis Linear avec l’outil de la session, en lecture seule. Tu peux essayer une syntaxe sur une copie dans le scratchpad, jamais dans le dépôt.
 >
-> Interdits : aucune modification du dépôt, rien dans Linear.
+> Interdits : aucune modification du dépôt, aucune écriture dans Linear.
 >
-> Retour, 20 lignes au plus. Pour chaque point : l’affirmation, « confirmé », « faux » ou « introuvable », l’URL et la date de lecture.
+> Retour, 20 lignes au plus. Pour chaque point : l’affirmation, « confirmé », « faux » ou « introuvable », la source (URL ou identifiant du ticket) et la date de lecture ; pour « introuvable », les sources lues.
 
 ## Brief de l’intégrateur
 

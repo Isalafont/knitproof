@@ -179,13 +179,14 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 - `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`, `lint-imports`, `mypy`). `main` n’accepte que des pull requests depuis `develop`.
 - GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>`.
 - Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
+- ruff vérifie aussi le nommage (`N`), le style pytest (`PT`), ses propres règles (`RUF`) et les nombres magiques dans `src/` (`PLR2004`) ; l’apostrophe typographique et les espaces insécables sont permis. mypy refuse `Any` ([ADR 0012](docs/adr/0012-interdire-any-avec-mypy.md)). Les conventions que les outils ne vérifient pas sont dans `AGENTS.md`.
 
 Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commit. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
 
 ### Travailler avec les agents
 
 - Les règles de tous les agents sont dans [`AGENTS.md`](AGENTS.md), que `CLAUDE.md` importe.
-- Avec Claude Code, `/plan-ticket CLA-XX` prépare le contexte et le plan d’un ticket (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code.
+- Avec Claude Code, `/plan-ticket CLA-XX` prépare le contexte et le plan d’un ticket (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code ; le rédacteur et le vérificateur lisent aussi les tickets directement liés.
 - `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie et ouvre la PR en brouillon après accord.
 - Les plans restent locaux dans `.claude/plans/` ; `.claude/settings.json` pré-autorise les commandes courantes (détail dans `AGENTS.md`).
 
