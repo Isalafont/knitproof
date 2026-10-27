@@ -44,31 +44,12 @@ Chaque sous-agent : outil Agent, `subagent_type: general-purpose`, avec le `mode
 
 ## Phase 4 — Ticket réaligné (session)
 
-Rédige `<id>-linear.md` au canevas ci-dessous, aligné sur le contexte validé, et montre-le à Isabelle. Ne le publie avec l’outil Linear de la session qu’après son accord explicite.
+Rédige `<id>-linear.md` au template de son type, aligné sur le contexte validé, et montre-le à Isabelle. Ne le publie avec l’outil Linear de la session qu’après son accord explicite.
 
-```
-Titre: …
-
-## Constat
-Le problème, factuel, sans solution.
-
-## Objectif
-La valeur visée.
-
-## Proposition technique
-Approche et fichiers clés, en bref.
-
-## Critères d’acceptation
-1. Étant donné …, quand …, alors …
-n. Contrôles verts, doc à jour.
-
-## Hors périmètre
-- … → ticket
-
----
-
-Priorité: … · Estimate: … pts · Labels: … · Lié à: … · Références: …
-```
+- Templates : `~/.claude/templates/side-projects/` (`us.md`, `ts.md`, `bug.md`, `cadrage.md`). Lis d’abord `README.md` du dossier, puis le template du type.
+- Toutes les sections du template restent, une ligne sans objet porte « aucune » ou « sans objet ».
+- Les critères d’acceptation reprennent ceux du contexte validé, en tableau `Étant donné | Quand | Alors`, cases d’état décochées.
+- Priorité, estimation, labels et relations vont dans les champs Linear, pas dans la description.
 
 ## Conditions d’arrêt
 
