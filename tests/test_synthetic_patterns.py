@@ -22,7 +22,7 @@ def _id(path: Path) -> str:
     return path.relative_to(SYNTHETIC).as_posix()
 
 
-@pytest.mark.parametrize("family", ["bonnet-secteurs-"])
+@pytest.mark.parametrize("family", ["bonnet-secteurs-", "bonnet-paliers-"])
 def test_each_family_has_at_least_three_sizes(family: str) -> None:
     sizes = [path for path in FILES if path.name.startswith(family)]
 
