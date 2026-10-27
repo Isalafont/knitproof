@@ -273,7 +273,7 @@ rounds:
     location: {page: 2, line: 14}
 ```
 
-Opérations prises en charge (abréviations de la liste standard du Craft Yarn Council, [URL à vérifier](https://www.craftyarncouncil.com/standards/knitting-abbreviations) : la page répond le 27/10/2026 mais ses définitions n’ont pas été relues) :
+Opérations prises en charge. `k2tog`, `m1` et `p2tog` suivent la [liste standard du Craft Yarn Council](https://www.craftyarncouncil.com/standards/knitting-abbreviations) (lue le 27/10/2026 : « knit 2 stitches together; single right-leaning decrease », « make one stitch knitwise; single knit increase », « purl 2 stitches together; single decrease ») ; `work n` est propre à knitproof :
 
 | Opération | Anglais | En français | Consomme | Produit |
 |---|---|---|---|---|
