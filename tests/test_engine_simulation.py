@@ -1,4 +1,4 @@
-"""`simulate` : comptes tour par tour et arrêt sur une répétition fausse (CLA-64)."""
+"""`simulate` : comptes rang par rang et arrêt sur une répétition fausse (CLA-64)."""
 
 from knitproof.domain.finding import FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation

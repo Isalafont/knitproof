@@ -1,4 +1,4 @@
-"""Opérations, tours et patron : invariants structurels (CLA-64)."""
+"""Opérations, rangs et patron : invariants structurels (CLA-64)."""
 
 from pathlib import Path
 
@@ -108,12 +108,12 @@ def test_round_count_and_location_are_optional() -> None:
 
 
 def test_pattern_must_start_at_round_one() -> None:
-    with pytest.raises(ValidationError, match="tour 2"):
+    with pytest.raises(ValidationError, match="rang 2"):
         Pattern(cast_on=10, rounds=(Round(start=2, ops=(Work(work=10),)),))
 
 
 def test_pattern_with_a_gap_is_rejected() -> None:
-    with pytest.raises(ValidationError, match="tour 3"):
+    with pytest.raises(ValidationError, match="rang 3"):
         Pattern(
             cast_on=10,
             rounds=(
@@ -124,7 +124,7 @@ def test_pattern_with_a_gap_is_rejected() -> None:
 
 
 def test_pattern_with_overlapping_rounds_is_rejected() -> None:
-    with pytest.raises(ValidationError, match="tour 2"):
+    with pytest.raises(ValidationError, match="rang 2"):
         Pattern(
             cast_on=10,
             rounds=(

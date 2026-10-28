@@ -6,7 +6,7 @@ from knitproof.domain.finding import Finding
 
 
 class RoundCount(BaseModel):
-    """Mailles sur les aiguilles à la fin d’un tour."""
+    """Mailles sur les aiguilles à la fin d’un rang."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -15,7 +15,7 @@ class RoundCount(BaseModel):
 
 
 class Simulation(BaseModel):
-    """Comptes tour par tour, et le constat qui a arrêté la simulation s’il y en a un."""
+    """Comptes rang par rang, et le constat qui a arrêté la simulation s’il y en a un."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

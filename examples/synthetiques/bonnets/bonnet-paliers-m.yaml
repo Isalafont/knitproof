@@ -1,6 +1,6 @@
 # Bonnet synthétique, écrit pour knitproof : aucun patron réel.
-# Taille M : 84 m, côtes 2/2 sur 14 tours, jersey jusqu’au tour 44.
-# Calotte en 7 sections, diminutions par paliers : tous les 4 tours, puis tous les 2 tours, puis à chaque tour.
+# Taille M : 84 m, côtes 2/2 sur 14 rangs, jersey jusqu’au rang 44.
+# Calotte en 7 sections, diminutions par paliers : tous les 4 rangs, puis tous les 2 rangs, puis à chaque rang.
 cast_on: 84
 rounds:
   - {start: 1, end: 14, ops: [{work: 84}]}

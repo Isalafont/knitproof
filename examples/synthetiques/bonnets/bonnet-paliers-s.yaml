@@ -1,6 +1,6 @@
 # Bonnet synthétique, écrit pour knitproof : aucun patron réel.
-# Taille S : 72 m, côtes 2/2 sur 12 tours, jersey jusqu’au tour 38.
-# Calotte en 6 sections, diminutions par paliers : tous les 4 tours, puis tous les 2 tours, puis à chaque tour.
+# Taille S : 72 m, côtes 2/2 sur 12 rangs, jersey jusqu’au rang 38.
+# Calotte en 6 sections, diminutions par paliers : tous les 4 rangs, puis tous les 2 rangs, puis à chaque rang.
 cast_on: 72
 rounds:
   - {start: 1, end: 12, ops: [{work: 72}]}
