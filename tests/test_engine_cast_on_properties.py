@@ -99,6 +99,14 @@ def test_cast_on_respects_the_point_and_is_positive(
     ),
     StitchMultiple(repeat_multiple=4, repeat_offset=2),
 )
+# Égalité : 86 m brut, 84 et 88 à égale distance.
+@example(
+    Length(value=Decimal("43"), unit=LengthUnit.CM),
+    SwatchMeasurement(
+        stitches=Decimal("20"), width=Length(value=Decimal("10"), unit=LengthUnit.CM)
+    ),
+    StitchMultiple(repeat_multiple=4, repeat_offset=0),
+)
 def test_no_candidate_is_closer_and_ties_go_down(
     target: Length, swatch: SwatchMeasurement, point: StitchMultiple
 ) -> None:

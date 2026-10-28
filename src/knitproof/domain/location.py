@@ -2,7 +2,9 @@
 
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, PositiveInt, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
+
+from knitproof.domain.integers import StrictPositiveInt
 
 
 class SourceLocation(BaseModel):
@@ -10,8 +12,8 @@ class SourceLocation(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    page: PositiveInt | None = None
-    line: PositiveInt | None = None
+    page: StrictPositiveInt | None = None
+    line: StrictPositiveInt | None = None
 
     @model_validator(mode="after")
     def _has_a_position(self) -> Self:

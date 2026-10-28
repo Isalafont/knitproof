@@ -1,6 +1,6 @@
 """Nombre brut de mailles pour une largeur (CLA-65)."""
 
-from decimal import Decimal, localcontext
+from decimal import Decimal, Inexact, Rounded, localcontext
 
 import pytest
 from pydantic import ValidationError
@@ -39,6 +39,12 @@ def test_floor_division_under_exact_signals_nothing() -> None:
     with localcontext(EXACT):
         assert Decimal("7") // Decimal("2") == Decimal("3")
         assert Decimal("-7") // Decimal("2") == Decimal("-3")
+
+
+def test_a_product_beyond_28_digits_stops_instead_of_rounding() -> None:
+    # 10^30 fois 10 cm dépasse les 28 chiffres d’EXACT (ADR 0015).
+    with pytest.raises((Rounded, Inexact)):
+        cast_on(TARGET, SWATCH, StitchMultiple(repeat_multiple=10**30, repeat_offset=0))
 
 
 @pytest.mark.parametrize(
@@ -116,3 +122,8 @@ def test_the_calculated_cast_on_is_accepted() -> None:
 def test_a_proposal_of_zero_is_rejected_by_validation() -> None:
     with pytest.raises(ValidationError):
         check_cast_on(0, TARGET, SWATCH, POINT)
+
+
+def test_a_bool_proposal_is_rejected_by_validation() -> None:
+    with pytest.raises(ValidationError):
+        check_cast_on(True, TARGET, SWATCH, POINT)

@@ -2,8 +2,9 @@
 
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, NonNegativeInt, PositiveInt
+from pydantic import BaseModel, ConfigDict
 
+from knitproof.domain.integers import StrictNonNegativeInt, StrictPositiveInt
 from knitproof.domain.location import SourceLocation
 
 
@@ -23,7 +24,7 @@ class Finding(BaseModel):
 
     status: FindingStatus
     code: FindingCode
-    round: PositiveInt
-    expected: NonNegativeInt
-    actual: NonNegativeInt
+    round: StrictPositiveInt
+    expected: StrictNonNegativeInt
+    actual: StrictNonNegativeInt
     location: SourceLocation | None = None

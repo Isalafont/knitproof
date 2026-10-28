@@ -4,7 +4,7 @@ from decimal import ROUND_HALF_EVEN, Context, Decimal, Inexact, Rounded
 from enum import StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, computed_field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
 INCH_IN_CM = Decimal("2.54")
 
@@ -53,7 +53,6 @@ class SwatchMeasurement(BaseModel):
     stitches: PositiveDecimal
     width: Length
 
-    @computed_field  # type: ignore[prop-decorator]
     @property
     def stitches_per_10_cm(self) -> Decimal:
         return DIVISION.divide(EXACT.multiply(self.stitches, Decimal(10)), self.width.in_cm)

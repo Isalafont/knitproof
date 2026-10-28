@@ -1,8 +1,9 @@
 """Résultat de la simulation d’un patron."""
 
-from pydantic import BaseModel, ConfigDict, PositiveInt
+from pydantic import BaseModel, ConfigDict
 
 from knitproof.domain.finding import Finding
+from knitproof.domain.integers import StrictPositiveInt
 
 
 class RoundCount(BaseModel):
@@ -10,8 +11,8 @@ class RoundCount(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    round: PositiveInt
-    stitches: PositiveInt
+    round: StrictPositiveInt
+    stitches: StrictPositiveInt
 
 
 class Simulation(BaseModel):

@@ -8,12 +8,11 @@ from pydantic import (
     ConfigDict,
     Discriminator,
     Field,
-    NonNegativeInt,
-    PositiveInt,
     Tag,
     model_validator,
 )
 
+from knitproof.domain.integers import StrictNonNegativeInt, StrictPositiveInt
 from knitproof.domain.location import SourceLocation
 
 
@@ -41,7 +40,7 @@ class Work(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    work: PositiveInt
+    work: StrictPositiveInt
 
     @property
     def consumes(self) -> int:
@@ -56,7 +55,7 @@ class RepeatBlock(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     body: tuple["Op", ...] = Field(min_length=1)
-    times: PositiveInt
+    times: StrictPositiveInt
 
 
 class Repeat(BaseModel):
@@ -103,10 +102,10 @@ class Round(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    start: PositiveInt
-    end: PositiveInt | None = None
+    start: StrictPositiveInt
+    end: StrictPositiveInt | None = None
     ops: tuple[Op, ...] = Field(min_length=1)
-    stated_count: NonNegativeInt | None = None
+    stated_count: StrictNonNegativeInt | None = None
     location: SourceLocation | None = None
 
     @property
@@ -133,7 +132,7 @@ class Pattern(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    cast_on: PositiveInt
+    cast_on: StrictPositiveInt
     rounds: tuple[Round, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
