@@ -201,6 +201,7 @@ Limites :
 
 - Seules `work`, `k2tog`, `m1` et `repeat` sont prises en charge ; les diminutions des patrons synthétiques sont toutes écrites en `k2tog`. Un fichier qui emploie une autre opération est rejeté, et ce rejet ne prouve pas une erreur de calcul.
 - Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande et le test comptent les mailles, ils ne contrôlent pas le montage. Le moteur calcule et contrôle le montage d’un seul point (multiple et reste), au plus proche, en dessous en cas d’égalité, mais `knitproof verify` ne le vérifie pas et aucune commande ne l’expose avant CLA-69. Le rang d’ajustement entre bord et corps relève de CLA-103.
+- Les tailles d’aiguilles de deux systèmes (US, UK, japonais, mm) ne sont pas converties : sans table de correspondance (CLA-81), le moteur avertit qu’il ne peut pas les comparer, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). Aucune commande ne l’expose avant CLA-69.
 - Après un `repeat_not_fitting`, les comptes annoncés suivants ne sont pas comparés ([ADR 0013](docs/adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)).
 - Seuls les comptes de mailles sont vérifiés : ni mesures, ni échantillon.
 
