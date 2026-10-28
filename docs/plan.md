@@ -24,7 +24,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 
 **Critère de fin**
 
-- `uv run knitproof verify examples/bonnet-erreur-rang-33.yaml` sort en code 1 avec un constat `count_mismatch` au tour 33 (attendu 90, annoncé 89).
+- `uv run knitproof verify examples/bonnet-erreur-rang-33.yaml` sort en code 1 avec un constat `count_mismatch` au rang 33 (attendu 90, annoncé 89).
 - `uv run knitproof calc examples/bonnet-3-ans.yaml` (aisance saisie) donne la sortie de référence : 88 m, alerte à 96 m, rejet de 120 m, plan complet du bonnet.
 - `uv run pytest`, `uv run ruff check .`, `uv run lint-imports` et `uv run mypy` passent.
 
@@ -61,9 +61,9 @@ Ces questions ne sont pas tranchées par le code : chacune bloque une tranche ju
 | # | Question | Bloque |
 |---|---|---|
 | 1 | L’aisance dépend-elle d’abord de l’ajustement voulu et du point, la fibre ne faisant que la moduler ? En % ou en cm ? Quelles sources ? **Tranché en partie le 26/10/2026 par Isabelle** : l’aisance dépend du point, de la fibre, des aiguilles et de l’ajustement voulu (ajusté ou ample) ; la fibre n’est pas une simple modulation. Restent ouverts : la règle de combinaison, l’unité (l’Oslo plaide pour le %) et les sources. Bonnet Oslo (Petite Knit, bonnet ajusté) : −15,5 % en jersey, constant en % du bébé à l’adulte. Mélèze (patron personnel, bonnet ample à bord replié) : ne sert pas de référence pour un bonnet ajusté. −10 % paraît faible face à l’Oslo, mais aucune source en côtes 2/2 pour l’instant. (cadrage : CLA-77) | tranche 4 |
-| 2 | ~~Bord en côtes : échantillon en côtes obligatoire, ou même montage que le corps avec un avertissement ?~~ **Tranché le 27/10/2026 par Isabelle** : échantillon en côtes facultatif ; s’il est donné, il sert au bord (tour d’ajustement possible) ; sinon le bord prend le montage du corps, marqué « À VÉRIFIER : les côtes resserrent le bord ». | — |
+| 2 | ~~Bord en côtes : échantillon en côtes obligatoire, ou même montage que le corps avec un avertissement ?~~ **Tranché le 27/10/2026 par Isabelle** : échantillon en côtes facultatif ; s’il est donné, il sert au bord (rang d’ajustement possible) ; sinon le bord prend le montage du corps, marqué « À VÉRIFIER : les côtes resserrent le bord ». | — |
 | 3 | ~~Échantillon tricoté à plat, bonnet tricoté en rond : un écart à prendre en compte ?~~ **Tranché le 27/10/2026 par Isabelle** : échantillon à plat pour un ouvrage en rond : avertissement « À VÉRIFIER », sans correction du calcul. | — |
-| 4 | ~~Arrondi du montage : au plus proche, en dessous ou au-dessus ? Tour d’ajustement entre bord et corps accepté ?~~ **Tranché le 27/10/2026 par Isabelle** : montage arrondi au multiple le plus proche, en dessous en cas d’égalité ; tour d’ajustement entre bord et corps accepté, calculé et vérifié par le moteur. | — |
+| 4 | ~~Arrondi du montage : au plus proche, en dessous ou au-dessus ? Rang d’ajustement entre bord et corps accepté ?~~ **Tranché le 27/10/2026 par Isabelle** : montage arrondi au multiple le plus proche, en dessous en cas d’égalité ; rang d’ajustement entre bord et corps accepté, calculé et vérifié par le moteur. | — |
 | 5 | Calotte : nombre de secteurs, rythme des diminutions, profondeur ; comment la mesurer ? (cadrage : CLA-78) | tranche 5 |
 | 6 | Hauteur par âge et bord replié : quelles sources ? (cadrage : CLA-79) | tranche 5 |
 | 7 | ~~Échantillon non bloqué sur une fibre à forte détente : refuser, ou estimer et marquer « À VÉRIFIER » ?~~ **Tranché le 27/10/2026 par Isabelle** : jauge après blocage estimée seulement avec un coefficient de détente sourcé, cité avec sa source ; résultat toujours « À VÉRIFIER », avec le rappel qu’un échantillon doit être bloqué (lavé) avant d’être mesuré ; sans coefficient sourcé, calcul sur l’échantillon non bloqué, « À VÉRIFIER ». Quand un échantillon est mesuré avant et après blocage, le moteur en déduit la détente réelle du fil, qui prime sur la bibliothèque. | — |

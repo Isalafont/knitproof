@@ -7,7 +7,7 @@
 - Lint : `uv run ruff check .` et `uv run ruff format --check .` (corriger : `uv run ruff check --fix .`, formater : `uv run ruff format .`)
 - Contrats de couches : `uv run lint-imports`
 - Types : `uv run mypy`
-- Les hooks pre-commit et la CI lancent ces outils en `uv run --locked` : après un changement de `pyproject.toml`, lancer `uv lock`, sinon le commit est refusé.
+- Les hooks pre-commit et la CI lancent ces outils en `uv run --locked` : après un changement de dépendances dans `pyproject.toml`, lancer `uv lock`, sinon le commit est refusé ; après tout autre changement de `pyproject.toml`, `uv lock --check` le confirme.
 
 ## Principes d’architecture
 
