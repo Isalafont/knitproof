@@ -89,3 +89,20 @@ def test_a_swatch_is_frozen_and_forbids_extra_keys() -> None:
         SwatchMeasurement.model_validate(
             {"stitches": "20", "width": {"value": "10", "unit": "cm"}, "rows": "30"}
         )
+
+
+def test_a_swatch_reads_back_its_own_dump() -> None:
+    swatch = SwatchMeasurement(stitches=Decimal("20"), width=cm("10"))
+
+    again = SwatchMeasurement.model_validate(swatch.model_dump())
+
+    assert again == swatch
+    assert again.stitches_per_10_cm == Decimal("20")
+
+
+def test_a_swatch_reads_back_its_own_json_dump() -> None:
+    swatch = SwatchMeasurement(
+        stitches=Decimal("22.5"), width=Length(value=Decimal("4"), unit=LengthUnit.IN)
+    )
+
+    assert SwatchMeasurement.model_validate(swatch.model_dump(mode="json")) == swatch
