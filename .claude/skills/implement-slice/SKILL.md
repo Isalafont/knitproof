@@ -1,6 +1,6 @@
 ---
 name: implement-slice
-description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, coche les cases producteur du ticket Linear, pousse, ouvre la PR, puis coche les cases testeur et la DOD et la merge après le « ok » d’Isabelle sur le test.
+description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, fait relire le diff par un agent neuf, coche les cases producteur du ticket Linear, pousse, ouvre la PR, puis coche les cases testeur et la DOD et la merge après le « ok » d’Isabelle sur le test.
 argument-hint: "[CLA-XX]"
 disable-model-invocation: true
 allowed-tools:
@@ -29,17 +29,18 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 2. Lance toi-même les cinq contrôles d’`AGENTS.md` (« Commandes ») ; tous verts.
 3. `git log --oneline develop..` : un commit par étape, aux messages du plan, conformes aux « Conventions ».
 4. `git diff develop...` : rien hors du plan ; README et `docs/` à jour selon les « Conventions ».
-5. Cases producteur : pour chaque CA, et chaque RG s’il y en a, lance la commande ou le test qui la prouve ; coche OK en état producteur seulement s’il passe, sinon KO et arrête-toi. Corrige les mentions devenues fausses (par exemple « ADR à créer »). Montre à Isabelle chaque case avec sa preuve et la description modifiée ; publie-la avec l’outil Linear de la session seulement après son accord.
-6. `git push -u origin <branche>` (jamais `HEAD`), puis PR prête (pas de brouillon) vers `develop`, avec une section « Tester ». Attends la CI ; verte, passe le ticket en « In Review » avec l’outil Linear de la session.
-7. Donne à Isabelle le lien de la PR, l’état de la CI, les commits, les contrôles, les cases producteur et ce qui n’a pas été vérifié. Attends son « ok » sur le test.
-8. Après son « ok » et ses contrôles, au plus tard au merge : coche les cases testeur des CA et des RG, puis la DOD, chaque case après sa preuve (DOD : les cinq contrôles, README et `docs/` à jour, ADR créée si une décision structurante est prise). Même accord avant de publier.
-9. CI verte et cases publiées : `gh pr merge <numéro> --merge`, puis `git switch develop`, `git pull --ff-only` et `git branch -d <branche>`.
+5. Relecture du diff par un agent neuf (`model: opus`), en arrière-plan : brief `${CLAUDE_SKILL_DIR}/reviewer.md`. Il reçoit seulement l’identifiant, les chemins du plan validé et du contexte, et la plage `develop..<branche>` (SHA de base et de tête). Jamais les tableaux d’arbitrage de la planification, ni ton avis. Quand il revient, dresse le tableau d’arbitrage : constat, « vérifié par », ta recommandation. Un constat sans preuve ne va pas plus loin. Isabelle tranche chaque ligne ; l’implémenteur fait les corrections retenues (fixup sur le commit de l’étape concernée), puis reprends aux étapes 1 à 4. Une seule relecture par ticket : la relancer est une décision d’Isabelle.
+6. Cases producteur : pour chaque CA, et chaque RG s’il y en a, lance la commande ou le test qui la prouve ; coche OK en état producteur seulement s’il passe, sinon KO et arrête-toi. Corrige les mentions devenues fausses (par exemple « ADR à créer »). Montre à Isabelle chaque case avec sa preuve et la description modifiée ; publie-la avec l’outil Linear de la session seulement après son accord.
+7. `git push -u origin <branche>` (jamais `HEAD`), puis PR prête (pas de brouillon) vers `develop`, avec une section « Tester ». Attends la CI ; verte, passe le ticket en « In Review » avec l’outil Linear de la session.
+8. Donne à Isabelle le lien de la PR, l’état de la CI, les commits, les contrôles, les cases producteur et ce qui n’a pas été vérifié. Attends son « ok » sur le test.
+9. Après son « ok » et ses contrôles, au plus tard au merge : coche les cases testeur des CA et des RG, puis la DOD, chaque case après sa preuve (DOD : les cinq contrôles, README et `docs/` à jour, ADR créée si une décision structurante est prise). Même accord avant de publier.
+10. CI verte et cases publiées : `gh pr merge <numéro> --merge`, puis `git switch develop`, `git pull --ff-only` et `git branch -d <branche>`.
 
 ## Conditions d’arrêt
 
 - Jamais de merge sans le « ok » d’Isabelle sur le test, ni avec une CI rouge ; jamais de merge vers `main`.
 - Un contrôle rouge à la revérification : corrige avec Isabelle, dans le respect des « Règles pour tous les agents ».
-- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 6.
+- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 7.
 - Si le test d’Isabelle demande des corrections, le lui signaler : elle décide du statut du ticket, sans retour automatique en « In Progress ».
 - La DOR n’est pas cochée ici : `/plan-ticket` la coche à la publication du ticket réaligné.
 - Fin : PR mergée dans `develop`, branche locale supprimée.
