@@ -186,7 +186,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | Modèle | Champs clés | Invariants |
 |---|---|---|
 | `Length` | `value: Decimal`, `unit` (`cm` / `in`) | `value` > 0, au plus 5 chiffres en écriture décimale (zéros finaux retirés), `float` refusé en entrée ; conversion exacte : 1 in = 2,54 cm |
-| `NeedleSize` | `original` (ex. « US 6 », « 4 mm », taille UK ou japonaise), `system` (`mm`, `us`, `uk`, `jp`), `mm: Decimal` | `mm` calculé par la table de correspondance sourcée ; correspondance ambiguë ⇒ `needs_review` |
+| `NeedleSize` | `system` (`mm`, `us`, `uk`, `jp`, champ explicite), `original` (notation d’origine), `mm` facultatif ; `normalized` et `known_mm` dérivés | système jamais déduit du texte ; normalisation à l’intérieur d’un système (« 00 » ≠ « 0 » en us et uk ; en mm, valeur `Decimal` sans tolérance) ; forme validée, pas l’existence de la taille ; `mm` saisi, jamais converti (pour mm, lu dans la notation) ; table et liste des tailles : CLA-81 puis CLA-67 |
 | `Needle` | `size: NeedleSize`, `kind` (`straight`, `circular`, `double_pointed`), `cable_length: Length` (aiguilles circulaires), `material` (optionnel : métal, bois, bambou…) | `cable_length` obligatoire pour `circular`, absent sinon ; la matière n’entre dans aucun calcul |
 | `SwatchMeasurement` | `stitches: Decimal`, `width: Length` ; à venir, CLA-68 : `rows`, `height` | valeurs > 0, `float` refusé en entrée ; demi-mailles admises (ex. 22,5 m pour 10 cm, 22 m pour 4 in) ; jauge pour 10 cm dérivée |
 | `Swatch` | `id`, `yarn_id`, `needle: Needle`, `stitch_pattern_id`, `worked` (`round` / `flat`), `before`, `after`, `blocking_method` | aiguilles et point identiques avant et après, par construction |
