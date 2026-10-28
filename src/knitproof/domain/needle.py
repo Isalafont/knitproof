@@ -7,7 +7,7 @@ from typing import Self
 
 from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError, model_validator
 
-from knitproof.domain.measure import PositiveDecimal
+from knitproof.domain.measure import Length, PositiveDecimal
 
 
 class NeedleSystem(StrEnum):
@@ -81,3 +81,42 @@ class NeedleSize(BaseModel):
             return _MM_VALUE.validate_python(Decimal(value.replace(",", ".")))
         except ValidationError as error:
             raise ValueError(f"taille en mm invalide : {error.errors()[0]['msg']}") from error
+
+
+class NeedleKind(StrEnum):
+    STRAIGHT = "straight"
+    CIRCULAR = "circular"
+    DOUBLE_POINTED = "double_pointed"
+
+
+class NeedleMaterial(StrEnum):
+    """Aluminium, acier, nickel et laiton restent `metal` ; le verre est `other`."""
+
+    METAL = "metal"
+    WOOD = "wood"
+    BAMBOO = "bamboo"
+    PLASTIC = "plastic"
+    CARBON = "carbon"
+    OTHER = "other"
+
+
+class KnittingMethod(StrEnum):
+    FLAT = "flat"
+    ROUND = "round"
+
+
+class Needle(BaseModel):
+    """Taille, type et matière ; la longueur de câble n’existe que pour une circulaire."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    size: NeedleSize
+    kind: NeedleKind
+    cable_length: Length | None = None
+    material: NeedleMaterial | None = None
+
+    @model_validator(mode="after")
+    def _cable_only_on_circular(self) -> Self:
+        if self.cable_length is not None and self.kind is not NeedleKind.CIRCULAR:
+            raise ValueError("une longueur de câble n’existe que pour une aiguille circulaire")
+        return self

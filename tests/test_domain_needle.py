@@ -5,7 +5,15 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from knitproof.domain.needle import NeedleSize, NeedleSystem
+from knitproof.domain.measure import Length, LengthUnit
+from knitproof.domain.needle import (
+    KnittingMethod,
+    Needle,
+    NeedleKind,
+    NeedleMaterial,
+    NeedleSize,
+    NeedleSystem,
+)
 
 
 def size(system: NeedleSystem, original: str, mm: Decimal | None = None) -> NeedleSize:
@@ -116,3 +124,50 @@ def test_a_mm_size_confirmed_by_its_input_is_accepted() -> None:
 def test_needle_size_refuses_an_unknown_field() -> None:
     with pytest.raises(ValidationError):
         NeedleSize.model_validate({"system": "us", "original": "US 6", "extra": 1})
+
+
+def cable() -> Length:
+    return Length(value=Decimal(80), unit=LengthUnit.CM)
+
+
+def needle(kind: NeedleKind, cable_length: Length | None = None) -> Needle:
+    return Needle(size=size(NeedleSystem.MM, "4 mm"), kind=kind, cable_length=cable_length)
+
+
+@pytest.mark.parametrize("length", [None, cable()])
+def test_a_circular_needle_has_an_optional_cable(length: Length | None) -> None:
+    assert needle(NeedleKind.CIRCULAR, length).cable_length == length
+
+
+@pytest.mark.parametrize("kind", [NeedleKind.STRAIGHT, NeedleKind.DOUBLE_POINTED])
+def test_a_non_circular_needle_refuses_a_cable(kind: NeedleKind) -> None:
+    assert needle(kind).cable_length is None
+    with pytest.raises(ValidationError):
+        needle(kind, cable())
+
+
+def test_needle_refuses_an_unknown_field() -> None:
+    with pytest.raises(ValidationError):
+        Needle.model_validate(
+            {"size": size(NeedleSystem.MM, "4 mm"), "kind": "straight", "extra": 1}
+        )
+
+
+def test_material_is_optional_and_closed() -> None:
+    assert needle(NeedleKind.STRAIGHT).material is None
+    assert {m.value for m in NeedleMaterial} == {
+        "metal",
+        "wood",
+        "bamboo",
+        "plastic",
+        "carbon",
+        "other",
+    }
+    with pytest.raises(ValidationError):
+        Needle.model_validate(
+            {"size": size(NeedleSystem.MM, "4 mm"), "kind": "straight", "material": "aluminium"}
+        )
+
+
+def test_knitting_method_has_exactly_two_values() -> None:
+    assert {m.value for m in KnittingMethod} == {"flat", "round"}
