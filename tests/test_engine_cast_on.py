@@ -116,3 +116,8 @@ def test_the_calculated_cast_on_is_accepted() -> None:
 def test_a_proposal_of_zero_is_rejected_by_validation() -> None:
     with pytest.raises(ValidationError):
         check_cast_on(0, TARGET, SWATCH, POINT)
+
+
+def test_a_bool_proposal_is_rejected_by_validation() -> None:
+    with pytest.raises(ValidationError):
+        check_cast_on(True, TARGET, SWATCH, POINT)

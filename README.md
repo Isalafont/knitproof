@@ -181,6 +181,8 @@ Le rapport sort sur stdout. Le code de sortie dit le résultat :
 - `2` : erreur d’usage (par exemple, fichier non précisé), message sur stderr ;
 - `3` : fichier absent, illisible ou invalide, message sur stderr, sans trace Python.
 
+Les comptes (`cast_on`, `work`, `times`, `start`, `end`, `stated_count`) sont des entiers nus : une chaîne, un nombre à virgule ou un booléen rend le patron invalide (code 3).
+
 Pour vérifier plusieurs fichiers d’un coup, un test à la demande lit ceux que désigne `KNITPROOF_PATTERNS`. Depuis la racine du dépôt, un fichier, puis tous ceux d’un dossier (motif glob, entre apostrophes pour que le shell ne le développe pas) :
 
 ```sh

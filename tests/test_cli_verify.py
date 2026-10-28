@@ -64,6 +64,18 @@ def test_unknown_operation_exits_3_in_rangs(
     assert "rang" in captured.err
 
 
+def test_booleans_as_counts_exit_3(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    path = tmp_path / "patron.yaml"
+    path.write_text("cast_on: true\nrounds:\n  - start: 1\n    ops:\n      - work: true\n")
+
+    code = main(["verify", str(path)])
+
+    captured = capsys.readouterr()
+    assert code == 3
+    assert captured.out == ""
+    assert "cast_on" in captured.err
+
+
 def test_deeply_nested_file_exits_3(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     path = tmp_path / "patron.yaml"
     path.write_bytes(b"[" * 5000 + b"]" * 5000 + b"\n")

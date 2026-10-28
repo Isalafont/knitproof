@@ -4,8 +4,9 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, NonNegativeInt, PositiveInt, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
+from knitproof.domain.integers import StrictNonNegativeInt, StrictPositiveInt
 from knitproof.domain.measure import Length
 
 
@@ -18,8 +19,8 @@ class StitchMultiple(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    repeat_multiple: PositiveInt
-    repeat_offset: NonNegativeInt
+    repeat_multiple: StrictPositiveInt
+    repeat_offset: StrictNonNegativeInt
 
     @model_validator(mode="after")
     def _offset_is_below_multiple(self) -> Self:
@@ -38,7 +39,7 @@ class CastOnResult(BaseModel):
 
     target: Length
     raw_stitches: Decimal
-    stitches: PositiveInt
+    stitches: StrictPositiveInt
     rounding_rule: RoundingRule
     finished_cm: Decimal
 
@@ -53,8 +54,8 @@ class CastOnCheck(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    proposed: PositiveInt
-    expected: PositiveInt
+    proposed: StrictPositiveInt
+    expected: StrictPositiveInt
     reasons: tuple[CastOnRejection, ...]
     proposed_finished_cm: Decimal
 
