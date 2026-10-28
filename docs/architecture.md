@@ -315,6 +315,8 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0011 — Licence de l’API Ravelry](adr/0011-licence-api-ravelry.md)
 - [ADR 0012 — Interdire `Any` avec mypy](adr/0012-interdire-any-avec-mypy.md)
 - [ADR 0013 — Format YAML figé et poursuite sur le compte calculé](adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)
+- [ADR 0014 — « Rang » plutôt que « tour » dans les textes](adr/0014-rang-plutot-que-tour-dans-les-textes.md)
+- [ADR 0015 — Quotients décimaux à précision fixe, montage décidé exactement](adr/0015-quotients-decimaux-et-montage-exact.md)
 
 ## 13. Projets proches
 
