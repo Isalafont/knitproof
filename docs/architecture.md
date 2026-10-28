@@ -322,6 +322,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0013 — Format YAML figé et poursuite sur le compte calculé](adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)
 - [ADR 0014 — « Rang » plutôt que « tour » dans les textes](adr/0014-rang-plutot-que-tour-dans-les-textes.md)
 - [ADR 0015 — Quotients décimaux à précision fixe, montage décidé exactement](adr/0015-quotients-decimaux-et-montage-exact.md)
+- [ADR 0016 — Tailles d’aiguilles sans conversion](adr/0016-tailles-d-aiguilles-sans-conversion.md)
 
 ## 13. Projets proches
 
