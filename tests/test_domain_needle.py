@@ -9,6 +9,7 @@ from knitproof.domain.measure import Length, LengthUnit
 from knitproof.domain.needle import (
     KnittingMethod,
     Needle,
+    NeedleCheck,
     NeedleKind,
     NeedleMaterial,
     NeedleSize,
@@ -171,3 +172,9 @@ def test_material_is_optional_and_closed() -> None:
 
 def test_knitting_method_has_exactly_two_values() -> None:
     assert {m.value for m in KnittingMethod} == {"flat", "round"}
+
+
+def test_needle_check_refuses_an_unknown_field() -> None:
+    a = needle(NeedleKind.STRAIGHT)
+    with pytest.raises(ValidationError):
+        NeedleCheck.model_validate({"swatch": a, "project": a, "reasons": (), "extra": 1})

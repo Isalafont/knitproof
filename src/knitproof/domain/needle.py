@@ -120,3 +120,23 @@ class Needle(BaseModel):
         if self.cable_length is not None and self.kind is not NeedleKind.CIRCULAR:
             raise ValueError("une longueur de câble n’existe que pour une aiguille circulaire")
         return self
+
+
+class NeedleMismatch(StrEnum):
+    SIZE_DIFFERS = "size_differs"
+    SIZES_NOT_COMPARABLE = "sizes_not_comparable"
+    MATERIAL_DIFFERS = "material_differs"
+
+
+class NeedleCheck(BaseModel):
+    """Aiguilles de l’échantillon et du projet, avec les raisons de l’avertissement."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    swatch: Needle
+    project: Needle
+    reasons: tuple[NeedleMismatch, ...]
+
+    @property
+    def matches(self) -> bool:
+        return not self.reasons
