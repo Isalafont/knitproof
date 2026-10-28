@@ -2,6 +2,8 @@
 
 Complète l’[ADR 0003](0003-format-intermediaire-type.md) et l’[ADR 0004](0004-moteur-deterministe-sans-llm.md).
 
+Terminologie amendée par [ADR 0014](0014-rang-plutot-que-tour-dans-les-textes.md).
+
 ## Contexte
 
 La tranche 1 (CLA-64) livre la vérification des comptes de mailles. Elle doit charger les exemples YAML et décider quoi faire d’un compte annoncé faux : continuer sur l’annoncé ou sur le calculé.
