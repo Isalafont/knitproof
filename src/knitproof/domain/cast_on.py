@@ -41,3 +41,23 @@ class CastOnResult(BaseModel):
     stitches: PositiveInt
     rounding_rule: RoundingRule
     finished_cm: Decimal
+
+
+class CastOnRejection(StrEnum):
+    STITCH_MULTIPLE_NOT_RESPECTED = "stitch_multiple_not_respected"
+    DIFFERS_FROM_CALCULATION = "differs_from_calculation"
+
+
+class CastOnCheck(BaseModel):
+    """Contrôle d’un nombre proposé : raisons du rejet et largeur finie."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    proposed: PositiveInt
+    expected: PositiveInt
+    reasons: tuple[CastOnRejection, ...]
+    proposed_finished_cm: Decimal
+
+    @property
+    def accepted(self) -> bool:
+        return not self.reasons

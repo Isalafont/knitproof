@@ -3,10 +3,11 @@
 from decimal import Decimal, localcontext
 
 import pytest
+from pydantic import ValidationError
 
-from knitproof.domain.cast_on import RoundingRule, StitchMultiple
+from knitproof.domain.cast_on import CastOnRejection, RoundingRule, StitchMultiple
 from knitproof.domain.measure import DIVISION, EXACT, Length, LengthUnit, SwatchMeasurement
-from knitproof.engine.cast_on import cast_on, stitches_for_width
+from knitproof.engine.cast_on import cast_on, check_cast_on, stitches_for_width
 
 
 def length(value: str, unit: LengthUnit = LengthUnit.CM) -> Length:
@@ -81,3 +82,37 @@ def test_cast_on_in_inches() -> None:
     assert (result.raw_stitches, result.stitches) == (Decimal("93.5"), 92)
     assert result.target.unit is LengthUnit.IN
     assert str(result.finished_cm).startswith("42.4872")
+
+
+TARGET = length("43.2")
+SWATCH = swatch("20", length("10"))
+POINT = StitchMultiple(repeat_multiple=4, repeat_offset=0)
+
+
+def test_a_proposal_that_differs_from_the_calculation_is_rejected() -> None:
+    check = check_cast_on(120, TARGET, SWATCH, POINT)
+
+    assert check.reasons == (CastOnRejection.DIFFERS_FROM_CALCULATION,)
+    assert (check.expected, check.proposed_finished_cm) == (88, Decimal("60"))
+    assert not check.accepted
+
+
+def test_a_proposal_with_both_defects_gives_both_reasons() -> None:
+    check = check_cast_on(90, TARGET, SWATCH, POINT)
+
+    assert check.reasons == (
+        CastOnRejection.STITCH_MULTIPLE_NOT_RESPECTED,
+        CastOnRejection.DIFFERS_FROM_CALCULATION,
+    )
+    assert check.proposed_finished_cm == Decimal("45")
+
+
+def test_the_calculated_cast_on_is_accepted() -> None:
+    check = check_cast_on(88, TARGET, SWATCH, POINT)
+
+    assert (check.reasons, check.proposed_finished_cm, check.accepted) == ((), Decimal("44"), True)
+
+
+def test_a_proposal_of_zero_is_rejected_by_validation() -> None:
+    with pytest.raises(ValidationError):
+        check_cast_on(0, TARGET, SWATCH, POINT)

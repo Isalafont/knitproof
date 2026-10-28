@@ -5,9 +5,9 @@ from decimal import Decimal, localcontext
 from hypothesis import example, given
 from hypothesis import strategies as st
 
-from knitproof.domain.cast_on import StitchMultiple
+from knitproof.domain.cast_on import CastOnRejection, StitchMultiple
 from knitproof.domain.measure import EXACT, Length, LengthUnit, SwatchMeasurement
-from knitproof.engine.cast_on import cast_on, stitches_for_width
+from knitproof.engine.cast_on import cast_on, check_cast_on, stitches_for_width
 
 WIDTHS = st.decimals(
     min_value=Decimal("0.01"),
@@ -122,3 +122,14 @@ def test_cast_on_never_decreases_with_width(
     small, large = sorted((first, second), key=lambda length: length.value)
 
     assert cast_on(small, swatch, point).stitches <= cast_on(large, swatch, point).stitches
+
+
+@given(st.integers(min_value=1, max_value=400), LENGTHS_CM, SWATCHES, MULTIPLES)
+def test_a_proposal_is_accepted_exactly_when_it_equals_the_calculation(
+    proposed: int, target: Length, swatch: SwatchMeasurement, point: StitchMultiple
+) -> None:
+    check = check_cast_on(proposed, target, swatch, point)
+
+    assert check.accepted == (proposed == cast_on(target, swatch, point).stitches)
+    if CastOnRejection.STITCH_MULTIPLE_NOT_RESPECTED in check.reasons:
+        assert CastOnRejection.DIFFERS_FROM_CALCULATION in check.reasons
