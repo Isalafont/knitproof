@@ -26,4 +26,4 @@ Décision d’Isabelle du 28/10/2026 (option a).
 ## Conséquences
 
 - Le nombre brut et la largeur finie sont des valeurs de trace ; seule une porte arrondit pour l’affichage.
-- Un entier absurde (plus de vingt chiffres) fait lever `decimal.Inexact` ; la porte d’entrée l’attrapera (CLA-69).
+- Le moteur calcule avec 28 chiffres au plus. Si une valeur saisie est si grande qu’un calcul dépasse cette limite (par exemple un point qui se répète toutes les 10^27 mailles), le moteur s’arrête avec une erreur au lieu d’arrondir en silence. Selon le cas, l’erreur s’appelle `decimal.Rounded` ou `decimal.Inexact` : la commande de CLA-69 devra attraper les deux pour afficher un message clair. Aucune limite de taille n’est imposée aux saisies. (Corrigé le 28/10/2026, CLA-108.)
