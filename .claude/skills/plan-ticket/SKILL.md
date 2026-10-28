@@ -19,8 +19,9 @@ Chaque sous-agent : outil Agent, `subagent_type: general-purpose`, avec le `mode
 
 ## Phase 1 — Questions (rédacteur)
 
-1. Lance le rédacteur (`model: opus`) : brief `${CLAUDE_SKILL_DIR}/writer.md`, phase « questions », identifiant `$0`.
-2. Pose ses questions à Isabelle **une par une**, en attendant chaque réponse.
+1. Passe `$0` en « In Progress » avec l’outil Linear de la session, s’il est encore en Backlog ou Todo. Ce passage ne demande pas d’accord (voir `AGENTS.md`).
+2. Lance le rédacteur (`model: opus`) : brief `${CLAUDE_SKILL_DIR}/writer.md`, phase « questions », identifiant `$0`.
+3. Pose ses questions à Isabelle **une par une**, en attendant chaque réponse.
 
 ## Phase 2 — Contexte, puis plan (même rédacteur)
 
@@ -55,7 +56,8 @@ Rédige `<id>-linear.md` au template de son type, aligné sur le contexte valid�
 ## Conditions d’arrêt
 
 - Aucune branche, aucun commit, aucun fichier hors de `.claude/plans/` et du scratchpad.
-- Rien dans Linear sans accord explicite d’Isabelle.
+- Rien dans Linear sans accord explicite d’Isabelle, sauf le passage en « In Progress » de la phase 1.
+- Si la planification s’arrête sans plan validé, le signaler à Isabelle, qui décide du statut du ticket : aucun retour automatique.
 - Fin : plan validé par Isabelle, ticket réaligné. L’implémentation se lance avec `/implement-slice $0`.
 - Règles du projet : `AGENTS.md`, « Règles pour tous les agents » et « Conventions ».
 

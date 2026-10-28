@@ -30,7 +30,7 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 3. `git log --oneline develop..` : un commit par étape, aux messages du plan, conformes aux « Conventions ».
 4. `git diff develop...` : rien hors du plan ; README et `docs/` à jour selon les « Conventions ».
 5. Cases producteur : pour chaque CA, et chaque RG s’il y en a, lance la commande ou le test qui la prouve ; coche OK en état producteur seulement s’il passe, sinon KO et arrête-toi. Corrige les mentions devenues fausses (par exemple « ADR à créer »). Montre à Isabelle chaque case avec sa preuve et la description modifiée ; publie-la avec l’outil Linear de la session seulement après son accord.
-6. `git push -u origin <branche>` (jamais `HEAD`), puis PR prête (pas de brouillon) vers `develop`, avec une section « Tester ». Attends la CI.
+6. `git push -u origin <branche>` (jamais `HEAD`), puis PR prête (pas de brouillon) vers `develop`, avec une section « Tester ». Attends la CI ; verte, passe le ticket en « In Review » avec l’outil Linear de la session.
 7. Donne à Isabelle le lien de la PR, l’état de la CI, les commits, les contrôles, les cases producteur et ce qui n’a pas été vérifié. Attends son « ok » sur le test.
 8. Après son « ok » et ses contrôles, au plus tard au merge : coche les cases testeur des CA et des RG, puis la DOD, chaque case après sa preuve (DOD : les cinq contrôles, README et `docs/` à jour, ADR créée si une décision structurante est prise). Même accord avant de publier.
 9. CI verte et cases publiées : `gh pr merge <numéro> --merge`, puis `git switch develop`, `git pull --ff-only` et `git branch -d <branche>`.
@@ -39,7 +39,8 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 
 - Jamais de merge sans le « ok » d’Isabelle sur le test, ni avec une CI rouge ; jamais de merge vers `main`.
 - Un contrôle rouge à la revérification : corrige avec Isabelle, dans le respect des « Règles pour tous les agents ».
-- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle.
+- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 6.
+- Si le test d’Isabelle demande des corrections, le lui signaler : elle décide du statut du ticket, sans retour automatique en « In Progress ».
 - La DOR n’est pas cochée ici : `/plan-ticket` la coche à la publication du ticket réaligné.
 - Fin : PR mergée dans `develop`, branche locale supprimée.
 
