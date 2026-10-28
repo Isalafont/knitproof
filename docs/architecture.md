@@ -247,6 +247,7 @@ La provenance permet aussi d’effacer sur demande toutes les données venues d�
 - La matière des aiguilles (métal, bois, bambou…) joue sur la tension et sur la glisse du fil, mais n’entre dans aucun calcul : aucun coefficient inventé. Si les aiguilles du projet diffèrent de celles de l’échantillon, en taille ou en matière, le moteur produit un avertissement `swatch_needle_mismatch` qui invite à refaire l’échantillon.
 - Le type d’aiguilles compte pour le tricot en rond : un câble de circulaire trop long pour la circonférence du tricot ne permet pas de tricoter. Le moteur signale le rang de la calotte à partir duquel il faut passer aux aiguilles double pointe ou au magic loop (constat `needle_change`), selon une règle à valider.
 - Un seul arrondi métier : celui du montage, avec une règle paramétrée et tracée dans le résultat.
+- Les quotients (nombre brut de mailles, largeur finie, jauge pour 10 cm) sont des `Decimal` à 28 chiffres significatifs, `ROUND_HALF_EVEN`, calculés par `DIVISION.divide` et non par `/` ; ils ne servent qu’à la trace, le montage se décidant exactement par produits croisés ([ADR 0015](adr/0015-quotients-decimaux-et-montage-exact.md)).
 - La mise en forme française (« 43,2 cm ») relève du rendu, pas du domaine.
 
 ## 9. Représentation d’un patron
