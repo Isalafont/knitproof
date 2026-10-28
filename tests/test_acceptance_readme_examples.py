@@ -1,4 +1,4 @@
-"""Tests d’acceptation des deux exemples du README, en attente de la CLI (tranche 6)."""
+"""Tests d’acceptation des deux exemples du README, la CLI de `calc` reste en attente (CLA-69)."""
 
 import re
 import subprocess
@@ -11,10 +11,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = PROJECT_ROOT / "examples"
 KNITPROOF = Path(sysconfig.get_path("scripts")) / "knitproof"
 
-PENDING_CLI = pytest.mark.xfail(
-    raises=FileNotFoundError,
+PENDING_CALC = pytest.mark.xfail(
+    raises=AssertionError,
     strict=True,
-    reason="la commande knitproof n’existe pas encore (tranche 6)",
+    reason="la sous-commande knitproof calc n’existe pas encore (CLA-69)",
 )
 
 
@@ -38,7 +38,6 @@ def numbers(output: str) -> set[int]:
     return {int(n) for n in re.findall(r"\d+", output)}
 
 
-@PENDING_CLI
 def test_verify_reports_the_count_mismatch_at_round_33() -> None:
     pattern = example("bonnet-erreur-rang-33.yaml")
 
@@ -48,7 +47,7 @@ def test_verify_reports_the_count_mismatch_at_round_33() -> None:
     assert {33, 90, 89} <= numbers(result.stdout)
 
 
-@PENDING_CLI
+@PENDING_CALC
 def test_calc_casts_on_88_warns_at_96_and_rejects_120() -> None:
     request = example("bonnet-3-ans.yaml")
 
