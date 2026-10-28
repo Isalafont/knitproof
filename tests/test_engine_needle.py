@@ -7,6 +7,7 @@ import pytest
 from knitproof.domain.needle import (
     Needle,
     NeedleKind,
+    NeedleMaterial,
     NeedleMismatch,
     NeedleSize,
     NeedleSystem,
@@ -14,9 +15,14 @@ from knitproof.domain.needle import (
 from knitproof.engine.needle import check_needles
 
 
-def needle(system: NeedleSystem, original: str, mm: str | None = None) -> Needle:
+def needle(
+    system: NeedleSystem,
+    original: str,
+    mm: str | None = None,
+    material: NeedleMaterial | None = None,
+) -> Needle:
     size = NeedleSize(system=system, original=original, mm=None if mm is None else Decimal(mm))
-    return Needle(size=size, kind=NeedleKind.STRAIGHT)
+    return Needle(size=size, kind=NeedleKind.STRAIGHT, material=material)
 
 
 def reasons(swatch: Needle, project: Needle) -> tuple[NeedleMismatch, ...]:
@@ -89,3 +95,38 @@ def test_3_50mm_against_3_5_mm_has_no_reason() -> None:
 def test_a_needle_against_itself_has_no_reason() -> None:
     a = needle(NeedleSystem.US, "US 6")
     assert check_needles(a, a).matches
+
+
+def test_wood_against_metal_differs_by_material() -> None:
+    wood = needle(NeedleSystem.MM, "4 mm", material=NeedleMaterial.WOOD)
+    metal = needle(NeedleSystem.MM, "4 mm", material=NeedleMaterial.METAL)
+    assert reasons(wood, metal) == (NeedleMismatch.MATERIAL_DIFFERS,)
+
+
+def test_reasons_accumulate_in_a_fixed_order() -> None:
+    wood = needle(NeedleSystem.MM, "4 mm", material=NeedleMaterial.WOOD)
+    metal = needle(NeedleSystem.US, "US 6", material=NeedleMaterial.METAL)
+    assert reasons(wood, metal) == (
+        NeedleMismatch.SIZES_NOT_COMPARABLE,
+        NeedleMismatch.MATERIAL_DIFFERS,
+    )
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        (NeedleMaterial.OTHER, NeedleMaterial.OTHER),
+        (NeedleMaterial.OTHER, NeedleMaterial.METAL),
+        (None, NeedleMaterial.METAL),
+        (None, None),
+    ],
+)
+def test_other_or_absent_material_is_never_compared(
+    a: NeedleMaterial | None, b: NeedleMaterial | None
+) -> None:
+    assert (
+        reasons(
+            needle(NeedleSystem.MM, "4 mm", material=a), needle(NeedleSystem.MM, "4 mm", material=b)
+        )
+        == ()
+    )

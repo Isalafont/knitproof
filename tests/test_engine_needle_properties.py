@@ -8,6 +8,7 @@ from hypothesis import strategies as st
 from knitproof.domain.needle import (
     Needle,
     NeedleKind,
+    NeedleMaterial,
     NeedleMismatch,
     NeedleSize,
     NeedleSystem,
@@ -47,7 +48,12 @@ NEEDLES = st.builds(
     Needle,
     size=needle_sizes(),
     kind=st.just(NeedleKind.STRAIGHT),
+    material=st.none() | st.sampled_from(NeedleMaterial),
 )
+
+
+def _size_reasons(a: Needle, b: Needle) -> tuple[NeedleMismatch, ...]:
+    return tuple(r for r in check_needles(a, b).reasons if r is not NeedleMismatch.MATERIAL_DIFFERS)
 
 
 @given(a=NEEDLES, b=NEEDLES)
@@ -66,14 +72,23 @@ def test_different_systems_without_both_mm_are_not_comparable(a: Needle, b: Need
         return
     if a.size.known_mm is not None and b.size.known_mm is not None:
         return
-    assert check_needles(a, b).reasons == (NeedleMismatch.SIZES_NOT_COMPARABLE,)
+    assert _size_reasons(a, b) == (NeedleMismatch.SIZES_NOT_COMPARABLE,)
 
 
 @given(a=NEEDLES, b=NEEDLES)
 def test_equal_known_mm_never_give_a_size_reason(a: Needle, b: Needle) -> None:
     if a.size.known_mm is None or a.size.known_mm != b.size.known_mm:
         return
-    assert check_needles(a, b).reasons == ()
+    assert _size_reasons(a, b) == ()
+
+
+@given(a=NEEDLES, b=NEEDLES)
+def test_material_differs_never_appears_with_an_absent_or_other_material(
+    a: Needle, b: Needle
+) -> None:
+    absent_or_other = {None, NeedleMaterial.OTHER}
+    if a.material in absent_or_other or b.material in absent_or_other:
+        assert NeedleMismatch.MATERIAL_DIFFERS not in check_needles(a, b).reasons
 
 
 @given(a=NEEDLES)
