@@ -218,7 +218,7 @@ Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commi
 ### Travailler avec les agents
 
 - Les règles de tous les agents sont dans [`AGENTS.md`](AGENTS.md), que `CLAUDE.md` importe.
-- Avec Claude Code, `/plan-ticket CLA-XX` prépare le contexte et le plan d’un ticket (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code ; le rédacteur et le vérificateur lisent aussi les tickets directement liés. Le ticket réaligné suit le template de son type (US, TS, Bug, Cadrage), versionné dans `.claude/skills/plan-ticket/templates/` ; à la publication, il coche la DOR.
+- Avec Claude Code, `/plan-ticket CLA-XX` passe le ticket en « In Progress », puis prépare son contexte et son plan (questions une par une, deux relectures, arbitrage, ticket réaligné), sans écrire de code ; le rédacteur et le vérificateur lisent aussi les tickets directement liés. Le ticket réaligné suit le template de son type (US, TS, Bug, Cadrage), versionné dans `.claude/skills/plan-ticket/templates/` ; à la publication, il coche la DOR.
 - `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie, coche les cases producteur du ticket Linear, pousse et ouvre la PR, puis, après le « ok » d’Isabelle sur le test, coche les cases testeur et la DOD et merge. Chaque case est cochée sur preuve, et toute écriture dans Linear attend l’accord d’Isabelle.
 - Les plans restent locaux dans `.claude/plans/` ; `.claude/settings.json` pré-autorise les commandes courantes (détail dans `AGENTS.md`).
 
