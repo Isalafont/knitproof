@@ -78,7 +78,7 @@ ERREUR      Rang 33 — nombre de mailles incohérent
             Décidé par : le moteur (calcul vérifiable)
 ```
 
-*Le rapport cible du jalon M1 va plus loin : les lignes « OK Montage » et « À VÉRIFIER Échantillon », le détail « 99 − 9 diminutions » et la citation du texte source arriveront avec les tranches 2 et 3.*
+*Le rapport cible du jalon M1 va plus loin : les lignes « OK Montage » et « À VÉRIFIER Échantillon » arriveront avec `knitproof calc` (CLA-69), qui assemblera le montage (tranche 2) et l’échantillon (tranche 3) ; le détail « 99 − 9 diminutions » et la citation du texte source ne sont pas encore planifiés.*
 
 ## Comment c’est construit
 
@@ -198,7 +198,7 @@ Lire le résultat :
 Limites :
 
 - Seules `work`, `k2tog`, `m1` et `repeat` sont prises en charge ; les diminutions des patrons synthétiques sont toutes écrites en `k2tog`. Un fichier qui emploie une autre opération est rejeté, et ce rejet ne prouve pas une erreur de calcul.
-- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande et le test comptent les mailles, ils ne contrôlent pas le montage. Le montage aux multiples combinés, arrondi au multiple le plus proche (en dessous en cas d’égalité), rang d’ajustement entre bord et corps accepté, est l’objet de CLA-65.
+- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande et le test comptent les mailles, ils ne contrôlent pas le montage. Le moteur calcule et contrôle le montage d’un seul point (multiple et reste), au plus proche, en dessous en cas d’égalité, mais `knitproof verify` ne le vérifie pas et aucune commande ne l’expose avant CLA-69. Le rang d’ajustement entre bord et corps relève de CLA-103.
 - Après un `repeat_not_fitting`, les comptes annoncés suivants ne sont pas comparés ([ADR 0013](docs/adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)).
 - Seuls les comptes de mailles sont vérifiés : ni mesures, ni échantillon.
 

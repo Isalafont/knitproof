@@ -185,12 +185,13 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 | Modèle | Champs clés | Invariants |
 |---|---|---|
-| `Length` | `value: Decimal`, `unit` (`cm` / `in`) | conversion exacte : 1 in = 2,54 cm |
+| `Length` | `value: Decimal`, `unit` (`cm` / `in`) | `value` > 0, au plus 5 chiffres en écriture décimale (zéros finaux retirés), `float` refusé en entrée ; conversion exacte : 1 in = 2,54 cm |
 | `NeedleSize` | `original` (ex. « US 6 », « 4 mm », taille UK ou japonaise), `system` (`mm`, `us`, `uk`, `jp`), `mm: Decimal` | `mm` calculé par la table de correspondance sourcée ; correspondance ambiguë ⇒ `needs_review` |
 | `Needle` | `size: NeedleSize`, `kind` (`straight`, `circular`, `double_pointed`), `cable_length: Length` (aiguilles circulaires), `material` (optionnel : métal, bois, bambou…) | `cable_length` obligatoire pour `circular`, absent sinon ; la matière n’entre dans aucun calcul |
-| `SwatchMeasurement` | `stitches: Decimal`, `width: Length`, `rows: Decimal`, `height: Length` | valeurs > 0 ; demi-mailles admises (ex. 22,5 m pour 10 cm, 22 m pour 4 in) ; jauge pour 10 cm dérivée |
+| `SwatchMeasurement` | `stitches: Decimal`, `width: Length` ; à venir, CLA-68 : `rows`, `height` | valeurs > 0, `float` refusé en entrée ; demi-mailles admises (ex. 22,5 m pour 10 cm, 22 m pour 4 in) ; jauge pour 10 cm dérivée |
 | `Swatch` | `id`, `yarn_id`, `needle: Needle`, `stitch_pattern_id`, `worked` (`round` / `flat`), `before`, `after`, `blocking_method` | aiguilles et point identiques avant et après, par construction |
-| `StitchPattern` | `id`, `names`, `repeat_multiple`, `repeat_offset` | `0 ≤ offset < multiple` |
+| `StitchMultiple` | `repeat_multiple`, `repeat_offset` | `multiple ≥ 1`, `0 ≤ offset < multiple` ; `accepts(n)` ; le point saisi pour le montage (CLA-65), sans `id` ni `names` |
+| `StitchPattern` | `id`, `names`, `repeat_multiple`, `repeat_offset` | `0 ≤ offset < multiple` ; le couple de `StitchMultiple` (CLA-65) y sera rattaché par CLA-67 |
 
 ### Spécification, patron, résultats
 
@@ -203,7 +204,8 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `Repeat` | `body`, `times` (entier ; `to_end` à venir) | `body` non vide, `times ≥ 1` |
 | `Round` | `start`, `end`, `ops`, `stated_count`, `location` (`section` à venir) | `start ≤ end` ; le moteur vérifie que les opérations consomment les mailles du rang précédent (section 9) |
 | `Pattern` | `cast_on`, `rounds` (`provenance` à venir) | rangs contigus et croissants depuis le rang 1 |
-| `CastOnResult` | `target_cm`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm`, `adjustment_round` | compatible avec tous les multiples, ou rang d’ajustement explicite |
+| `CastOnResult` | `target: Length`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm` ; `adjustment_round` à venir, CLA-103 | `stitches` respecte le multiple et le reste du point (`StitchMultiple`) ; le plus proche du nombre brut, en dessous en cas d’égalité ; rang d’ajustement entre multiples différents : CLA-103 |
+| `CastOnCheck` | `proposed`, `expected`, `reasons` (`stitch_multiple_not_respected`, `differs_from_calculation`), `proposed_finished_cm` ; `accepted` dérivé | `proposed` ≥ 1 ; « point non respecté » implique toujours « diffère du calcul » ; pas de tolérance (cadrage CLA-105) |
 | `CrownPlan` | `sectors`, `rounds`, `depth_cm` | fin à 0 maille ou fermeture déclarée |
 | `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
 | `Finding` | `status` (`error` en tranche 1 ; `warning`, `ok`, `needs_review` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `message`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
@@ -247,6 +249,7 @@ La provenance permet aussi d’effacer sur demande toutes les données venues d�
 - La matière des aiguilles (métal, bois, bambou…) joue sur la tension et sur la glisse du fil, mais n’entre dans aucun calcul : aucun coefficient inventé. Si les aiguilles du projet diffèrent de celles de l’échantillon, en taille ou en matière, le moteur produit un avertissement `swatch_needle_mismatch` qui invite à refaire l’échantillon.
 - Le type d’aiguilles compte pour le tricot en rond : un câble de circulaire trop long pour la circonférence du tricot ne permet pas de tricoter. Le moteur signale le rang de la calotte à partir duquel il faut passer aux aiguilles double pointe ou au magic loop (constat `needle_change`), selon une règle à valider.
 - Un seul arrondi métier : celui du montage, avec une règle paramétrée et tracée dans le résultat.
+- Les quotients (nombre brut de mailles, largeur finie, jauge pour 10 cm) sont des `Decimal` à 28 chiffres significatifs, `ROUND_HALF_EVEN`, calculés par `DIVISION.divide` et non par `/` ; ils ne servent qu’à la trace, le montage se décidant exactement par produits croisés ([ADR 0015](adr/0015-quotients-decimaux-et-montage-exact.md)).
 - La mise en forme française (« 43,2 cm ») relève du rendu, pas du domaine.
 
 ## 9. Représentation d’un patron
@@ -315,6 +318,8 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0011 — Licence de l’API Ravelry](adr/0011-licence-api-ravelry.md)
 - [ADR 0012 — Interdire `Any` avec mypy](adr/0012-interdire-any-avec-mypy.md)
 - [ADR 0013 — Format YAML figé et poursuite sur le compte calculé](adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)
+- [ADR 0014 — « Rang » plutôt que « tour » dans les textes](adr/0014-rang-plutot-que-tour-dans-les-textes.md)
+- [ADR 0015 — Quotients décimaux à précision fixe, montage décidé exactement](adr/0015-quotients-decimaux-et-montage-exact.md)
 
 ## 13. Projets proches
 
