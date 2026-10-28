@@ -8,12 +8,9 @@ import os
 from pathlib import Path
 
 import pytest
-import yaml
-from pydantic import ValidationError
 
-from knitproof.domain.finding import Finding, FindingCode
-from knitproof.domain.pattern import Pattern
-from knitproof.engine.verification import verify
+from knitproof.app.verification import PatternFileError, verify_pattern
+from knitproof.cli.report import render
 
 VARIABLE = "KNITPROOF_PATTERNS"
 
@@ -32,19 +29,7 @@ def test_requested_pattern_files_have_no_finding() -> None:
 
 def _problems(path: Path) -> list[str]:
     try:
-        pattern = Pattern.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
-    except (OSError, yaml.YAMLError, ValidationError) as error:
-        return [f"{path} : fichier illisible ou invalide\n{error}"]
-    return [f"{path} : {_describe(finding)}" for finding in verify(pattern)]
-
-
-def _describe(finding: Finding) -> str:
-    if finding.code is FindingCode.COUNT_MISMATCH:
-        return (
-            f"tour {finding.round} — count_mismatch : "
-            f"calculé {finding.expected} m, annoncé {finding.actual} m"
-        )
-    return (
-        f"tour {finding.round} — repeat_not_fitting : le tour précédent laisse "
-        f"{finding.expected} m, les opérations en consomment {finding.actual}"
-    )
+        findings = verify_pattern(path)
+    except PatternFileError as error:
+        return [f"{path} : fichier illisible ou invalide\n{error.reason}"]
+    return [f"{path}\n{render(findings)}"] if findings else []

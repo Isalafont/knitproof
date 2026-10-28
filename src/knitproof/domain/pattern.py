@@ -1,4 +1,4 @@
-"""Opérations d’un tour : mailles consommées et produites."""
+"""Opérations d’un rang : mailles consommées et produites."""
 
 from enum import StrEnum
 from typing import Annotated, Self
@@ -99,7 +99,7 @@ type Op = Annotated[
 
 
 class Round(BaseModel):
-    """Un tour, ou une plage de tours qui répètent les mêmes opérations."""
+    """Un rang, ou une plage de rangs qui répètent les mêmes opérations."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -124,12 +124,12 @@ class Round(BaseModel):
     @model_validator(mode="after")
     def _ends_after_start(self) -> Self:
         if self.end is not None and self.end < self.start:
-            raise ValueError(f"le tour {self.start} se termine avant son début ({self.end})")
+            raise ValueError(f"le rang {self.start} se termine avant son début ({self.end})")
         return self
 
 
 class Pattern(BaseModel):
-    """Un patron : montage et tours contigus à partir du tour 1."""
+    """Un patron : montage et rangs contigus à partir du rang 1."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -141,6 +141,6 @@ class Pattern(BaseModel):
         expected = 1
         for round_ in self.rounds:
             if round_.start != expected:
-                raise ValueError(f"tour {round_.start} : le tour attendu est le tour {expected}")
+                raise ValueError(f"rang {round_.start} : le rang attendu est le rang {expected}")
             expected = round_.last + 1
         return self

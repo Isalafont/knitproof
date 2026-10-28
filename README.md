@@ -69,22 +69,16 @@ Rang 32 : tout à l’endroit.
 Rang 33 : *9 m end., 2 m ens.*, 9 fois (89 m)
 ```
 
-Le rapport de knitproof :
+Le rapport de knitproof, avec `uv run knitproof verify examples/bonnet-erreur-rang-33.yaml` (code de sortie 1) :
 
 ```text
 ERREUR      Rang 33 — nombre de mailles incohérent
-            Annoncé : 89 m · Calculé : 90 m (99 − 9 diminutions)
-            Source : « *9 m end., 2 m ens.*, 9 fois », page 2, ligne 14
+            Annoncé : 89 m · Calculé : 90 m
+            Source : page 2, ligne 14
             Décidé par : le moteur (calcul vérifiable)
-
-OK          Montage — 108 m compatibles avec les côtes 2/2 (multiple de 4)
-
-À VÉRIFIER  Échantillon mesuré en jersey ; les côtes resserrent le bord.
-            La largeur finale n’est pas calculable avec certitude.
-            Décidé par : une personne
 ```
 
-*Rapport cible du jalon M1 : le moteur est en cours de construction.*
+*Le rapport cible du jalon M1 va plus loin : les lignes « OK Montage » et « À VÉRIFIER Échantillon », le détail « 99 − 9 diminutions » et la citation du texte source arriveront avec les tranches 2 et 3.*
 
 ## Comment c’est construit
 
@@ -168,15 +162,26 @@ uv run lint-imports
 uv run mypy
 ```
 
-`domain` et `engine` portent le modèle de patron et la vérification des comptes de mailles ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs tests d’acceptation sont marqués en échec attendu jusqu’à ce que la commande `knitproof` existe, et la CI casse le jour où ils passent sans qu’on retire le marqueur. Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
+`domain` et `engine` portent le modèle de patron et la vérification des comptes de mailles ; `app` et `cli` portent la commande `knitproof verify` ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; le test d’acceptation de `verify` passe ; celui de `calc` reste en échec attendu jusqu’à CLA-69, et la CI casse le jour où il passe sans qu’on retire le marqueur. Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
 
 ### Vérifier un patron YAML
 
-En attendant la commande `knitproof verify` (CLA-76), un test à la demande vérifie les comptes de mailles d’un ou plusieurs fichiers au format décrit dans [`docs/architecture.md`](docs/architecture.md), section 9. Un patron réel se range dans `local-patterns/`, que git ignore : il ne quitte pas votre machine et aucun test de la CI ne le lit.
+La commande `knitproof verify` vérifie les comptes de mailles d’un fichier au format décrit dans [`docs/architecture.md`](docs/architecture.md), section 9. Un patron réel se range dans `local-patterns/`, que git ignore : il ne quitte pas votre machine et aucun test de la CI ne le lit.
 
-Depuis la racine du dépôt, un fichier, puis tous ceux d’un dossier (motif glob, entre apostrophes pour que le shell ne le développe pas) :
+```sh
+uv run knitproof verify local-patterns/mon-bonnet.yaml
+```
+
+Le rapport sort sur stdout. Le code de sortie dit le résultat :
+
+- `0` : aucun constat ;
+- `1` : au moins un constat, rapporté sur stdout ;
+- `2` : erreur d’usage (par exemple, fichier non précisé), message sur stderr ;
+- `3` : fichier absent, illisible ou invalide, message sur stderr, sans trace Python.
+
+Pour vérifier plusieurs fichiers d’un coup, un test à la demande lit ceux que désigne `KNITPROOF_PATTERNS`. Depuis la racine du dépôt, un fichier, puis tous ceux d’un dossier (motif glob, entre apostrophes pour que le shell ne le développe pas) :
 
 ```sh
 KNITPROOF_PATTERNS=local-patterns/mon-bonnet.yaml uv run pytest tests/test_pattern_files.py
@@ -186,14 +191,14 @@ KNITPROOF_PATTERNS='local-patterns/*.yaml' uv run pytest tests/test_pattern_file
 Lire le résultat :
 
 - `1 passed` : aucun constat, chaque compte annoncé est celui que calcule le moteur.
-- `1 failed` : une ligne par constat, avec le fichier et le tour. Par exemple, sur `examples/bonnet-erreur-rang-33.yaml` : `tour 33 — count_mismatch : calculé 90 m, annoncé 89 m`. Pour un `repeat_not_fitting`, la ligne donne les mailles laissées par le tour précédent et celles que consomment les opérations ; la simulation s’arrête à ce tour.
+- `1 failed` : une ligne par constat, le fichier, puis le même bloc que `knitproof verify`, avec le rang. Par exemple, sur `examples/bonnet-erreur-rang-33.yaml` : `Rang 33 — nombre de mailles incohérent`, puis `Annoncé : 89 m · Calculé : 90 m`. Pour un `repeat_not_fitting`, le bloc donne les mailles laissées par le rang précédent et celles que consomment les opérations ; la simulation s’arrête à ce rang.
 - Un motif qui ne trouve aucun fichier, ou un fichier invalide (opération inconnue, clé en trop), échoue avec la raison.
 - Sans la variable, le test est sauté (`1 skipped`) : `uv run pytest` ne lit jamais `local-patterns/`. Préfixer la commande, ne pas exporter la variable.
 
 Limites :
 
 - Seules `work`, `k2tog`, `m1` et `repeat` sont prises en charge ; les diminutions des patrons synthétiques sont toutes écrites en `k2tog`. Un fichier qui emploie une autre opération est rejeté, et ce rejet ne prouve pas une erreur de calcul.
-- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande compte les mailles, elle ne contrôle pas le montage. Le montage aux multiples combinés, arrondi au multiple le plus proche (en dessous en cas d’égalité), tour d’ajustement entre bord et corps accepté, est l’objet de CLA-65.
+- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande et le test comptent les mailles, ils ne contrôlent pas le montage. Le montage aux multiples combinés, arrondi au multiple le plus proche (en dessous en cas d’égalité), rang d’ajustement entre bord et corps accepté, est l’objet de CLA-65.
 - Après un `repeat_not_fitting`, les comptes annoncés suivants ne sont pas comparés ([ADR 0013](docs/adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)).
 - Seuls les comptes de mailles sont vérifiés : ni mesures, ni échantillon.
 

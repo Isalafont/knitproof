@@ -30,7 +30,7 @@ def verify(pattern: Pattern) -> list[Finding]:
 
 
 def simulate(pattern: Pattern) -> Simulation:
-    """Compte les mailles tour par tour, jusqu’au premier tour qui ne tombe pas juste."""
+    """Compte les mailles rang par rang, jusqu’au premier rang qui ne tombe pas juste."""
     stitches = pattern.cast_on
     counts: list[RoundCount] = []
     for round_ in pattern.rounds:

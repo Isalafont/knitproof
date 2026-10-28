@@ -64,7 +64,7 @@ Trois acteurs, trois responsabilités qui ne se recouvrent pas :
 | Comprendre une demande, lire une étiquette (M2) | propose une structure | valide le schéma, pose la provenance | corrige si besoin |
 | Résoudre les paramètres (échantillon, tour de tête, aisance, hauteur) | — | applique la table de résolution | répond aux questions en attente |
 | Calculer montage, hauteur, calotte | — | calcule | — |
-| Vérifier un patron | — | simule tour par tour, compare | — |
+| Vérifier un patron | — | simule rang par rang, compare | — |
 | Contrôler un nombre proposé par un LLM | — | accepte ou rejette, avec le calcul | — |
 | Trancher une ambiguïté | — | signale `needs_review` | décide ; la `Decision` est tracée |
 | Juger tombé, confort, esthétique | — | — | tricot-test |
@@ -83,10 +83,10 @@ sequenceDiagram
     CLI->>APP: verify_pattern(chemin)
     APP->>APP: lit le fichier, valide le patron (Pydantic)
     APP->>ENG: verify(pattern)
-    ENG->>ENG: simule chaque tour : mailles consommées et produites
+    ENG->>ENG: simule chaque rang : mailles consommées et produites
     ENG-->>APP: constats (count_mismatch, repeat_not_fitting…)
-    APP-->>CLI: rapport
-    CLI-->>P: rapport localisé, code de sortie 1 si erreur
+    APP-->>CLI: constats
+    CLI-->>P: rapport localisé, code 1 si constat, 3 si fichier invalide
 ```
 
 ## 4. Parcours « calculer un bonnet »
@@ -112,7 +112,7 @@ sequenceDiagram
         P->>APP: Decision
     end
     APP->>ENG: plan_beanie(paramètres)
-    ENG-->>APP: montage, tours, calotte, constats
+    ENG-->>APP: montage, rangs, calotte, constats
     APP-->>P: rapport
 ```
 
@@ -201,9 +201,9 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `m1` (tranche 1) ; à venir : `ssk`, `k3tog`, `sk2p`, `finish` ; `consumes` et `produces` dérivés | `n ≥ 1`, `consumes ≥ 0`, `produces ≥ 1` |
 | `Repeat` | `body`, `times` (entier ; `to_end` à venir) | `body` non vide, `times ≥ 1` |
-| `Round` | `start`, `end`, `ops`, `stated_count`, `location` (`section` à venir) | `start ≤ end` ; le moteur vérifie que les opérations consomment les mailles du tour précédent (section 9) |
-| `Pattern` | `cast_on`, `rounds` (`provenance` à venir) | tours contigus et croissants depuis le tour 1 |
-| `CastOnResult` | `target_cm`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm`, `adjustment_round` | compatible avec tous les multiples, ou tour d’ajustement explicite |
+| `Round` | `start`, `end`, `ops`, `stated_count`, `location` (`section` à venir) | `start ≤ end` ; le moteur vérifie que les opérations consomment les mailles du rang précédent (section 9) |
+| `Pattern` | `cast_on`, `rounds` (`provenance` à venir) | rangs contigus et croissants depuis le rang 1 |
+| `CastOnResult` | `target_cm`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm`, `adjustment_round` | compatible avec tous les multiples, ou rang d’ajustement explicite |
 | `CrownPlan` | `sectors`, `rounds`, `depth_cm` | fin à 0 maille ou fermeture déclarée |
 | `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
 | `Finding` | `status` (`error` en tranche 1 ; `warning`, `ok`, `needs_review` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `message`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
@@ -239,23 +239,23 @@ La provenance permet aussi d’effacer sur demande toutes les données venues d�
 
 ## 8. Nombres et arrondis
 
-- Les comptes du patron (mailles sur l’aiguille, numéros de tours) sont des entiers : on monte 88 mailles, pas 88,5.
+- Les comptes du patron (mailles sur l’aiguille, numéros de rangs) sont des entiers : on monte 88 mailles, pas 88,5.
 - Les mesures sont des `Decimal`, y compris les mailles et rangs comptés sur un échantillon, où les demi-mailles sont courantes (22,5 m pour 10 cm). Aucun `float` dans `engine`.
 - Chaque longueur garde son unité d’origine. Un échantillon « 22 m pour 4 in » se mesure sur 10,16 cm, pas 10 cm : confondre les deux décale le montage d’environ 1,6 %.
 - Les tailles d’aiguilles gardent leur notation d’origine (mm, US, UK, japonaise) ; la valeur en mm vient d’une table de correspondance sourcée dans la bibliothèque. Une correspondance ambiguë devient un constat `needs_review`.
 - L’outil et la méthode sont distincts : des circulaires servent à plat comme en rond, des aiguilles droites seulement à plat. La méthode (`worked`) se renseigne sur l’échantillon et sur le projet ; le moteur vérifie que les aiguilles la permettent.
 - La matière des aiguilles (métal, bois, bambou…) joue sur la tension et sur la glisse du fil, mais n’entre dans aucun calcul : aucun coefficient inventé. Si les aiguilles du projet diffèrent de celles de l’échantillon, en taille ou en matière, le moteur produit un avertissement `swatch_needle_mismatch` qui invite à refaire l’échantillon.
-- Le type d’aiguilles compte pour le tricot en rond : un câble de circulaire trop long pour la circonférence du tricot ne permet pas de tricoter. Le moteur signale le tour de la calotte à partir duquel il faut passer aux aiguilles double pointe ou au magic loop (constat `needle_change`), selon une règle à valider.
+- Le type d’aiguilles compte pour le tricot en rond : un câble de circulaire trop long pour la circonférence du tricot ne permet pas de tricoter. Le moteur signale le rang de la calotte à partir duquel il faut passer aux aiguilles double pointe ou au magic loop (constat `needle_change`), selon une règle à valider.
 - Un seul arrondi métier : celui du montage, avec une règle paramétrée et tracée dans le résultat.
 - La mise en forme française (« 43,2 cm ») relève du rendu, pas du domaine.
 
 ## 9. Représentation d’un patron
 
-Chaque opération déclare les mailles qu’elle consomme et produit : `k2tog` consomme 2 mailles et en produit 1. Une répétition indique son nombre de passages (`to_end` viendra plus tard). Un tour peut couvrir une plage (« côtes 2/2 sur 20 rangs ») et porte sa localisation dans le document source.
+Chaque opération déclare les mailles qu’elle consomme et produit : `k2tog` consomme 2 mailles et en produit 1. Une répétition indique son nombre de passages (`to_end` viendra plus tard). Un rang peut couvrir une plage (« côtes 2/2 sur 20 rangs ») et porte sa localisation dans le document source.
 
-Invariant central, vérifié par le moteur et non par Pydantic (les comptes dépendent du contexte d’exécution) : les opérations d’un tour consomment exactement les mailles produites par le tour précédent. Sinon, le moteur produit un constat `repeat_not_fitting` au tour fautif et arrête la simulation. Un compte annoncé qui diffère de la simulation produit un constat `count_mismatch` ; la simulation continue alors sur le compte calculé, pas sur l’annoncé (ADR 0013). Un compte annoncé situé après l’arrêt n’est pas comparé.
+Invariant central, vérifié par le moteur et non par Pydantic (les comptes dépendent du contexte d’exécution) : les opérations d’un rang consomment exactement les mailles produites par le rang précédent. Sinon, le moteur produit un constat `repeat_not_fitting` au rang fautif et arrête la simulation. Un compte annoncé qui diffère de la simulation produit un constat `count_mismatch` ; la simulation continue alors sur le compte calculé, pas sur l’annoncé (ADR 0013). Un compte annoncé situé après l’arrêt n’est pas comparé.
 
-Une plage de tours répète les mêmes opérations à chaque tour ; le compte annoncé porte sur le dernier tour de la plage. Une plage dont les opérations changent le nombre de mailles échoue donc dès son deuxième tour.
+Une plage de rangs répète les mêmes opérations à chaque rang ; le compte annoncé porte sur le dernier rang de la plage. Une plage dont les opérations changent le nombre de mailles échoue donc dès son deuxième rang.
 
 Format YAML (figé par CLA-64), chargé par `yaml.safe_load` puis `Pattern.model_validate` ; `k2tog` et `m1` s’écrivent nus. Les exemples vivent dans [`examples/`](../examples/) ; les patrons synthétiques justes, dans `examples/synthetiques/`, que la CI parcourt récursivement. Pour vérifier un fichier, voir la section « Vérifier un patron YAML » du README.
 
@@ -283,7 +283,7 @@ Opérations prises en charge. `k2tog`, `m1` et `p2tog` suivent la [liste standar
 
 À venir, sans comptes pour l’instant : `p2tog` (purl 2 together, 2 mailles ensemble à l’envers), `ssk`, `k3tog`, `sk2p`…
 
-En V0, le bonnet se tricote en rond : `Round` suffit. Les patrons français disent souvent « rang » pour un tour.
+En V0, le bonnet se tricote en rond : `Round` suffit. Le texte en français dit « rang », comme les patrons ; le code garde `Round`.
 
 ## 10. Sécurité et données
 

@@ -50,7 +50,8 @@ def test_wrong_pattern_fails_with_round_computed_and_stated_counts() -> None:
     result = _run("examples/bonnet-erreur-rang-33.yaml")
 
     assert result.returncode == 1
-    assert "tour 33 — count_mismatch : calculé 90 m, annoncé 89 m" in result.stdout
+    assert "Rang 33" in result.stdout
+    assert "Annoncé : 89 m · Calculé : 90 m" in result.stdout
 
 
 def test_pattern_matching_no_file_fails() -> None:
