@@ -1,5 +1,5 @@
 # Bonnet synthétique, écrit pour knitproof : aucun patron réel.
-# Côtes sur 88 m, augmentation à 96 m, corps, calotte en 8 secteurs.
+# Côtes sur 88 m, augmentation à 96 m, corps, calotte en 4 secteurs à 2 diminutions.
 cast_on: 88
 rounds:
   - {start: 1, end: 12, ops: [{work: 88}]}
