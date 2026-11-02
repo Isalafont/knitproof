@@ -191,13 +191,13 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `SwatchMeasurement` | `stitches: Decimal`, `width: Length` ; à venir, CLA-68 : `rows`, `height` | valeurs > 0, `float` refusé en entrée ; demi-mailles admises (ex. 22,5 m pour 10 cm, 22 m pour 4 in) ; jauge pour 10 cm dérivée |
 | `Swatch` | `id`, `yarn_id`, `needle: Needle`, `stitch_pattern_id`, `worked` (`round` / `flat`), `before`, `after`, `blocking_method` | aiguilles et point identiques avant et après, par construction |
 | `StitchMultiple` | `repeat_multiple`, `repeat_offset` | `multiple ≥ 1`, `0 ≤ offset < multiple` ; `accepts(n)` ; le point saisi pour le montage (CLA-65), sans `id` ni `names` |
-| `StitchPattern` | `id`, `names`, `repeat_multiple`, `repeat_offset` | `0 ≤ offset < multiple` ; le couple de `StitchMultiple` (CLA-65) y sera rattaché par CLA-67 |
+| `StitchPattern` | `id`, `names`, `repeat_multiple`, `repeat_offset` ; à venir : marque « motif précis » (ADR 0019) | `0 ≤ offset < multiple` ; le couple de `StitchMultiple` (CLA-65) y sera rattaché par CLA-67 |
 
 ### Spécification, patron, résultats
 
 | Modèle | Champs clés | Invariants |
 |---|---|---|
-| `BeanieSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `crown_sectors`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
+| `BeanieSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
 | `Ease` | `value`, `unit` (% ou cm) | — |
 | `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `m1` (tranche 1) ; à venir : `ssk`, `k3tog`, `sk2p`, `finish` ; `consumes` et `produces` dérivés | `n ≥ 1`, `consumes ≥ 0`, `produces ≥ 1` |
@@ -207,7 +207,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `CastOnResult` | `target: Length`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm` ; `adjustment_round` à venir, CLA-103 | `stitches` respecte le multiple et le reste du point (`StitchMultiple`) ; le plus proche du nombre brut, en dessous en cas d’égalité ; rang d’ajustement entre multiples différents : CLA-103 |
 | `CastOnCheck` | `proposed`, `expected`, `reasons` (`stitch_multiple_not_respected`, `differs_from_calculation`), `proposed_finished_cm` ; `accepted` dérivé | `proposed` ≥ 1 ; « point non respecté » implique toujours « diffère du calcul » ; pas de tolérance (cadrage CLA-105) |
 | `NeedleCheck` | `swatch`, `project`, `reasons` (`size_differs`, `sizes_not_comparable`, `material_differs`) ; `matches` dérivé | avertissement `swatch_needle_mismatch`, jamais une erreur ; raisons cumulables ; rapprochement avec `Finding` : CLA-69 |
-| `CrownPlan` | `sectors`, `rounds`, `depth_cm` | fin à 0 maille ou fermeture déclarée |
+| `CrownPlan` | `sectors` (4, à 2 diminutions chacun, ADR 0019), `rounds`, `depth_cm` | fin par fermeture déclarée, sur 8 à 12 m pour un montage ≥ 32 m |
 | `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
 | `Finding` | `status` (`error` en tranche 1 ; `warning`, `ok`, `needs_review` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `message`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
 | `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
@@ -325,6 +325,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0015 — Quotients décimaux à précision fixe, montage décidé exactement](adr/0015-quotients-decimaux-et-montage-exact.md)
 - [ADR 0016 — Tailles d’aiguilles sans conversion](adr/0016-tailles-d-aiguilles-sans-conversion.md)
 - [ADR 0017 — Worktrees et force-with-lease](adr/0017-worktrees-et-force-with-lease.md)
+- [ADR 0019 — Calotte du bonnet](adr/0019-calotte-du-bonnet.md)
 
 ## 13. Projets proches
 
