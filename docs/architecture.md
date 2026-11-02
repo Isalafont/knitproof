@@ -175,7 +175,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | Modèle | Champs clés | Invariants |
 |---|---|---|
 | `Range` | `min`, `max` | `min ≤ max` |
-| `ReferenceMeasurement` | `quantity` (tour, hauteur), `age_or_size`, `range_cm`, `proposed_cm`, `source` | source obligatoire ; tour de tête : au mois, une seule source par âge, plage P3–P97 tous sexes, `proposed_cm` au milieu des deux médianes ([ADR 0018](adr/0018-tour-de-tete-par-age.md)) ; hauteur : question 6 |
+| `ReferenceMeasurement` | `quantity` (tour, hauteur), `age_or_size`, `range_cm`, `proposed_cm`, `source` | source obligatoire ; tour de tête : au mois, une seule source par âge, plage P3–P97 tous sexes, `proposed_cm` au milieu des deux médianes ([ADR 0018](adr/0018-tour-de-tete-par-age.md)) ; hauteur : valeur par ligne, unité d’origine, un âge peut désigner deux lignes (ADR 0020) |
 | `FiberComposition` | parts (`fiber_id`, `percent`) | somme = 100 ; fibres connues |
 | `YarnLabel` | composition, `needle: Range[NeedleSize]`, `gauge` (fourchette, unité d’origine, état inconnu), `length_m`, `weight_g`, `care`, `superwash` | provenance au niveau de l’objet |
 | `Yarn` | `id`, `name`, `brand`, `composition`, `superwash`, `label` | — |
@@ -197,7 +197,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 | Modèle | Champs clés | Invariants |
 |---|---|---|
-| `BeanieSpecification` | `head_cm` (facultatif, ADR 0018), `age` (mois avant 2 ans, années entières ensuite, ADR 0018 ; le détail revient au ticket du champ), `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 s’il est présent ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
+| `BeanieSpecification` | `head_cm` (facultatif, ADR 0018), `age` (mois avant 2 ans, années entières ensuite, ADR 0018 ; le détail revient au ticket du champ), `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 s’il est présent ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) ; `total_height_cm` : hauteur finie, du bord porté au sommet, calotte incluse, revers replié ; `brim_height_cm` : hauteur visible du revers si `folded_brim`, sinon hauteur du bord (ADR 0020) |
 | `Ease` | `value`, `unit` (% ou cm) | — |
 | `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `m1` (tranche 1) ; à venir : `ssk`, `k3tog`, `sk2p`, `finish` ; `consumes` et `produces` dérivés | `n ≥ 1`, `consumes ≥ 0`, `produces ≥ 1` |
@@ -208,7 +208,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `CastOnCheck` | `proposed`, `expected`, `reasons` (`stitch_multiple_not_respected`, `differs_from_calculation`), `proposed_finished_cm` ; `accepted` dérivé | `proposed` ≥ 1 ; « point non respecté » implique toujours « diffère du calcul » ; pas de tolérance (cadrage CLA-105) |
 | `NeedleCheck` | `swatch`, `project`, `reasons` (`size_differs`, `sizes_not_comparable`, `material_differs`) ; `matches` dérivé | avertissement `swatch_needle_mismatch`, jamais une erreur ; raisons cumulables ; rapprochement avec `Finding` : CLA-69 |
 | `CrownPlan` | `sectors` (4, à 2 diminutions chacun, ADR 0019), `rounds`, `depth_cm` | fin par fermeture déclarée, sur 8 à 12 m pour un montage ≥ 32 m |
-| `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage |
+| `BeaniePlan` | `cast_on`, `brim_rounds`, `body_rounds`, `crown`, `finished_circumference_cm`, `finished_height_cm` | hauteurs calculées avec la jauge en rangs après blocage ; `finished_height_cm` : hauteur finie, revers replié (ADR 0020) |
 | `Finding` | `status` (`error` en tranche 1 ; `warning`, `ok`, `needs_review` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `message`, `decided_by`, `provenance` | `error` ⇒ moteur ; `needs_review` ⇒ une question en attente |
 | `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
 | `Report` | `findings`, `inputs`, `decisions`, `result`, `engine_version`, `library_version` | déterministe : même entrée, même rapport |
@@ -232,7 +232,9 @@ L’ordre de confiance dépend de la grandeur :
 | Échantillon | échantillon bloqué > échantillon non bloqué (règle à trancher) > étiquette ou fiche Ravelry (`needs_review`) | question en attente |
 | Tour de tête | mesure > mesure de référence par âge, proposée puis décidée par la personne (`needs_review`, ADR 0018) | question en attente |
 | Aisance | saisie > bibliothèque de fibres validée | question en attente |
-| Hauteur | saisie > mesure de référence par âge | question en attente |
+| Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
+
+La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
 
 Pour le tour de tête, une seule source est chargée par âge : l’OMS, de 0 à 60 mois. Sans mesure, une question en attente affiche la plage, propose d’abord de mesurer la tête, et la valeur « À VÉRIFIER » reste le choix à défaut ; le calcul ne part qu’après la `Decision`. Au-delà de 60 mois, aucune autre source ne prend sa place : la question demande le tour de tête, sans plage. Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
 
@@ -329,6 +331,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0017 — Worktrees et force-with-lease](adr/0017-worktrees-et-force-with-lease.md)
 - [ADR 0018 — Tour de tête par âge](adr/0018-tour-de-tete-par-age.md)
 - [ADR 0019 — Calotte du bonnet](adr/0019-calotte-du-bonnet.md)
+- [ADR 0020 — Hauteur finie du bonnet et bord replié](adr/0020-hauteur-finie-et-bord-replie.md)
 - [ADR 0021 — Table de référence des tailles d’aiguilles](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)
 
 ## 13. Projets proches
