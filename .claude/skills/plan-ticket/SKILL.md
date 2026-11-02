@@ -1,7 +1,7 @@
 ---
 name: plan-ticket
 description: Prépare le contexte et le plan d’un ticket knitproof (questions une par une, plan vérifié, deux relectures, arbitrage, ticket réaligné), sans écrire de code.
-argument-hint: "[CLA-XX]"
+argument-hint: "[CLA-XX] [orchestre] [numéro d’ADR]"
 disable-model-invocation: true
 allowed-tools:
   - Bash(git branch --show-current)
@@ -16,6 +16,15 @@ Tu es la session principale : tu orchestres, tu poses les questions à Isabelle,
 Dans les noms de fichiers, `<id>` est `$0` en minuscules (`CLA-58` donne `cla-58`). Fichiers produits, hors git : `.claude/plans/<id>-context.md`, `.claude/plans/<id>-plan.md`, `.claude/plans/<id>-linear.md`.
 
 Chaque sous-agent : outil Agent, `subagent_type: general-purpose`, avec le `model` indiqué à sa phase. Opus pour le rédacteur et les relecteurs, Sonnet pour le vérificateur de doc et l’intégrateur. Les briefs en fichier passent par leur chemin complet `${CLAUDE_SKILL_DIR}/…`. Attends la notification de fin d’un sous-agent avant d’utiliser son résultat ; ne résume jamais un résultat qui n’est pas revenu.
+
+## Lancé par l’orchestrateur
+
+Seulement si `$1` vaut `orchestre` ; sinon, rien de cette section ne s’applique.
+
+- Avant chaque attente d’Isabelle (questions, contexte, plan, arbitrages, accord de publication), passe `$0` en « Attente Isabelle » avec l’outil Linear de la session ; après sa réponse, remets-le en « In Progress ».
+- La branche du ticket existe déjà et elle est extraite dans ce worktree : pas de `git switch develop` à l’étape 0 du plan.
+- `$2` est le numéro d’ADR réservé : donne-le au rédacteur. Toute ADR de ce ticket prend ce numéro, et aucun autre.
+- À la fin, après la publication du ticket réaligné, ajoute `plan_valide: AAAA-MM-JJ` à `.claude/plans/<id>-orchestration.md`, puis rends la main.
 
 ## Phase 1 — Questions (rédacteur)
 
@@ -56,7 +65,7 @@ Rédige `<id>-linear.md` au template de son type, aligné sur le contexte valid�
 ## Conditions d’arrêt
 
 - Aucune branche, aucun commit, aucun fichier hors de `.claude/plans/` et du scratchpad.
-- Rien dans Linear sans accord explicite d’Isabelle, sauf le passage en « In Progress » de la phase 1.
+- Rien dans Linear sans accord explicite d’Isabelle, sauf le passage en « In Progress » de la phase 1 et les statuts de « Lancé par l’orchestrateur ».
 - Si la planification s’arrête sans plan validé, le signaler à Isabelle, qui décide du statut du ticket : aucun retour automatique.
 - Fin : plan validé par Isabelle, ticket réaligné. L’implémentation se lance avec `/implement-slice $0`.
 - Règles du projet : `AGENTS.md`, « Règles pour tous les agents » et « Conventions ».

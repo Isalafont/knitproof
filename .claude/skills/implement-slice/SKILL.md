@@ -1,7 +1,7 @@
 ---
 name: implement-slice
 description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, fait relire le diff par un agent neuf, coche les cases producteur du ticket Linear, pousse, ouvre la PR, puis coche les cases testeur et la DOD et la merge après le « ok » d’Isabelle sur le test.
-argument-hint: "[CLA-XX]"
+argument-hint: "[CLA-XX] [orchestre]"
 disable-model-invocation: true
 allowed-tools:
   - Bash(git branch --show-current)
@@ -14,6 +14,14 @@ Branche courante : !`git branch --show-current`
 Tu es la session principale. Un sous-agent Sonnet écrit le code ; tu revérifies toi-même. `<id>` est `$0` en minuscules.
 
 **En worktree** : `git rev-parse --git-dir` diffère de `git rev-parse --git-common-dir`.
+
+## Lancé par l’orchestrateur
+
+Seulement si `$1` vaut `orchestre` ; sinon, rien de cette section ne s’applique.
+
+- Avant chaque attente d’Isabelle hors test de la PR (notamment arbitrage de la relecture, accords de publication des étapes 6 et 9), passe `$0` en « Attente Isabelle » ; après sa réponse, remets-le à son statut précédent.
+- Pendant le test de la PR (étape 8), le ticket reste en « In Review ».
+- Après le merge, ajoute `merge: AAAA-MM-JJ` à `.claude/plans/<id>-orchestration.md`, puis rends la main.
 
 ## Avant de déléguer
 
@@ -49,7 +57,7 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 
 - Jamais de merge sans le « ok » d’Isabelle sur le test, ni avec une CI rouge ; jamais de merge vers `main`.
 - Un contrôle rouge à la revérification : corrige avec Isabelle, dans le respect des « Règles pour tous les agents ».
-- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 7.
+- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 7 et les statuts de « Lancé par l’orchestrateur ».
 - Si le test d’Isabelle demande des corrections, le lui signaler : elle décide du statut du ticket, sans retour automatique en « In Progress ».
 - La DOR n’est pas cochée ici : `/plan-ticket` la coche à la publication du ticket réaligné.
 - Fin : PR mergée dans `develop` ; branche locale supprimée, sauf en worktree où l’orchestrateur s’en charge.
