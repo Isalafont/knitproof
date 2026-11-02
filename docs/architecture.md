@@ -326,6 +326,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0016 — Tailles d’aiguilles sans conversion](adr/0016-tailles-d-aiguilles-sans-conversion.md)
 - [ADR 0017 — Worktrees et force-with-lease](adr/0017-worktrees-et-force-with-lease.md)
 - [ADR 0019 — Calotte du bonnet](adr/0019-calotte-du-bonnet.md)
+- [ADR 0021 — Table de référence des tailles d’aiguilles](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)
 
 ## 13. Projets proches
 
