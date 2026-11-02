@@ -61,9 +61,10 @@ Ce que ruff et mypy ne vérifient pas :
 - Aucun nombre venu d’un modèle sans passage par le moteur.
 - Ne jamais assouplir un contrat import-linter ou une option mypy pour faire passer un changement.
 - Dans `.claude/`, seuls `skills/` et `settings.json` sont versionnés ; jamais `.claude/plans/`.
-- `.claude/settings.json` pré-autorise les lectures, les cinq contrôles, les commandes git locales, le push d’une branche de travail et les PR vers `develop`.
+- `.claude/settings.json` pré-autorise les lectures, les cinq contrôles, les commandes git locales, les commandes de worktree, les commandes herdr de `/orchestrate`, le push d’une branche de travail, `--force-with-lease` sur `feature/*` et les PR vers `develop`.
 - L’agent commite sans validation, fait relire le diff par un agent neuf (voir `implement-slice`), pousse et ouvre une PR prête (pas de brouillon) vers `develop`. Il la merge dès qu’Isabelle a lancé le test de la PR et dit « ok », CI verte. Avant le merge, les cases producteur du ticket sont cochées dans Linear ; les cases testeur et la DOD le sont après le « ok » d’Isabelle (voir `implement-slice`).
-- Écrire dans Linear demande toujours un accord, sauf deux changements de statut faits par les skills : « In Progress » quand `/plan-ticket` commence la planification, « In Review » quand `/implement-slice` a ouvert la PR et que la CI est verte.
+- Écrire dans Linear demande toujours un accord, sauf les changements de statut faits par les skills : « In Progress » quand `/plan-ticket` commence la planification, « In Review » quand `/implement-slice` a ouvert la PR et que la CI est verte ; et, seulement lancés par `/orchestrate`, le passage en « Attente Isabelle » avant une validation, hors test de la PR, et le retour après sa réponse.
+- `/orchestrate`, lancé dans une pane herdr, propose les tickets démarrables du cycle (`--max N`, 3 par défaut), puis lance chacun dans son worktree et sa pane ; un ticket occupe sa place jusqu’au merge.
 - Commits sans mention d’un agent de code (Claude, Codex…).
 
 ## Branches
@@ -72,8 +73,10 @@ Ce que ruff et mypy ne vérifient pas :
 - Chaque ticket a sa branche, créée depuis `develop` et nommée comme la branche du ticket Linear.
 - Une branche de travail revient sur `develop` par une PR ; `develop` passe sur `main` par une PR.
 - Jamais de commit ni de push direct sur `main` ou `develop` : un ruleset GitHub le refuse.
-- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>`.
+- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>` (sans worktree ouvert : `git fetch -p` déplace les références distantes partagées et annule le lease des worktrees).
 - Une PR ne merge que si la CI (`.github/workflows/ci.yml`) est verte ; `main` n’accepte que des PR depuis `develop`.
+- Avec `/orchestrate`, chaque ticket a son worktree `../knitproof-<id>` ; `.claude/plans/` y est un lien vers le checkout principal.
+- En worktree, une branche se rebase sur `origin/develop` juste avant le test, puis avant le merge si `develop` a avancé, et se pousse avec `--force-with-lease`, sur `feature/*` seulement ; seules `develop` et `main` sont contrôlées comme cibles, une refspec vers un autre nom n’est pas refusée. Sans conflit et CI reverte, le « ok » d’Isabelle tient ; conflit résolu, nouveau « ok ».
 - Vérifier la branche courante (`git branch --show-current`) juste avant chaque commit.
 
 ## Conventions

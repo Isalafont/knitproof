@@ -1,7 +1,7 @@
 ---
 name: implement-slice
 description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, fait relire le diff par un agent neuf, coche les cases producteur du ticket Linear, pousse, ouvre la PR, puis coche les cases testeur et la DOD et la merge après le « ok » d’Isabelle sur le test.
-argument-hint: "[CLA-XX]"
+argument-hint: "[CLA-XX] [orchestre]"
 disable-model-invocation: true
 allowed-tools:
   - Bash(git branch --show-current)
@@ -12,6 +12,16 @@ allowed-tools:
 Branche courante : !`git branch --show-current`
 
 Tu es la session principale. Un sous-agent Sonnet écrit le code ; tu revérifies toi-même. `<id>` est `$0` en minuscules.
+
+**En worktree** : `git rev-parse --git-dir` diffère de `git rev-parse --git-common-dir`.
+
+## Lancé par l’orchestrateur
+
+Seulement si `$1` vaut `orchestre` ; sinon, rien de cette section ne s’applique.
+
+- Avant chaque attente d’Isabelle hors test de la PR (notamment arbitrage de la relecture, accords de publication des étapes 6 et 9), passe `$0` en « Attente Isabelle » ; après sa réponse, remets-le à son statut précédent.
+- Pendant le test de la PR (étape 8), le ticket reste en « In Review ».
+- Après le merge, ajoute `merge: AAAA-MM-JJ` à `.claude/plans/<id>-orchestration.md`, puis rends la main.
 
 ## Avant de déléguer
 
@@ -27,23 +37,30 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 
 1. `git branch --show-current` donne la branche attendue.
 2. Lance toi-même les cinq contrôles d’`AGENTS.md` (« Commandes ») ; tous verts.
-3. `git log --oneline develop..` : un commit par étape, aux messages du plan, conformes aux « Conventions ».
-4. `git diff develop...` : rien hors du plan ; README et `docs/` à jour selon les « Conventions ».
-5. Relecture du diff par un agent neuf (`model: opus`), en arrière-plan : brief `${CLAUDE_SKILL_DIR}/reviewer.md`. Il reçoit seulement l’identifiant, les chemins du plan validé et du contexte, et la plage `develop..<branche>` (SHA de base et de tête). Jamais les tableaux d’arbitrage de la planification, ni ton avis. Quand il revient, dresse le tableau d’arbitrage : constat, « vérifié par », ta recommandation. Un constat sans preuve ne va pas plus loin. Isabelle tranche chaque ligne ; l’implémenteur fait les corrections retenues (fixup sur le commit de l’étape concernée), puis reprends aux étapes 1 à 4. Une seule relecture par ticket : la relancer est une décision d’Isabelle.
+3. D’abord `git fetch origin develop`, puis `git log --oneline origin/develop..` : un commit par étape, aux messages du plan, conformes aux « Conventions ».
+4. `git diff origin/develop...` : rien hors du plan ; README et `docs/` à jour selon les « Conventions ».
+5. Relecture du diff par un agent neuf (`model: opus`), en arrière-plan : brief `${CLAUDE_SKILL_DIR}/reviewer.md`. Il reçoit seulement l’identifiant, les chemins du plan validé et du contexte, et la plage `origin/develop..<branche>` (base = `git merge-base origin/develop <branche>`, en SHA, et tête). Pas de seconde relecture après un rebase. Jamais les tableaux d’arbitrage de la planification, ni ton avis. Quand il revient, dresse le tableau d’arbitrage : constat, « vérifié par », ta recommandation. Un constat sans preuve ne va pas plus loin. Isabelle tranche chaque ligne ; l’implémenteur fait les corrections retenues (fixup sur le commit de l’étape concernée), puis reprends aux étapes 1 à 4. Une seule relecture par ticket : la relancer est une décision d’Isabelle.
 6. Cases producteur : pour chaque CA, et chaque RG s’il y en a, lance la commande ou le test qui la prouve ; coche OK en état producteur seulement s’il passe, sinon KO et arrête-toi. Corrige les mentions devenues fausses (par exemple « ADR à créer »). Montre à Isabelle chaque case avec sa preuve et la description modifiée ; publie-la avec l’outil Linear de la session seulement après son accord.
 7. `git push -u origin <branche>` (jamais `HEAD`), puis PR prête (pas de brouillon) vers `develop`, avec une section « Tester ». Attends la CI ; verte, passe le ticket en « In Review » avec l’outil Linear de la session.
-8. Donne à Isabelle le lien de la PR, l’état de la CI, les commits, les contrôles, les cases producteur et ce qui n’a pas été vérifié. Attends son « ok » sur le test.
+8. En worktree, juste avant de donner le test, rebase si `develop` a avancé. Donne à Isabelle le lien de la PR, l’état de la CI, les commits, les contrôles, les cases producteur et ce qui n’a pas été vérifié. Attends son « ok » sur le test.
 9. Après son « ok » et ses contrôles, au plus tard au merge : coche les cases testeur des CA et des RG, puis la DOD, chaque case après sa preuve (DOD : les cinq contrôles, README et `docs/` à jour, ADR créée si une décision structurante est prise). Même accord avant de publier.
-10. CI verte et cases publiées : `gh pr merge <numéro> --merge`, puis `git switch develop`, `git pull --ff-only` et `git branch -d <branche>`.
+10. Juste avant le merge, en worktree, rebase si `develop` a avancé. CI verte et cases publiées : `gh pr merge <numéro> --merge`. Après le merge : en worktree, aucun geste git (la branche reste ouverte ici, le nettoyage ne se fait pas depuis ce dossier) ; sinon, `git switch develop`, `git pull --ff-only origin develop` et `git branch -d <branche>`.
+
+## Rebase en worktree
+
+1. `git fetch origin develop`, jamais `git fetch origin` : déplacer `origin/<branche>` annulerait la protection du lease. `git merge-base --is-ancestor origin/develop HEAD` réussit : rien à faire.
+2. Sinon, `git rebase origin/develop`. Résous toi-même un conflit sur `docs/plan.md` ; tout autre conflit s’arbitre avec Isabelle. Relance les cinq contrôles.
+3. Branche déjà poussée : `git push --force-with-lease origin <branche>`, jamais `--force` ni `-f`, puis attends la CI. Une commande à la fois : pas de `git rebase … && git push …`, qui demande une autorisation par sous-commande. Un rejet du lease veut dire qu’un autre a poussé : arrête-toi et montre-le à Isabelle.
+4. Après son « ok » : rebase sans conflit et CI reverte, le « ok » tient ; conflit résolu, redemande son « ok » avant le merge. À l’étape 10, signale-lui que ce nouveau « ok » est demandé alors que les cases testeur sont déjà publiées à l’étape 9.
 
 ## Conditions d’arrêt
 
 - Jamais de merge sans le « ok » d’Isabelle sur le test, ni avec une CI rouge ; jamais de merge vers `main`.
 - Un contrôle rouge à la revérification : corrige avec Isabelle, dans le respect des « Règles pour tous les agents ».
-- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 7.
+- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 7 et les statuts de « Lancé par l’orchestrateur ».
 - Si le test d’Isabelle demande des corrections, le lui signaler : elle décide du statut du ticket, sans retour automatique en « In Progress ».
 - La DOR n’est pas cochée ici : `/plan-ticket` la coche à la publication du ticket réaligné.
-- Fin : PR mergée dans `develop`, branche locale supprimée.
+- Fin : PR mergée dans `develop` ; branche locale supprimée, sauf en worktree où l’orchestrateur s’en charge.
 
 ## Brief de l’implémenteur
 
