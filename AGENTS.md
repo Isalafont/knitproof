@@ -64,6 +64,7 @@ Ce que ruff et mypy ne vérifient pas :
 - `.claude/settings.json` pré-autorise les lectures, les cinq contrôles, les commandes git locales, les commandes de worktree, les commandes herdr de `/orchestrate`, le push d’une branche de travail, `--force-with-lease` sur `feature/*` et les PR vers `develop`.
 - L’agent commite sans validation, fait relire le diff par un agent neuf (voir `implement-slice`), pousse et ouvre une PR prête (pas de brouillon) vers `develop`. Il la merge dès qu’Isabelle a lancé le test de la PR et dit « ok », CI verte. Avant le merge, les cases producteur du ticket sont cochées dans Linear ; les cases testeur et la DOD le sont après le « ok » d’Isabelle (voir `implement-slice`).
 - Écrire dans Linear demande toujours un accord, sauf les changements de statut faits par les skills : « In Progress » quand `/plan-ticket` commence la planification, « In Review » quand `/implement-slice` a ouvert la PR et que la CI est verte ; et, seulement lancés par `/orchestrate`, le passage en « Attente Isabelle » avant une validation, hors test de la PR, et le retour après sa réponse.
+- `/orchestrate`, lancé dans une pane herdr, propose les tickets démarrables du cycle (`--max N`, 3 par défaut), puis lance chacun dans son worktree et sa pane ; un ticket occupe sa place jusqu’au merge.
 - Commits sans mention d’un agent de code (Claude, Codex…).
 
 ## Branches
