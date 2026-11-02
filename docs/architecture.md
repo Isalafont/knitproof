@@ -175,7 +175,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | Modèle | Champs clés | Invariants |
 |---|---|---|
 | `Range` | `min`, `max` | `min ≤ max` |
-| `ReferenceMeasurement` | `quantity` (tour, hauteur), `age_or_size`, `range_cm`, `source` | source obligatoire ; divergence entre sources signalée |
+| `ReferenceMeasurement` | `quantity` (tour, hauteur), `age_or_size`, `range_cm`, `proposed_cm`, `source` | source obligatoire ; tour de tête : au mois, une seule source par âge, plage P3–P97 tous sexes, `proposed_cm` au milieu des deux médianes ([ADR 0018](adr/0018-tour-de-tete-par-age.md)) ; hauteur : question 6 |
 | `FiberComposition` | parts (`fiber_id`, `percent`) | somme = 100 ; fibres connues |
 | `YarnLabel` | composition, `needle: Range[NeedleSize]`, `gauge` (fourchette, unité d’origine, état inconnu), `length_m`, `weight_g`, `care`, `superwash` | provenance au niveau de l’objet |
 | `Yarn` | `id`, `name`, `brand`, `composition`, `superwash`, `label` | — |
@@ -197,7 +197,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 | Modèle | Champs clés | Invariants |
 |---|---|---|
-| `BeanieSpecification` | `head_cm`, `age_years`, `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
+| `BeanieSpecification` | `head_cm` (facultatif, ADR 0018), `age` (mois avant 2 ans, années entières ensuite, ADR 0018 ; le détail revient au ticket du champ), `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 s’il est présent ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) |
 | `Ease` | `value`, `unit` (% ou cm) | — |
 | `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `m1` (tranche 1) ; à venir : `ssk`, `k3tog`, `sk2p`, `finish` ; `consumes` et `produces` dérivés | `n ≥ 1`, `consumes ≥ 0`, `produces ≥ 1` |
@@ -230,9 +230,11 @@ L’ordre de confiance dépend de la grandeur :
 | Grandeur | Ordre de confiance | Si rien n’est disponible |
 |---|---|---|
 | Échantillon | échantillon bloqué > échantillon non bloqué (règle à trancher) > étiquette ou fiche Ravelry (`needs_review`) | question en attente |
-| Tour de tête | mesure > mesure de référence par âge (`needs_review` si les sources divergent) | question en attente |
+| Tour de tête | mesure > mesure de référence par âge, proposée puis décidée par la personne (`needs_review`, ADR 0018) | question en attente |
 | Aisance | saisie > bibliothèque de fibres validée | question en attente |
 | Hauteur | saisie > mesure de référence par âge | question en attente |
+
+Pour le tour de tête, une seule source est chargée par âge : l’OMS, de 0 à 60 mois. Sans mesure, une question en attente affiche la plage, propose d’abord de mesurer la tête, et la valeur « À VÉRIFIER » reste le choix à défaut ; le calcul ne part qu’après la `Decision`. Au-delà de 60 mois, aucune autre source ne prend sa place : la question demande le tour de tête, sans plage. Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
 
 Une étiquette et une fiche Ravelry qui divergent produisent un constat `needs_review`.
 
