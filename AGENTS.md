@@ -72,8 +72,10 @@ Ce que ruff et mypy ne vérifient pas :
 - Chaque ticket a sa branche, créée depuis `develop` et nommée comme la branche du ticket Linear.
 - Une branche de travail revient sur `develop` par une PR ; `develop` passe sur `main` par une PR.
 - Jamais de commit ni de push direct sur `main` ou `develop` : un ruleset GitHub le refuse.
-- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>`.
+- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>` (sans worktree ouvert : `git fetch -p` déplace les références distantes partagées et annule le lease des worktrees).
 - Une PR ne merge que si la CI (`.github/workflows/ci.yml`) est verte ; `main` n’accepte que des PR depuis `develop`.
+- Avec `/orchestrate`, chaque ticket a son worktree `../knitproof-<id>` ; `.claude/plans/` y est un lien vers le checkout principal.
+- En worktree, une branche se rebase sur `origin/develop` juste avant le test, puis avant le merge si `develop` a avancé, et se pousse avec `--force-with-lease`, sur `feature/*` seulement ; seules `develop` et `main` sont contrôlées comme cibles, une refspec vers un autre nom n’est pas refusée. Sans conflit et CI reverte, le « ok » d’Isabelle tient ; conflit résolu, nouveau « ok ».
 - Vérifier la branche courante (`git branch --show-current`) juste avant chaque commit.
 
 ## Conventions

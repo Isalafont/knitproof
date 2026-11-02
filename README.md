@@ -212,7 +212,7 @@ Les patrons synthétiques justes de `examples/synthetiques/` sont vérifiés par
 - `main` est la production, `develop` l’intégration déployée sur la sandbox.
 - Chaque changement part de `develop` sur sa propre branche et y revient par une pull request ; `develop` passe sur `main` par une pull request.
 - `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`, `lint-imports`, `mypy`). `main` n’accepte que des pull requests depuis `develop`.
-- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>`.
+- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>` (sans worktree ouvert : `git fetch -p` déplace les références distantes partagées et annule le lease des worktrees).
 - Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
 - ruff vérifie aussi le nommage (`N`), le style pytest (`PT`), ses propres règles (`RUF`) et les nombres magiques dans `src/` (`PLR2004`) ; l’apostrophe typographique et les espaces insécables sont permis. mypy refuse `Any` ([ADR 0012](docs/adr/0012-interdire-any-avec-mypy.md)). Les conventions que les outils ne vérifient pas sont dans `AGENTS.md`.
 
