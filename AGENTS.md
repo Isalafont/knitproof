@@ -61,7 +61,7 @@ Ce que ruff et mypy ne vérifient pas :
 - Aucun nombre venu d’un modèle sans passage par le moteur.
 - Ne jamais assouplir un contrat import-linter ou une option mypy pour faire passer un changement.
 - Dans `.claude/`, seuls `skills/` et `settings.json` sont versionnés ; jamais `.claude/plans/`.
-- `.claude/settings.json` pré-autorise les lectures, les cinq contrôles, les commandes git locales, le push d’une branche de travail et les PR vers `develop`.
+- `.claude/settings.json` pré-autorise les lectures, les cinq contrôles, les commandes git locales, les commandes de worktree, les commandes herdr de `/orchestrate`, le push d’une branche de travail, `--force-with-lease` sur `feature/*` et les PR vers `develop`.
 - L’agent commite sans validation, fait relire le diff par un agent neuf (voir `implement-slice`), pousse et ouvre une PR prête (pas de brouillon) vers `develop`. Il la merge dès qu’Isabelle a lancé le test de la PR et dit « ok », CI verte. Avant le merge, les cases producteur du ticket sont cochées dans Linear ; les cases testeur et la DOD le sont après le « ok » d’Isabelle (voir `implement-slice`).
 - Écrire dans Linear demande toujours un accord, sauf deux changements de statut faits par les skills : « In Progress » quand `/plan-ticket` commence la planification, « In Review » quand `/implement-slice` a ouvert la PR et que la CI est verte.
 - Commits sans mention d’un agent de code (Claude, Codex…).
