@@ -43,7 +43,7 @@ Au-delà de 5 ans, l’OMS n’a pas de table de tour de tête : sa référence 
 | [Craft Yarn Council](https://craftyarncouncil.com/node/39) | « Toddler » 16–18 in / 40,5–46 cm, « Child » 18–20 in / 45,5–51 cm, sans âge ni méthode | Lu comme 3 ans, « Toddler » tombe presque entièrement sous la plage OMS (0,1 cm commun) |
 | [Knit Picks](https://tutorials.knitpicks.com/hat-size-charts/) (17 décembre 2009) | « 12 mois à 3 ans » 19 in, « 3 à 10 ans » 20 in, en pouces seulement (conversion : environ 48 et 51 cm) ; origine non indiquée | 3 ans figure dans deux lignes, toutes deux dans la plage OMS |
 
-Pages lues le 02/11/2026 via un résumé automatique. Le lien Knit Picks que cite le README (<https://www.knitpicks.com/learning-center/hat-size-chart>) répond 403 : page non lue ; le README le garde.
+Pages relues par Isabelle le 02/11/2026. Le lien Knit Picks que citait le README (<https://www.knitpicks.com/learning-center/hat-size-chart>) répond 403 : page non lue.
 
 ## Recoupement par des patrons publiés
 
