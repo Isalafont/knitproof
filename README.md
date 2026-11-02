@@ -53,7 +53,7 @@ Le moteur ne calcule qu’avec des valeurs dont il connaît l’origine, dans ce
 1. **Votre échantillon**, mesuré avant et après blocage, avec la composition du fil et la taille des aiguilles. C’est la seule mesure qui reflète votre fil, vos aiguilles et votre main.
 2. **L’étiquette du fil** : composition, échantillon et aiguilles conseillés par le fabricant, métrage, consignes de lavage. Une photo de l’étiquette suffit : le modèle la lit, le moteur s’en sert.
 3. **La bibliothèque de fibres**, pour ce que l’échantillon et l’étiquette ne disent pas : élasticité, détente au lavage (forte pour un superwash).
-4. **Les mesures de référence** par âge et par taille, quand la personne n’a pas pu être mesurée (par exemple, pour un tour de tête à 3 ans : environ 48 cm selon [Knit Picks](https://www.knitpicks.com/learning-center/hat-size-chart), 41 à 46 cm selon le [Craft Yarn Council](https://craftyarncouncil.com/node/39) ; les tableaux divergent, d’où l’intérêt de mesurer).
+4. **Les mesures de référence** par âge et par taille, quand la personne n’a pas pu être mesurée. Pour un tour de tête, la plage vient des [standards de croissance de l’OMS](https://www.who.int/tools/child-growth-standards/standards/head-circumference-for-age), de la naissance à 5 ans (à 3 ans : 45,9 à 52,1 cm, tous sexes confondus). Les tableaux du tricot divergent : 19 in (environ 48 cm) pour « 12 mois à 3 ans » selon [Knit Picks](https://tutorials.knitpicks.com/hat-size-charts/) ; 40,5 à 46 cm pour « Toddler », sans âge, selon le [Craft Yarn Council](https://craftyarncouncil.com/node/39). D’où l’intérêt de mesurer.
 5. **Rien d’autre.** Une valeur manquante est demandée, jamais inventée.
 
 Vos échantillons sont enregistrés et réutilisables d’un projet à l’autre.
