@@ -2,6 +2,8 @@
 
 Une décision structurante par fichier, numérotée : `0001-titre.md`.
 
+Seulement pour le produit et le code. Une règle de process (skills, branches, revue) vit dans le skill ou dans `AGENTS.md`, sans ADR.
+
 Un ADR dit pourquoi on a décidé, pour ne pas refaire le débat. Il tient en 40 lignes au plus :
 
 - **Contexte** : le problème, en quelques lignes.
