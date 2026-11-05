@@ -1,5 +1,7 @@
 # ADR 0010 — Mélanges de fibres
 
+Remplacé en partie par l’ADR 0024 (aisance).
+
 ## Contexte
 
 Un fil est souvent un mélange (par exemple 80 % mérinos, 20 % polyamide, d’après le journal de cadrage). La bibliothèque décrit des fibres pures (`FiberProfile`).

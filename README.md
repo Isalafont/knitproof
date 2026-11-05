@@ -29,7 +29,7 @@ Le calcul de knitproof :
 
 ```text
 Échantillon  20 m / 10 cm, après blocage              source : votre échantillon
-Aisance      −10 % : saisie, bonnet ajusté (à confirmer, question 1)
+Aisance      −10 % : saisie, bonnet ajusté
 Tour visé    43,2 cm (48 × 0,90)
 Montage      86,4 m calculées (43,2 × 20 / 10) → 88 m, multiple de 4 pour les côtes 2/2
              Tour fini réel : 44 cm
@@ -44,7 +44,7 @@ REJETÉ       Proposition d’un LLM seul : 120 m
              Décidé par : le moteur (calcul vérifiable)
 ```
 
-*Résultat cible du jalon M1 ; valeur d’aisance saisie, à confirmer (question tricot 1).*
+*Résultat cible du jalon M1 ; valeur d’aisance saisie.*
 
 ### Vos échantillons d’abord
 
@@ -111,9 +111,9 @@ flowchart LR
     classDef data fill:#F5F5F5,stroke:#616161,color:#1A1A1A
 ```
 
-En violet, le **modèle** : il comprend la demande ou lit le patron et produit une structure typée, jamais un nombre de mailles. En vert, le **moteur** : du Python pur, sans IA, qui calcule les mailles à partir de votre échantillon bloqué, de la mesure et de l’aisance selon le point et la fibre, puis vérifie les invariants (mailles avant et après, divisibilité des motifs). En orange, la **personne** : elle tranche ce qu’aucun calcul ne peut prouver.
+En violet, le **modèle** : il comprend la demande ou lit le patron et produit une structure typée, jamais un nombre de mailles. En vert, le **moteur** : du Python pur, sans IA, qui calcule les mailles à partir de votre échantillon bloqué, de la mesure et de l’aisance selon l’ajustement voulu et le point, puis vérifie les invariants (mailles avant et après, divisibilité des motifs). En orange, la **personne** : elle tranche ce qu’aucun calcul ne peut prouver.
 
-La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger) et sa part dans l’aisance, qui dépend aussi du point. Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
+La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger). Elle donne des avertissements, pas une part chiffrée de l’aisance, qui vient d’une table par ajustement et par point ([ADR 0024](docs/adr/0024-aisance-du-bonnet.md)). Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
 
 Pour aller plus loin : [l’architecture](docs/architecture.md) (qui décide quoi, couches, modèles de données, provenance), [le plan de réalisation](docs/plan.md) et [le protocole d’évaluation](docs/evaluation.md).
 
