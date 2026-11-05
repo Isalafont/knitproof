@@ -179,7 +179,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `FiberComposition` | parts (`fiber_id`, `percent`) | somme = 100 ; fibres connues |
 | `YarnLabel` | composition, `needle: Range[NeedleSize]`, `gauge` (fourchette, unité d’origine, état inconnu), `length_m`, `weight_g`, `care`, `superwash` | provenance au niveau de l’objet |
 | `Yarn` | `id`, `name`, `brand`, `composition`, `superwash`, `label` | — |
-| `FiberProfile` | `fiber_id`, `names`, `blocking_change` (largeur, hauteur), `ease_modifier`, `sources`, `validated_by` | au moins une source ; non validé ⇒ `needs_review` |
+| `FiberProfile` | `fiber_id`, `names`, `blocking_change` (largeur, hauteur), `sources`, `validated_by` | au moins une source ; non validé ⇒ `needs_review` |
 
 ### Échantillon et points
 
@@ -198,7 +198,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | Modèle | Champs clés | Invariants |
 |---|---|---|
 | `BeanieSpecification` | `head_cm` (facultatif, ADR 0018), `age` (mois avant 2 ans, années entières ensuite, ADR 0018 ; le détail revient au ticket du champ), `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 s’il est présent ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) ; `total_height_cm` : hauteur finie, du bord porté au sommet, calotte incluse, revers replié ; `brim_height_cm` : hauteur visible du revers si `folded_brim`, sinon hauteur du bord (ADR 0020) |
-| `Ease` | `value`, `unit` (% ou cm) | — |
+| `Ease` | `value`, `unit` (% ou cm) | unité d’origine conservée (§8) ; valeur de référence en % ([ADR 0024](adr/0024-aisance-du-bonnet.md)) |
 | `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `m1` (tranche 1) ; à venir : `ssk`, `k3tog`, `sk2p`, `finish` ; `consumes` et `produces` dérivés | `n ≥ 1`, `consumes ≥ 0`, `produces ≥ 1` |
 | `Repeat` | `body`, `times` (entier ; `to_end` à venir) | `body` non vide, `times ≥ 1` |
@@ -231,7 +231,7 @@ L’ordre de confiance dépend de la grandeur :
 |---|---|---|
 | Échantillon | échantillon bloqué > échantillon non bloqué (règle à trancher) > étiquette ou fiche Ravelry (`needs_review`) | question en attente |
 | Tour de tête | mesure > mesure de référence par âge, proposée puis décidée par la personne (`needs_review`, ADR 0018) | question en attente |
-| Aisance | saisie > bibliothèque de fibres validée | question en attente |
+| Aisance | saisie > table de référence par couple (ajustement, point), proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md)) | question en attente |
 | Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
 
 La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
@@ -335,6 +335,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0021 — Table de référence des tailles d’aiguilles](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)
 - [ADR 0022 — Parcours court des cadrages](adr/0022-parcours-court-des-cadrages.md)
 - [ADR 0023 — Longueur des aiguilles circulaires et passage en magic loop](adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md)
+- [ADR 0024 — Aisance du bonnet](adr/0024-aisance-du-bonnet.md)
 
 ## 13. Projets proches
 
