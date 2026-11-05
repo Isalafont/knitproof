@@ -333,6 +333,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0019 — Calotte du bonnet](adr/0019-calotte-du-bonnet.md)
 - [ADR 0020 — Hauteur finie du bonnet et bord replié](adr/0020-hauteur-finie-et-bord-replie.md)
 - [ADR 0021 — Table de référence des tailles d’aiguilles](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)
+- [ADR 0022 — Parcours court des cadrages](adr/0022-parcours-court-des-cadrages.md)
 
 ## 13. Projets proches
 
