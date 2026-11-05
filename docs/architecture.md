@@ -232,13 +232,13 @@ L’ordre de confiance dépend de la grandeur :
 | Grandeur | Ordre de confiance | Si rien n’est disponible |
 |---|---|---|
 | Échantillon | échantillon bloqué > échantillon non bloqué (règle à trancher) > étiquette ou fiche Ravelry (`needs_review`) | question en attente |
-| Tour de tête | mesure > mesure de référence par âge, proposée puis décidée par la personne (`needs_review`, ADR 0018) | question en attente |
+| Tour de tête | mesure > mesure de référence par âge ou par taille nommée, proposée puis décidée par la personne (`needs_review`, [ADR 0018](adr/0018-tour-de-tete-par-age.md), [ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)) | question en attente |
 | Aisance | saisie > table de référence par couple (ajustement, point), proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md)) | question en attente |
 | Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
 
 La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
 
-Pour le tour de tête, une seule source est chargée par âge : l’OMS, de 0 à 60 mois. Sans mesure, une question en attente affiche la plage, propose d’abord de mesurer la tête, et la valeur « À VÉRIFIER » reste le choix à défaut ; le calcul ne part qu’après la `Decision`. Au-delà de 60 mois, aucune autre source ne prend sa place : la question demande le tour de tête, sans plage. Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
+Pour le tour de tête, une seule source est chargée par âge : l’OMS, de 0 à 60 mois, puis KiGGS. Sans mesure, une question en attente affiche la plage, propose d’abord de mesurer la tête, et la valeur « À VÉRIFIER » reste le choix à défaut ; le calcul ne part qu’après la `Decision`. Une grille de tailles nommées, de 0–3 mois à l’adulte (OMS jusqu’à 60 mois, puis KiGGS ; femme et homme S/M/L), s’ajoute à l’entrée par âge. Le sexe, facultatif, ne sert qu’aux tailles adultes. Un âge sans taille fait demander le tour de tête ([ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)). Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
 
 Une étiquette et une fiche Ravelry qui divergent produisent un constat `needs_review`.
 
@@ -339,6 +339,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0023 — Longueur des aiguilles circulaires et passage en magic loop](adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md)
 - [ADR 0024 — Aisance du bonnet](adr/0024-aisance-du-bonnet.md)
 - [ADR 0025 — Rang d’ajustement entre bord et corps](adr/0025-rang-d-ajustement-entre-bord-et-corps.md)
+- [ADR 0026 — Grille de tailles du tour de tête](adr/0026-grille-de-tailles-du-tour-de-tete.md)
 
 ## 13. Projets proches
 
