@@ -1,6 +1,6 @@
 ---
 name: plan-ticket
-description: Prépare le contexte et le plan d’un ticket knitproof (questions une par une, plan vérifié, deux relectures, arbitrage, ticket réaligné), sans écrire de code.
+description: Prépare le contexte et le plan d’un ticket knitproof (questions une par une, plan vérifié, deux relectures, arbitrage, ticket réaligné), sans écrire de code ; parcours court pour un cadrage.
 argument-hint: "[CLA-XX] [orchestre] [numéro d’ADR]"
 disable-model-invocation: true
 allowed-tools:
@@ -13,9 +13,11 @@ Branche courante : !`git branch --show-current`
 
 Tu es la session principale : tu orchestres, tu poses les questions à Isabelle, tu arbitres avec elle. Tu n’écris ni le plan ni le code.
 
-Dans les noms de fichiers, `<id>` est `$0` en minuscules (`CLA-58` donne `cla-58`). Fichiers produits, hors git : `.claude/plans/<id>-context.md`, `.claude/plans/<id>-plan.md`, `.claude/plans/<id>-linear.md`.
+Dans les noms de fichiers, `<id>` est `$0` en minuscules (`CLA-58` donne `cla-58`). Fichiers produits, hors git : `.claude/plans/<id>-context.md`, `.claude/plans/<id>-plan.md`, `.claude/plans/<id>-linear.md`, et `.claude/plans/<id>-adr.md` (pour un cadrage).
 
 Chaque sous-agent : outil Agent, `subagent_type: general-purpose`, avec le `model` indiqué à sa phase. Opus pour le rédacteur et les relecteurs, Sonnet pour le vérificateur de doc et l’intégrateur. Les briefs en fichier passent par leur chemin complet `${CLAUDE_SKILL_DIR}/…`. Attends la notification de fin d’un sous-agent avant d’utiliser son résultat ; ne résume jamais un résultat qui n’est pas revenu.
+
+Si le titre du ticket commence par `[Cadrage]`, suis « Parcours court d’un cadrage » à la place des phases 1 à 4, avec ou sans orchestrateur.
 
 ## Lancé par l’orchestrateur
 
@@ -24,7 +26,7 @@ Seulement si `$1` vaut `orchestre` ; sinon, rien de cette section ne s’appliqu
 - Avant chaque attente d’Isabelle (questions, contexte, plan, arbitrages, accord de publication), passe `$0` en « Attente Isabelle » avec l’outil Linear de la session ; après sa réponse, remets-le en « In Progress ».
 - La branche du ticket existe déjà et elle est extraite dans ce worktree : pas de `git switch develop` à l’étape 0 du plan.
 - `$2` est le numéro d’ADR réservé : donne-le au rédacteur. Toute ADR de ce ticket prend ce numéro, et aucun autre.
-- À la fin, après la publication du ticket réaligné, ajoute `plan_valide: AAAA-MM-JJ` à `.claude/plans/<id>-orchestration.md`, puis rends la main.
+- À la fin, après la publication du ticket réaligné (cadrage : en fin de parcours, après l’éventuel `<id>-linear.md`, voir « Parcours court d’un cadrage »), ajoute `plan_valide: AAAA-MM-JJ` à `.claude/plans/<id>-orchestration.md`, puis rends la main.
 
 ## Phase 1 — Questions (rédacteur)
 
@@ -62,12 +64,27 @@ Rédige `<id>-linear.md` au template de son type, aligné sur le contexte valid�
 - La DOR est cochée à la publication du ticket réaligné, chaque case vérifiée sur le contexte et le plan validés.
 - Priorité, estimation, labels et relations vont dans les champs Linear, pas dans la description.
 
+## Parcours court d’un cadrage
+
+Deux attentes d’Isabelle au plus sur tout le ticket, hors test de la PR : l’attente 1 ici, l’attente 2 dans `/implement-slice` (ADR 0022).
+
+1. Passe `$0` en « In Progress », comme en phase 1.
+2. **Attente 1.** Lance le rédacteur (`model: opus`) : brief `${CLAUDE_SKILL_DIR}/writer.md`, phase « questions cadrage », identifiant `$0`. Présente à Isabelle ses sources et toutes ses questions d’un seul bloc, et attends ses réponses.
+3. En deux temps. D’abord le même rédacteur (SendMessage, repli de la phase 2), phase « cadrage », avec les réponses : il écrit `<id>-context.md` et `<id>-adr.md`, puis te rend la main.
+   Ensuite, dans un même message :
+   - le même rédacteur (SendMessage), phase « plan court » : il écrit `<id>-plan.md` ;
+   - un vérificateur de doc neuf (`model: sonnet`) reçoit « Brief du vérificateur de doc, cadrage » ci-dessous, l’identifiant et le chemin de `<id>-adr.md`.
+4. Transmets les constats du vérificateur au rédacteur, phase « finalisation cadrage » : il corrige l’ADR. Pas d’attente d’Isabelle ici ; garde les constats pour l’attente 2. Un point « introuvable » laisse la mention « À VÉRIFIER » dans le brouillon d’ADR : l’attente 2 le signale à Isabelle, et le fixup le traite avant la publication ; jamais d’ADR posé avec « À VÉRIFIER » au merge.
+5. Ticket réaligné : si le ticket s’écarte du template `cadrage.md` ou de la décision prise, rédige `<id>-linear.md` comme en phase 4, sans le publier ; il rejoint l’attente 2. Sinon, aucun ticket réaligné.
+6. Ni validation du contexte ou du plan, ni relecture de plan, ni arbitrage.
+7. Fin : les trois fichiers écrits, l’ADR corrigé ; pose alors `plan_valide:` (après l’éventuel `<id>-linear.md`). L’implémentation se lance avec `/implement-slice $0`.
+
 ## Conditions d’arrêt
 
 - Aucune branche, aucun commit, aucun fichier hors de `.claude/plans/` et du scratchpad.
 - Rien dans Linear sans accord explicite d’Isabelle, sauf le passage en « In Progress » de la phase 1 et les statuts de « Lancé par l’orchestrateur ».
 - Si la planification s’arrête sans plan validé, le signaler à Isabelle, qui décide du statut du ticket : aucun retour automatique.
-- Fin : plan validé par Isabelle, ticket réaligné. L’implémentation se lance avec `/implement-slice $0`.
+- Fin : plan validé par Isabelle, ticket réaligné ; cadrage : contexte, plan court et ADR écrits, ADR corrigé. L’implémentation se lance avec `/implement-slice $0`.
 - Règles du projet : `AGENTS.md`, « Règles pour tous les agents » et « Conventions ».
 
 ## Brief du vérificateur de doc
@@ -77,6 +94,14 @@ Rédige `<id>-linear.md` au template de son type, aligné sur le contexte valid�
 > Interdits : aucune modification du dépôt, aucune écriture dans Linear.
 >
 > Retour, 20 lignes au plus. Pour chaque point : l’affirmation, « confirmé », « faux » ou « introuvable », la source (URL ou identifiant du ticket) et la date de lecture ; pour « introuvable », les sources lues.
+
+## Brief du vérificateur de doc, cadrage
+
+> Tu vérifies les sources du brouillon `.claude/plans/<id>-adr.md`. Pour chaque valeur ou règle chiffrée : la source citée existe, et elle dit ce que l’ADR lui fait dire. Tu lis les sources à leur adresse ; une page illisible (refus, 429) est « introuvable », avec l’adresse essayée. Tu lis Linear en lecture seule.
+>
+> Interdits : aucune modification du dépôt, aucune écriture dans Linear.
+>
+> Retour, 20 lignes au plus. Pour chaque valeur : la valeur, la source citée, « confirmé », « faux » ou « introuvable », l’extrait lu ou l’écart, et la date de lecture.
 
 ## Brief de l’intégrateur
 
