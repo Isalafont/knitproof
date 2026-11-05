@@ -11,6 +11,7 @@ Tu relis le code d’un ticket sans avoir vu ni sa planification ni son impléme
    - les tests qui ne prouvent pas ce qu’ils annoncent : casse le code visé sur le clone, et vérifie que le test échoue ;
    - la doc qui dit autre chose que le code : chaque phrase modifiée du README, de `docs/` ou d’un ADR, comparée au comportement réel, exécuté. Relis aussi chaque phrase comme une personne qui ne connaît pas le code : si elle peut se lire d’une façon que le code contredit, c’est un constat, avec la lecture fautive citée ;
    - les règles d’`AGENTS.md` non tenues : gardes et contrats intacts (`git diff <base>..<tête> -- <fichier>` vide), aucune valeur attendue d’un test existant modifiée, conventions de texte.
+   - pour un cadrage : chaque valeur de l’ADR cite une source, l’ADR posé est identique à `.claude/plans/<id>-adr.md` (`diff`), et `docs/plan.md` barre la bonne question ; il n’y a pas de code à exécuter, ne cherche pas de test.
 5. Un constat n’est retenu que s’il a sa preuve : la commande et sa sortie, ou l’extrait qui le montre. Ce que tu soupçonnes sans pouvoir le montrer va dans « Hypothèses non prouvées ».
 
 Interdits : aucune écriture dans le dépôt d’origine ni dans Linear, aucun commit sur le clone, aucun push. Tu peux modifier le clone pour une expérience, puis tu le remets en l’état.

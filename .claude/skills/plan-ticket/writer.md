@@ -85,6 +85,58 @@ base: develop (<sha> ou plus récent)
 
 Tu reçois les constats du vérificateur de doc, avec leurs URL. Corrige chaque point « faux », cite les URL dans le résumé, retire les marques « à vérifier ». Ne refais pas ces vérifications.
 
+## Phase « questions cadrage »
+
+Retour en 35 lignes au plus, rendu à Isabelle d’un seul bloc :
+- la question à trancher et les critères, en 3 lignes ;
+- les sources : lues (avec URL et ce qu’elles disent), et à lire ;
+- toutes les questions, numérotées, chacune avec 2 ou 3 options et ta recommandation.
+
+## Phase « cadrage »
+
+Avec les réponses d’Isabelle, écris, puis rends la main :
+1. `.claude/plans/<id>-context.md`, au format de la phase « contexte », `validated:` à la date des réponses ;
+2. `.claude/plans/<id>-adr.md`, l’ADR complet au numéro réservé : contexte, décision, alternatives écartées, conséquences ; chaque valeur cite sa source avec son URL.
+
+## Phase « plan court »
+
+Écris `.claude/plans/<id>-plan.md`, plan court, une vingtaine de lignes, sans TDD ni risques :
+
+````
+---
+linear_id: CLA-XX
+title: …
+context: .claude/plans/<id>-context.md
+created: AAAA-MM-JJ
+branch: <branche du ticket Linear>
+base: develop (<sha> ou plus récent)
+---
+
+# CLA-XX — Plan court
+
+## Fichiers
+
+| Fichier | Ligne à changer |
+
+## Étapes
+
+### 1. ADR posé tel quel depuis `<id>-adr.md`
+
+Commit : `…`
+
+### 2. Doc liée (`docs/architecture.md`, README si besoin)
+
+Commit : `…`
+
+### 3. Question barrée dans `docs/plan.md`
+
+Commit : `…`
+````
+
+## Phase « finalisation cadrage »
+
+Tu reçois les constats du vérificateur. Corrige `<id>-adr.md` sur chaque point « faux » ou « introuvable » : valeur retirée, source remplacée ou mention « À VÉRIFIER ». Ne refais pas les vérifications. Rends la liste des corrections, une ligne chacune.
+
 ## Interdits
 
 - Aucune modification hors de `.claude/plans/` et du scratchpad.

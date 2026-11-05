@@ -30,8 +30,8 @@ Arrête-toi en disant pourquoi si l’un de ces points échoue :
 1. `git pull --ff-only origin develop`, toujours avec ces arguments : un `git fetch origin` ou un `git pull` sans argument déplacerait les références des autres worktrees et annulerait leur lease.
 2. Lis les tickets du projet knitproof, du cycle en cours, au statut Todo, triés par priorité ; « No priority » (valeur 0 dans Linear) passe après les autres. Écarte ceux qui ont déjà un fichier `.claude/plans/<id>-orchestration.md`.
 3. Pour chacun, lis ses bloqueurs et le statut de chacun. Un seul bloqueur non terminé l’écarte : nomme-le.
-4. Une place est prise par chaque `.claude/plans/*-orchestration.md` sans ligne `nettoye:` ni `abandon:`.
-5. Propose à Isabelle les tickets retenus dans la limite, ceux en attente de place et ceux écartés avec leur bloqueur. Au-delà de 3 tickets sur du code (titre sans le préfixe `[Cadrage]`), avertis sans refuser. Tant que les plans ne prouvent pas des fichiers différents, recommande 2 ou 3. Rien ne part sans sa validation.
+4. Une place est prise par chaque `.claude/plans/*-orchestration.md` sans ligne `nettoye:` ni `abandon:`. Une place de cadrage est prise par chaque fichier `.claude/plans/*-orchestration.md` qui contient `^cadrage: oui` et ne contient ni `^nettoye:` ni `^abandon:` ; compte-les avec l’outil Grep (parmi les fichiers contenant `^cadrage: oui`, ceux qui ne contiennent ni `^nettoye:` ni `^abandon:`).
+5. Propose à Isabelle les tickets retenus dans la limite, ceux en attente de place et ceux écartés avec leur bloqueur. Les cadrages (titre préfixé `[Cadrage]`) comptent dans la limite, 2 au plus à la fois avec ceux déjà en place ; un cadrage de plus attend une place de cadrage, et la proposition le dit. Au-delà de 3 tickets sur du code (titre sans le préfixe `[Cadrage]`), avertis sans refuser. Tant que les plans ne prouvent pas des fichiers différents, recommande 2 ou 3. Rien ne part sans sa validation.
 
 ## Lancement, ticket par ticket
 
@@ -39,7 +39,7 @@ Variables : `R`, racine du checkout principal ; `W`, `<dossier parent de R>/knit
 
 1. Numéro d’ADR : le plus grand entre `git ls-tree --name-only origin/develop docs/adr/` et les lignes `adr:` de `.claude/plans/*-orchestration.md`, plus un, sur quatre chiffres.
 2. `git worktree add --no-track -b B W origin/develop`, ou `git worktree add W B` si `B` existe déjà. Un refus (branche extraite ailleurs) se montre à Isabelle.
-3. Écris `.claude/plans/<id>-orchestration.md` : `adr:`, `worktree:`, `branche:`.
+3. Écris `.claude/plans/<id>-orchestration.md` : `adr:`, `worktree:`, `branche:`, et `cadrage: oui` pour un cadrage.
 4. `ln -s R/.claude/plans W/.claude/plans`.
 5. `herdr pane layout --current`, puis `herdr pane split --current --direction <right ou down> --cwd W --no-focus`, sens choisi pour éviter des panes trop étroites. Lis l’ID dans `.result.pane.pane_id`. Ajoute `pane:` au fichier d’orchestration.
 6. `herdr agent start <id> --kind claude --pane <pane> -- --add-dir R/.claude/plans`. Si le retour est `agent_not_ready`, montre l’écran à Isabelle.
