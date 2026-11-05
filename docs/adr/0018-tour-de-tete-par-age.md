@@ -1,5 +1,7 @@
 # ADR 0018 — Tour de tête par âge
 
+Amendé par l’ADR 0026 (§6, enveloppe pour les tailles nommées, champ de sexe).
+
 ## Contexte
 
 Une personne n’a pas toujours de mesure : tête absente, cadeau. Le moteur a besoin d’une valeur unique, et les tableaux du tricot divergent. Le « 41 à 46 cm contre 48 cm à 3 ans » du cadrage vient surtout d’une lecture : la page du Craft Yarn Council ne donne aucun âge, et celle de Knit Picks place 3 ans dans deux lignes (voir « Comparaison »).

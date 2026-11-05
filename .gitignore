@@ -21,3 +21,6 @@ wheels/
 
 # Patrons réels pour essais privés (droits d’auteur) : jamais versionnés
 /local-patterns/
+
+# macOS
+.DS_Store
