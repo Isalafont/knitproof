@@ -16,6 +16,7 @@ from knitproof.domain.location import SourceLocation
 from knitproof.domain.measure import Length, LengthUnit
 from knitproof.domain.pattern import Pattern, RepeatBlock, Round, Work
 from knitproof.domain.simulation import RoundCount
+from knitproof.domain.transition import Transition, TransitionRefusal, TransitionRejection
 
 VALID: dict[type[BaseModel], dict[str, object]] = {
     Work: {"work": 10},
@@ -45,6 +46,17 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
     },
     SourceLocation: {"page": 1, "line": 3},
     RoundCount: {"round": 1, "stitches": 10},
+    Transition: {
+        "edge_stitches": 4,
+        "body_stitches": 3,
+        "adjustment_round": {"start": 1, "ops": ({"work": 2}, "k2tog"), "stated_count": 3},
+    },
+    TransitionRefusal: {
+        "edge_stitches": 88,
+        "body_stitches": 43,
+        "reason": TransitionRejection.TOO_MANY_DECREASES,
+        "limit": 44,
+    },
 }
 
 
