@@ -96,7 +96,7 @@ Retour en 35 lignes au plus, rendu à Isabelle d’un seul bloc :
 
 Avec les réponses d’Isabelle, écris, puis rends la main :
 1. `.claude/plans/<id>-context.md`, au format de la phase « contexte », `validated:` à la date des réponses ;
-2. `.claude/plans/<id>-adr.md`, l’ADR complet au numéro réservé : contexte, décision, alternatives écartées, conséquences ; chaque valeur cite sa source avec son URL.
+2. `.claude/plans/<id>-adr.md`, l’ADR au numéro réservé, au format court de `docs/adr/README.md` (40 lignes au plus) ; chaque valeur retenue cite sa source dans « Sources ».
 
 ## Phase « plan court »
 
