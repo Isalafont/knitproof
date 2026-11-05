@@ -204,7 +204,9 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `Repeat` | `body`, `times` (entier ; `to_end` à venir) | `body` non vide, `times ≥ 1` |
 | `Round` | `start`, `end`, `ops`, `stated_count`, `location` (`section` à venir) | `start ≤ end` ; le moteur vérifie que les opérations consomment les mailles du rang précédent (section 9) |
 | `Pattern` | `cast_on`, `rounds` (`provenance` à venir) | rangs contigus et croissants depuis le rang 1 |
-| `CastOnResult` | `target: Length`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm` ; `adjustment_round` à venir, CLA-103 | `stitches` respecte le multiple et le reste du point (`StitchMultiple`) ; le plus proche du nombre brut, en dessous en cas d’égalité ; rang d’ajustement entre multiples différents : CLA-103 |
+| `CastOnResult` | `target: Length`, `raw_stitches`, `stitches`, `rounding_rule`, `finished_cm` | `stitches` respecte le multiple et le reste du point (`StitchMultiple`) ; le plus proche du nombre brut, en dessous en cas d’égalité ; un seul point, le rang d’ajustement est à part (`Transition`, ADR 0025) |
+| `Transition` | `edge_stitches`, `body_stitches`, `adjustment_round: Round \| None` (ADR 0025) | sans rang si le bord et le corps sont égaux, avec un seul rang sinon ; le rang a `start` 1, sans `end`, consomme le bord, produit le corps, et son `stated_count` vaut le corps |
+| `TransitionRefusal` | `edge_stitches`, `body_stitches`, `reason` (`too_many_decreases`, `too_many_increases`), `limit` | écart infaisable en un rang, au-delà d’un `k2tog` sur tout le rang ou d’un `m1` après chaque maille ; `limit` : corps atteignable le plus proche |
 | `CastOnCheck` | `proposed`, `expected`, `reasons` (`stitch_multiple_not_respected`, `differs_from_calculation`), `proposed_finished_cm` ; `accepted` dérivé | `proposed` ≥ 1 ; « point non respecté » implique toujours « diffère du calcul » ; pas de tolérance (cadrage CLA-105) |
 | `NeedleCheck` | `swatch`, `project`, `reasons` (`size_differs`, `sizes_not_comparable`, `material_differs`) ; `matches` dérivé | avertissement `swatch_needle_mismatch`, jamais une erreur ; raisons cumulables ; rapprochement avec `Finding` : CLA-69 |
 | `CrownPlan` | `sectors` (4, à 2 diminutions chacun, ADR 0019), `rounds`, `depth_cm` | fin par fermeture déclarée, sur 8 à 12 m pour un montage ≥ 32 m |
@@ -336,6 +338,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0022 — Parcours court des cadrages](adr/0022-parcours-court-des-cadrages.md)
 - [ADR 0023 — Longueur des aiguilles circulaires et passage en magic loop](adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md)
 - [ADR 0024 — Aisance du bonnet](adr/0024-aisance-du-bonnet.md)
+- [ADR 0025 — Rang d’ajustement entre bord et corps](adr/0025-rang-d-ajustement-entre-bord-et-corps.md)
 
 ## 13. Projets proches
 
