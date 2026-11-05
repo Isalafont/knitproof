@@ -1,6 +1,6 @@
 ---
 name: implement-slice
-description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, fait relire le diff par un agent neuf, coche les cases producteur du ticket Linear, pousse, ouvre la PR, puis coche les cases testeur et la DOD et la merge après le « ok » d’Isabelle sur le test.
+description: Fait implémenter le plan validé d’un ticket knitproof par un sous-agent Sonnet, un commit par étape, puis revérifie, fait relire le diff par un agent neuf, coche les cases producteur du ticket Linear, pousse, ouvre la PR, puis coche les cases testeur et la DOD et la merge après le « ok » d’Isabelle sur le test ; parcours court pour un cadrage.
 argument-hint: "[CLA-XX] [orchestre]"
 disable-model-invocation: true
 allowed-tools:
@@ -19,13 +19,13 @@ Tu es la session principale. Un sous-agent Sonnet écrit le code ; tu revérifie
 
 Seulement si `$1` vaut `orchestre` ; sinon, rien de cette section ne s’applique.
 
-- Avant chaque attente d’Isabelle hors test de la PR (notamment arbitrage de la relecture, accords de publication des étapes 6 et 9), passe `$0` en « Attente Isabelle » ; après sa réponse, remets-le à son statut précédent.
+- Avant chaque attente d’Isabelle hors test de la PR (notamment arbitrage de la relecture, accords de publication des étapes 6 et 9, cadrage : voir « Parcours court d’un cadrage »), passe `$0` en « Attente Isabelle » ; après sa réponse, remets-le à son statut précédent.
 - Pendant le test de la PR (étape 8), le ticket reste en « In Review ».
 - Après le merge, ajoute `merge: AAAA-MM-JJ` à `.claude/plans/<id>-orchestration.md`, puis rends la main.
 
 ## Avant de déléguer
 
-1. `.claude/plans/<id>-plan.md` existe et Isabelle l’a validé ; sinon, arrête-toi et propose `/plan-ticket $0`.
+1. `.claude/plans/<id>-plan.md` existe et Isabelle l’a validé ; sinon, arrête-toi et propose `/plan-ticket $0`. Cadrage (titre préfixé `[Cadrage]`) : le plan court n’a pas à être validé, mais `<id>-context.md` et `<id>-adr.md` existent aussi ; suis alors « Parcours court d’un cadrage ».
 2. La branche du frontmatter du plan existe, créée depuis `develop` à jour (`AGENTS.md`, « Branches ») ; sinon, crée-la.
 3. `git status --short` est propre.
 
@@ -53,18 +53,27 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 3. Branche déjà poussée : `git push --force-with-lease origin <branche>`, jamais `--force` ni `-f`, puis attends la CI. Une commande à la fois : pas de `git rebase … && git push …`, qui demande une autorisation par sous-commande. Un rejet du lease veut dire qu’un autre a poussé : arrête-toi et montre-le à Isabelle.
 4. Après son « ok » : rebase sans conflit et CI reverte, le « ok » tient ; conflit résolu, redemande son « ok » avant le merge. À l’étape 10, signale-lui que ce nouveau « ok » est demandé alors que les cases testeur sont déjà publiées à l’étape 9.
 
+## Parcours court d’un cadrage
+
+Pour un titre préfixé `[Cadrage]`, les phases 5 et 6 changent ainsi ; le reste est inchangé (ADR 0022).
+
+- Phase 5 : l’implémenteur suit le plan court et copie `<id>-adr.md` dans `docs/adr/` sans le réécrire.
+- Étape 5 : la relecture du diff reçoit le plan court et le chemin de `.claude/plans/<id>-adr.md` ; tu n’en dresses pas encore l’arbitrage.
+- Étapes 5 et 6 regroupées, **attente 2** : quand la relecture est revenue et les preuves des cases producteur prêtes, montre à Isabelle d’un seul bloc l’ADR, les constats du vérificateur (gardés par `/plan-ticket`) avec les corrections faites, le tableau d’arbitrage de la relecture, les cases producteur avec leurs preuves, `<id>-linear.md` s’il existe, la DOR, les tickets de suite proposés, et ce qui sera publié. Signale tout « À VÉRIFIER » resté dans l’ADR : le fixup le traite avant la publication, jamais d’ADR posé avec « À VÉRIFIER » au merge. Lancé par l’orchestrateur, c’est la seule attente « Attente Isabelle » de ce skill. Après sa réponse : fixups retenus, étapes 1 à 4, puis publication dans Linear de tout ce qu’elle a accepté.
+- Étape 9 : le « ok » d’Isabelle sur le test vaut accord. Coche et publie les cases testeur et la DOD, chacune sur sa preuve, sans autre attente ; dis-lui ce qui a été publié.
+
 ## Conditions d’arrêt
 
 - Jamais de merge sans le « ok » d’Isabelle sur le test, ni avec une CI rouge ; jamais de merge vers `main`.
 - Un contrôle rouge à la revérification : corrige avec Isabelle, dans le respect des « Règles pour tous les agents ».
-- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 7 et les statuts de « Lancé par l’orchestrateur ».
+- Jamais de case cochée sans la commande ou le test qui la prouve ; jamais d’écriture dans Linear sans l’accord d’Isabelle, sauf le passage en « In Review » de l’étape 7 et les statuts de « Lancé par l’orchestrateur » ; cadrage : l’attente 2 et le « ok » du test valent accord (voir « Parcours court d’un cadrage »).
 - Si le test d’Isabelle demande des corrections, le lui signaler : elle décide du statut du ticket, sans retour automatique en « In Progress ».
-- La DOR n’est pas cochée ici : `/plan-ticket` la coche à la publication du ticket réaligné.
+- La DOR n’est pas cochée ici : `/plan-ticket` la coche à la publication du ticket réaligné ; cadrage : cochée à l’attente 2 (voir « Parcours court d’un cadrage »).
 - Fin : PR mergée dans `develop` ; branche locale supprimée, sauf en worktree où l’orchestrateur s’en charge.
 
 ## Brief de l’implémenteur
 
-> Tu exécutes un plan validé sans le réviser. Tu ne vois pas la conversation : le plan et `AGENTS.md` font foi, en particulier « Commandes », « Règles pour tous les agents », « Branches » et « Conventions ».
+> Tu exécutes un plan validé, ou le plan court d’un cadrage, sans le réviser. Tu ne vois pas la conversation : le plan et `AGENTS.md` font foi, en particulier « Commandes », « Règles pour tous les agents », « Branches » et « Conventions ».
 >
 > Pour chaque étape de la plage, dans l’ordre :
 > 1. TDD quand l’étape touche du code : le test échoue d’abord, puis passe.
