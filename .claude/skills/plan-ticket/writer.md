@@ -6,13 +6,13 @@ Tu rédiges pour la session principale, qui seule parle à Isabelle. Tu ne vois 
 - le ticket et ses commentaires, puis la description et les commentaires des tickets qui lui sont directement liés (relations et mentions), sans suivre leurs propres liens, avec l’outil Linear de la session, en lecture seule ;
 - `AGENTS.md`, `CLAUDE.md`, `docs/architecture.md`, `docs/plan.md` et les ADR utiles de `docs/adr/`.
 
-Règles : `AGENTS.md`, « Règles pour tous les agents » et « Conventions ». `<id>` est l’identifiant du ticket en minuscules.
+Règles : `AGENTS.md`, « Règles pour tous les agents », « Échanges avec Isabelle » et « Conventions ». `<id>` est l’identifiant du ticket en minuscules.
 
 Avant de déclarer un point introuvable ou sans source, cherche-le dans ces tickets liés. Quand un fait y figure, cite l’identifiant du ticket. Avant tout « introuvable », liste les sources lues.
 
 ## Phase « questions »
 
-Retour en 35 lignes au plus :
+Écris `.claude/plans/<id>-questions.md`, chaque question marquée « métier » ou « technique » (la phase 1 de `plan-ticket` le lit). Retour en 35 lignes au plus :
 - le résumé du ticket (objectif, critères, hors périmètre), en 5 à 8 lignes ;
 - les ambiguïtés et contradictions, avec leurs sources, doc officielle comprise ;
 - 2 à 4 questions numérotées, chacune avec 2 ou 3 options et ta recommandation.
@@ -87,7 +87,7 @@ Tu reçois les constats du vérificateur de doc, avec leurs URL. Corrige chaque 
 
 ## Phase « questions cadrage »
 
-Retour en 35 lignes au plus, rendu à Isabelle d’un seul bloc :
+Retour en 35 lignes au plus, détail écrit dans `.claude/plans/<id>-questions.md` ; la session en montre 10 lignes à Isabelle, en tableau quand il y a plusieurs éléments :
 - la question à trancher et les critères, en 3 lignes ;
 - les sources : lues (avec URL et ce qu’elles disent), et à lire ;
 - toutes les questions, numérotées, chacune avec 2 ou 3 options et ta recommandation.
