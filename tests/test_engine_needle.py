@@ -63,6 +63,16 @@ def test_same_text_in_the_same_system_has_no_reason() -> None:
     assert reasons(needle(NeedleSystem.US, "US 6"), needle(NeedleSystem.US, "6")) == ()
 
 
+def test_us_2_5_against_us_2_half_has_no_reason() -> None:
+    # ADR 0021, décision 8 : égalité limitée au système US, pour la comparaison seulement.
+    assert reasons(needle(NeedleSystem.US, "US 2.5"), needle(NeedleSystem.US, "US 2½")) == ()
+
+
+def test_uk_2_5_against_uk_2_half_differs() -> None:
+    result = reasons(needle(NeedleSystem.UK, "2.5"), needle(NeedleSystem.UK, "2½"))
+    assert result == (NeedleMismatch.SIZE_DIFFERS,)
+
+
 @pytest.mark.parametrize(("a", "b"), [("US 00", "US 0"), ("US 000", "US 0")])
 def test_us_zero_sizes_stay_distinct(a: str, b: str) -> None:
     result = reasons(needle(NeedleSystem.US, a), needle(NeedleSystem.US, b))

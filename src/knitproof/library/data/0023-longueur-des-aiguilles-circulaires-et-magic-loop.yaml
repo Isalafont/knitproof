@@ -1,0 +1,11 @@
+schema_version: 1
+decided_in: docs/adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md
+entries:
+  - id: magic-loop-cable
+    magic_loop_cable:
+      value: "80"
+      unit: cm
+    source:
+      kind: reference_measurement
+      reference: "Conseil et non règle (ADR 0023 §6) : avis d’Isabelle ; KnitPro, « Knit the Magic Loop on circular needles », https://www.knitpro.eu/en/blog/knit-the-magic-loop-on-circular-needles (« at least 32 inches (81 cm) », 80 cm dans l’introduction) ; Knit Picks, « Magic Loop », https://tutorials.knitpicks.com/magic-loop/ (« 32″ cable or anything longer »)"
+      read_on: 2026-11-02

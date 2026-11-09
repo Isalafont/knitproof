@@ -5,9 +5,10 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError, model_validator
 
-from knitproof.domain.measure import Length, PositiveDecimal
+from knitproof.domain.measure import Length, PlainDecimal, PositiveDecimal
+from knitproof.domain.provenance import SourcedEntry
 
 
 class NeedleSystem(StrEnum):
@@ -28,10 +29,12 @@ _MARKERS: dict[NeedleSystem, re.Pattern[str]] = {
 # `[0-9]` en clair et non `\d` : un chiffre pleine largeur est refusé.
 _FORMS: dict[NeedleSystem, re.Pattern[str]] = {
     NeedleSystem.MM: re.compile(r"[0-9]+(?:[.,][0-9]+)?"),
-    NeedleSystem.US: re.compile(r"0+|[1-9][0-9]*½?"),
-    NeedleSystem.UK: re.compile(r"0+|[1-9][0-9]*"),
+    NeedleSystem.US: re.compile(r"0+|[1-9][0-9]*(?:\.[0-9]+|½|¾)?"),
+    NeedleSystem.UK: re.compile(r"0+|[1-9][0-9]*(?:\.[0-9]+|½|¾)?"),
     NeedleSystem.JP: re.compile(r"0|[1-9][0-9]*"),
 }
+
+_FRACTIONS = {"½": ".5", "¾": ".75"}
 
 _MM_VALUE = TypeAdapter(PositiveDecimal)
 
@@ -54,11 +57,22 @@ class NeedleSize(BaseModel):
 
     @property
     def normalized(self) -> str:
-        """Valeur à l’intérieur du système : « 00 » reste distinct de « 0 » en us et uk."""
+        """Valeur à l’intérieur du système : « 00 » reste distinct de « 0 » en us et uk.
+
+        En US, « 2.5 », « 2.50 » et « 2½ » sont égaux, « 10¾ » vaut « 10.75 » (ADR 0021,
+        décision 8) ; UK, comparé par notation, n’a pas cette égalité.
+        """
         value = self._normalize()
         if self.system is NeedleSystem.MM:
             return format(self._mm_value(value).normalize(), "f")
+        if self.system is NeedleSystem.US and not value.startswith("0"):
+            return self._us_decimal(value)
         return value
+
+    def _us_decimal(self, value: str) -> str:
+        for fraction, decimals in _FRACTIONS.items():
+            value = value.replace(fraction, decimals)
+        return format(Decimal(value).normalize(), "f")
 
     @property
     def known_mm(self) -> Decimal | None:
@@ -140,3 +154,22 @@ class NeedleCheck(BaseModel):
     @property
     def matches(self) -> bool:
         return not self.reasons
+
+
+class NeedleTableRow(SourcedEntry):
+    """Une ligne des tables de l’ADR 0021 : une taille US, UK ou JP et ses mm publiés.
+
+    Un ou deux mm : le Craft Yarn Council fait correspondre 4 et 4,25 mm à US 6. Le système
+    `mm` n’a pas de table : un mm est une mesure.
+    """
+
+    system: NeedleSystem
+    size: str
+    mm: tuple[PlainDecimal, ...] = Field(min_length=1, max_length=2)
+
+    @model_validator(mode="after")
+    def _is_a_size_of_a_tabulated_system(self) -> Self:
+        if self.system is NeedleSystem.MM:
+            raise ValueError("le système mm n’a pas de table")
+        NeedleSize(system=self.system, original=self.size)
+        return self

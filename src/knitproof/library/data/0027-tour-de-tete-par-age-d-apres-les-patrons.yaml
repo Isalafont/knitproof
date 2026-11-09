@@ -1,0 +1,204 @@
+schema_version: 1
+decided_in: docs/adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md
+entries:
+  - id: tete-0-2-mois
+    quantity: head_circumference
+    age:
+      min_months: 0
+      max_months: 2
+    span:
+      high: "35"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Julie Taylor, Tegan Top Knot (patron partagé par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+      location: "tableau « Head Circumference »"
+  - id: tete-3-5-mois
+    quantity: head_circumference
+    age:
+      min_months: 3
+      max_months: 5
+    span:
+      low: "35"
+      high: "40"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Julie Taylor, Tegan Top Knot (patron partagé par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+      location: "tableau « Head Circumference »"
+  - id: tete-6-11-mois
+    quantity: head_circumference
+    age:
+      min_months: 6
+      max_months: 11
+    span:
+      low: "40"
+      high: "45"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Julie Taylor, Tegan Top Knot (patron partagé par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+      location: "tableau « Head Circumference »"
+  - id: tete-12-18-mois
+    quantity: head_circumference
+    age:
+      min_months: 12
+      max_months: 18
+    span:
+      low: "44"
+      high: "46"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 37-16 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-19-23-mois
+    quantity: head_circumference
+    age:
+      min_months: 19
+      max_months: 23
+    span:
+      low: "45"
+      high: "48"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Julie Taylor, Tegan Top Knot (patron partagé par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+      location: "tableau « Head Circumference », 1–2 ans"
+  - id: tete-2-ans
+    quantity: head_circumference
+    age:
+      min_months: 24
+      max_months: 24
+    span:
+      low: "48"
+      high: "50"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 41-27 ; 49-25 ; 37-16 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-3-4-ans
+    quantity: head_circumference
+    age:
+      min_months: 36
+      max_months: 48
+    span:
+      low: "50"
+      high: "52"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 49-25 ; 37-16 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-5-6-ans
+    quantity: head_circumference
+    age:
+      min_months: 60
+      max_months: 72
+    span:
+      low: "52"
+      high: "53"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 49-25 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-7-8-ans
+    quantity: head_circumference
+    age:
+      min_months: 84
+      max_months: 96
+    span:
+      low: "53"
+      high: "54"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 49-25 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-9-10-ans
+    quantity: head_circumference
+    age:
+      min_months: 108
+      max_months: 120
+    span:
+      low: "54"
+      high: "55"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 49-25 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-11-12-ans
+    quantity: head_circumference
+    age:
+      min_months: 132
+      max_months: 144
+    span:
+      low: "55"
+      high: "56"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 49-25 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-13-14-ans
+    quantity: head_circumference
+    age:
+      min_months: 156
+      max_months: 168
+    span:
+      low: "56"
+      high: "57"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Children 49-25 (patrons partagés par Isabelle, valeurs reprises seules)"
+      read_on: 2026-11-09
+  - id: tete-adulte-femme
+    quantity: head_circumference
+    age:
+      min_months: 180
+    sex: female
+    span:
+      low: "53"
+      high: "58.5"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Head Circumference Chart – Yarn Standards », https://www.craftyarncouncil.com/standards/head-circumference-chart"
+      read_on: 2026-11-09
+      location: "Woman, 21–23 in / 53–58.5 cm"
+  - id: tete-adulte-homme
+    quantity: head_circumference
+    age:
+      min_months: 180
+    sex: male
+    span:
+      low: "56"
+      high: "61"
+      unit: cm
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Head Circumference Chart – Yarn Standards », https://www.craftyarncouncil.com/standards/head-circumference-chart"
+      read_on: 2026-11-09
+      location: "Man, 22–24 in / 56–61 cm"

@@ -3,9 +3,9 @@
 from decimal import Decimal
 
 import pytest
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
-from knitproof.domain.measure import Length, LengthUnit, SwatchMeasurement
+from knitproof.domain.measure import Length, LengthUnit, PlainDecimal, SwatchMeasurement
 
 
 def cm(value: str) -> Length:
@@ -106,3 +106,17 @@ def test_a_swatch_reads_back_its_own_json_dump() -> None:
     )
 
     assert SwatchMeasurement.model_validate(swatch.model_dump(mode="json")) == swatch
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [("50.5", Decimal("50.5")), ("50", Decimal(50)), (50, Decimal(50)), ("0.25", Decimal("0.25"))],
+)
+def test_a_plain_decimal_is_a_digit_string_or_an_integer(value: object, expected: Decimal) -> None:
+    assert TypeAdapter(PlainDecimal).validate_python(value) == expected
+
+
+@pytest.mark.parametrize("value", ["abc", "1e3", "1,5", "", " 1", "-2", "+2", "0", True, 1.5, None])
+def test_anything_else_is_not_a_plain_decimal(value: object) -> None:
+    with pytest.raises(ValidationError):
+        TypeAdapter(PlainDecimal).validate_python(value)

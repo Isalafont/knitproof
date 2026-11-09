@@ -10,7 +10,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "src" / "knitproof" / "library" / "data"
 SCHEMA_VERSION = 1
-SOURCE_KINDS = frozenset({"reference_measurement", "fiber_library"})
+SOURCE_KINDS = frozenset({"reference_measurement", "fiber_library", "person_decision"})
 STATUSES = frozenset({"to_verify"})
 ADR_PATH = re.compile(r"docs/adr/\d{4}-[a-z0-9-]+\.md")
 VALID = """\
@@ -42,6 +42,13 @@ def test_data_dir_has_no_yml_file() -> None:
 def test_a_valid_file_passes(tmp_path: Path) -> None:
     path = tmp_path / "head.yaml"
     path.write_text(VALID, encoding="utf-8")
+    assert data_problems(path) == []
+
+
+@pytest.mark.parametrize("kind", ["reference_measurement", "fiber_library", "person_decision"])
+def test_every_admitted_kind_passes(tmp_path: Path, kind: str) -> None:
+    path = tmp_path / "head.yaml"
+    path.write_text(VALID.replace("kind: reference_measurement", f"kind: {kind}"), encoding="utf-8")
     assert data_problems(path) == []
 
 

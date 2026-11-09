@@ -1,6 +1,6 @@
 # ADR 0018 — Tour de tête par âge
 
-Amendé par l’ADR 0026 (§6, enveloppe pour les tailles nommées, champ de sexe).
+Amendé par l’ADR 0026 (§6, enveloppe pour les tailles nommées, champ de sexe) et l’ADR 0027 (source du tour de tête).
 
 ## Contexte
 
