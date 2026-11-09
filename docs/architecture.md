@@ -148,7 +148,7 @@ Une flèche signifie « dépend de ».
 |---|---|---|
 | `domain` | Modèles de données et invariants | Aucune dépendance interne |
 | `engine` | Résolution, calculs, simulation, vérification | Python pur ; aucune lecture de fichier, aucun réseau, aucun appel à un modèle |
-| `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source ; fichiers dans `library/data/`, format dans son `README.md` |
+| `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source ; fichiers dans `library/data/`, format dans son `README.md` ; le chargeur type chaque fichier par un registre explicite (nom de fichier → modèle d’entrée), un fichier absent du registre est refusé |
 | `llm` | Objets d’extraction, appels aux modèles, conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
 | `app` | Cas d’usage : `verify_pattern`, `plan_beanie` | Seul point d’entrée pour `cli`, `api` et `web` |
@@ -167,7 +167,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 |---|---|---|
 | `SourceKind` | `user_swatch`, `user_measurement`, `user_input`, `yarn_label`, `ravelry`, `fiber_library`, `reference_measurement`, `model_inference`, `person_decision`, `engine` | pas d’ordre global (voir section 7) |
 | `SourceLocation` | `page`, `line` (tranche 1) ; à venir : `document`, `round` | au moins un champ renseigné |
-| `Provenance` | `kind`, `reference`, `location`, `extracted_by` (modèle, version, prompt), `note` | `reference` obligatoire pour `fiber_library`, `reference_measurement`, `yarn_label`, `ravelry` |
+| `Provenance` | `kind`, `reference`, `read_on` (date de lecture), `location` (texte libre, « tableau 2, p. 3 »), `to_verify` ; à venir : `extracted_by` (modèle, version, prompt) | `reference` non vide ; `location` est un texte, distinct de `SourceLocation` (page et ligne d’un patron) ; la clé YAML `location`, figée par CLA-124, est gardée ; les données de `library/` n’admettent que `reference_measurement`, `fiber_library` et `person_decision`, jamais `model_inference` |
 | `Sourced[T]` | `value`, `provenance` | réservé aux paramètres résolus et aux constats |
 
 ### Mesures, fil, fibres
@@ -175,7 +175,10 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | Modèle | Champs clés | Invariants |
 |---|---|---|
 | `Range` | `min`, `max` | `min ≤ max` |
-| `ReferenceMeasurement` | `quantity` (tour, hauteur), `age_or_size`, `range_cm`, `proposed_cm`, `source` | source obligatoire ; tour de tête : au mois, une seule source par âge, plage P3–P97 tous sexes, `proposed_cm` au milieu des deux médianes ([ADR 0018](adr/0018-tour-de-tete-par-age.md)) ; hauteur : valeur par ligne, unité d’origine, un âge peut désigner deux lignes (ADR 0020) |
+| `ReferenceMeasurement` | `quantity` (tour de tête, hauteur), `age` (bornes en mois incluses : `AgeBounds`), `sex`, `span` (plage) ou `value`, `label`, `source` | source obligatoire, le patron ou la page qui publie la valeur ; mesure en `Length` à l’unité d’origine, jamais convertie ; aucune valeur proposée : ni `proposed_cm`, ni P3–P97, ni « une seule source par âge » ; tour de tête : plage par tranche d’âge des patrons, Craft Yarn Council dès 15 ans, selon le sexe ([ADR 0027](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md)) ; hauteur : valeur par ligne, un âge peut désigner deux lignes (ADR 0020) |
+| `Notice` | `status` (`warning`), `code` (`unknown_needle_size`), `text` | un avis d’information, pas un écart prouvé : `Finding` ne porte que des erreurs du moteur ; une taille d’aiguille absente de la table est acceptée avec ce `warning` (ADR 0021, point 5) |
+| `NeedleTableRow` | `system` (`us`, `uk`, `jp`), `size`, `mm` (un ou deux), `source` | une ligne des tables de l’ADR 0021, chargée par la bibliothèque ; `app/needles.py` en tire le texte d’information et l’avis |
+| `CrownRule`, `MagicLoopAdvice` | seuils de la calotte (ADR 0019) ; câble de 80 cm, un conseil (ADR 0023) | `person_decision` pour la calotte, sources de l’ADR pour le câble |
 | `FiberComposition` | parts (`fiber_id`, `percent`) | somme = 100 ; fibres connues |
 | `YarnLabel` | composition, `needle: Range[NeedleSize]`, `gauge` (fourchette, unité d’origine, état inconnu), `length_m`, `weight_g`, `care`, `superwash` | provenance au niveau de l’objet |
 | `Yarn` | `id`, `name`, `brand`, `composition`, `superwash`, `label` | — |
@@ -186,12 +189,12 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | Modèle | Champs clés | Invariants |
 |---|---|---|
 | `Length` | `value: Decimal`, `unit` (`cm` / `in`) | `value` > 0, au plus 5 chiffres en écriture décimale (zéros finaux retirés), `float` refusé en entrée ; conversion exacte : 1 in = 2,54 cm |
-| `NeedleSize` | `system` (`mm`, `us`, `uk`, `jp`, champ explicite), `original` (notation d’origine), `mm` facultatif ; `normalized` et `known_mm` dérivés | système jamais déduit du texte ; normalisation à l’intérieur d’un système (« 00 » ≠ « 0 » en us et uk ; en mm, valeur `Decimal` sans tolérance) ; forme validée, pas l’existence de la taille ; `mm` saisi, jamais converti (pour mm, lu dans la notation) ; table et liste des tailles : ADR 0021, chargées par CLA-67 |
+| `NeedleSize` | `system` (`mm`, `us`, `uk`, `jp`, champ explicite), `original` (notation d’origine), `mm` facultatif ; `normalized` et `known_mm` dérivés | système jamais déduit du texte ; normalisation à l’intérieur d’un système (« 00 » ≠ « 0 » en us et uk ; en us, « 2.5 » = « 2½ » et « 10¾ » = « 10.75 », en uk comparaison par notation ; en mm, valeur `Decimal` sans tolérance) ; forme validée (décimales à point, ½ et ¾ en us et uk), pas l’existence de la taille ; `mm` saisi, jamais converti (pour mm, lu dans la notation) ; table et liste des tailles : ADR 0021, chargées par CLA-67 |
 | `Needle` | `size: NeedleSize`, `kind` (`straight`, `circular`, `double_pointed`), `cable_length: Length` (facultatif), `material` (facultatif : `metal`, `wood`, `bamboo`, `plastic`, `carbon`, `other`) | `cable_length` facultatif pour `circular`, refusé pour `straight` et `double_pointed` ; `cable_length` vaut la longueur totale de l’aiguille, de pointe à pointe, pointes comprises ([ADR 0023](adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md), point 8) ; aluminium, acier, nickel, laiton restent `metal`, verre : `other` ; la matière n’entre dans aucun calcul |
 | `SwatchMeasurement` | `stitches: Decimal`, `width: Length` ; à venir, CLA-68 : `rows`, `height` | valeurs > 0, `float` refusé en entrée ; demi-mailles admises (ex. 22,5 m pour 10 cm, 22 m pour 4 in) ; jauge pour 10 cm dérivée |
 | `Swatch` | `id`, `yarn_id`, `needle: Needle`, `stitch_pattern_id`, `worked` (`round` / `flat`), `before`, `after`, `blocking_method` | aiguilles et point identiques avant et après, par construction |
 | `StitchMultiple` | `repeat_multiple`, `repeat_offset` | `multiple ≥ 1`, `0 ≤ offset < multiple` ; `accepts(n)` ; le point saisi pour le montage (CLA-65), sans `id` ni `names` |
-| `StitchPattern` | `id`, `names`, `repeat_multiple`, `repeat_offset` ; à venir : marque « motif précis » (ADR 0019) | `0 ≤ offset < multiple` ; le couple de `StitchMultiple` (CLA-65) y sera rattaché par CLA-67 |
+| `StitchPattern` | `id`, `names`, `multiple: StitchMultiple` ; à venir : marque « motif précis » (ADR 0019) | `0 ≤ offset < multiple` (par `StitchMultiple`) ; sans liste de points, qui revient à un autre ticket |
 
 ### Spécification, patron, résultats
 
@@ -240,7 +243,7 @@ L’ordre de confiance dépend de la grandeur :
 
 La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
 
-Pour le tour de tête, une seule source est chargée par âge : l’OMS, de 0 à 60 mois, puis KiGGS. Sans mesure, une question en attente affiche la plage, propose d’abord de mesurer la tête, et la valeur « À VÉRIFIER » reste le choix à défaut ; le calcul ne part qu’après la `Decision`. Une grille de tailles nommées, de 0–3 mois à l’adulte (OMS jusqu’à 60 mois, puis KiGGS ; femme et homme S/M/L), s’ajoute à l’entrée par âge. Le sexe, facultatif, ne sert qu’aux tailles adultes. Un âge sans taille fait demander le tour de tête ([ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)). Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
+Pour le tour de tête, la bibliothèque charge une plage par tranche d’âge, reprise de patrons (DROPS Children, Julie Taylor) jusqu’à 14 ans, puis du Craft Yarn Council, femme et homme, dès 15 ans ([ADR 0027](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md), qui remplace l’OMS et KiGGS pour la source du tour de tête). La plage est « À VÉRIFIER » et sans valeur proposée ; la résolution reste à CLA-66. Sans mesure, la question en attente affiche la plage et demande la mesure ; le calcul ne part qu’après la `Decision`. Une grille de tailles nommées, de 0–3 mois à l’adulte, s’ajoute à l’entrée par âge ; sa source, l’OMS puis KiGGS, se recadre avec CLA-118. Le sexe, facultatif, ne sert qu’aux tailles adultes. Un âge sans taille fait demander le tour de tête ([ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)). Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
 
 Une étiquette et une fiche Ravelry qui divergent produisent un constat `needs_review`.
 
@@ -342,6 +345,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0024 — Aisance du bonnet](adr/0024-aisance-du-bonnet.md)
 - [ADR 0025 — Rang d’ajustement entre bord et corps](adr/0025-rang-d-ajustement-entre-bord-et-corps.md)
 - [ADR 0026 — Grille de tailles du tour de tête](adr/0026-grille-de-tailles-du-tour-de-tete.md)
+- [ADR 0027 — Tour de tête par âge d’après les patrons](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md)
 
 ## 13. Projets proches
 
