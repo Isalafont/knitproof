@@ -10,8 +10,10 @@ from knitproof.domain.crown import Crown, CrownReview
 from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.pattern import Op, Repeat, RepeatBlock, Round, Stitch, Work
 from knitproof.domain.question import PendingQuestion
+from knitproof.engine.cast_on import FLAT_SELVEDGES
 
 EVERY_OTHER_ROUND = 2
+FLAT_EVERY_ROUND_LAST = 1  # à plat, seul le dernier rang diminue hors rythme (ADR 0028)
 
 
 LONE_STITCH_WARNING = (
@@ -25,6 +27,7 @@ def crown_review(
     *,
     stitch_multiple: int | None = None,
     precise_pattern: bool | None = None,
+    flat: bool = False,
 ) -> CrownReview:
     """La calotte avec ses avis (ADR 0019, règles 5 à 8).
 
@@ -33,7 +36,7 @@ def crown_review(
     """
     if stitches < rule.min_cast_on:
         return _too_small(stitches, rule)
-    crown = crown_plan(stitches, rule)
+    crown = crown_plan(stitches, rule, flat=flat)
     if stitches % Stitch.K2TOG.consumes == 0:
         return CrownReview(crown=crown)
     if precise_pattern is None or precise_pattern:
@@ -48,26 +51,38 @@ def crown_review(
     return CrownReview(crown=crown)
 
 
-def crown_plan(stitches: int, rule: CrownRule) -> Crown:
-    """La calotte d’un montage ; refusée sous le minimum de `rule` (ADR 0019, règle 8)."""
+def crown_plan(stitches: int, rule: CrownRule, *, flat: bool = False) -> Crown:
+    """La calotte d’un montage ; refusée sous le minimum de `rule` (ADR 0019, règle 8).
+
+    À plat, `stitches` compte les mailles hors lisière : les diminutions se font à l’endroit,
+    un rang sur deux, et chaque rang est encadré de ses lisières (ADR 0028).
+    """
     if stitches < rule.min_cast_on:
         raise ValueError(f"montage de {stitches} m sous le minimum de {rule.min_cast_on} m")
     regular = _regular_decrease_rounds(stitches, rule)
     decrease_rounds = regular + 1
-    total = EVERY_OTHER_ROUND * decrease_rounds - rule.every_round_last
+    every_round_last = FLAT_EVERY_ROUND_LAST if flat else rule.every_round_last
+    total = EVERY_OTHER_ROUND * decrease_rounds - every_round_last
     rounds: list[Round] = []
     count = stitches
     for number in range(1, total + 1):
         if number == total:
             round_, count = _last_round(number, count)
-        elif number % EVERY_OTHER_ROUND == 1 or number > total - rule.every_round_last:
+        elif number % EVERY_OTHER_ROUND == 1 or number > total - every_round_last:
             round_, count = _decrease_round(number, count, rule.decreases_per_round)
         else:
             round_ = Round(start=number, ops=(Work(work=count),))
-        rounds.append(round_)
+        rounds.append(_with_selvedges(round_) if flat else round_)
     return Crown(
         stitches=stitches, rounds=tuple(rounds), decrease_rounds=decrease_rounds, remaining=count
     )
+
+
+def _with_selvedges(round_: Round) -> Round:
+    """La maille glissée en tête et la maille de fin, comptées comme travaillées."""
+    stated = None if round_.stated_count is None else round_.stated_count + FLAT_SELVEDGES
+    ops = (Work(work=1), *round_.ops, Work(work=1))
+    return Round(start=round_.start, ops=ops, stated_count=stated)
 
 
 def _regular_decrease_rounds(stitches: int, rule: CrownRule) -> int:
