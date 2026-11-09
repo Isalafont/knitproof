@@ -136,6 +136,12 @@ En violet, le **modèle** : il comprend la demande ou lit le patron et produit u
 
 La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger). Elle donne des avertissements, pas une part chiffrée de l’aisance, qui vient d’une table par ajustement et par point ([ADR 0024](docs/adr/0024-aisance-du-bonnet.md)). Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
 
+![Carte du code de knitproof. La commande knitproof (couche cli) passe par les cas d’usage (app), qui appellent le moteur de calcul (engine) et la bibliothèque de référence (library) ; tous dépendent du vocabulaire du tricot (domain), qui ne dépend d’aucune autre couche. Les dépendances vont toujours vers le bas, jamais l’inverse. Le tout s’appuie sur Pydantic et un lecteur YAML ; les tests (pytest et Hypothesis) couvrent chaque bloc ; les couches api, web, llm, sources et evals sont réservées et encore vides.](docs/images/architecture.png)
+
+*Carte du code au 9 novembre 2026 : chaque bloc est une partie du code, chaque trait un import. Elle est générée en local avec [Floorplan](https://github.com/haydenschmitty/floorplan) dans `floorplan/`, hors du dépôt, et se refait quand le code change. Cliquer sur l’image l’ouvre en taille réelle. Le détail des couches est dans [l’architecture](docs/architecture.md).*
+
+<!-- Vidéo de la carte : glisser le fichier dans l’éditeur GitHub et coller ici le lien user-attachments obtenu -->
+
 Pour aller plus loin : [l’architecture](docs/architecture.md) (qui décide quoi, couches, modèles de données, provenance), [le plan de réalisation](docs/plan.md) et [le protocole d’évaluation](docs/evaluation.md).
 
 ## Pourquoi on peut lui faire confiance
