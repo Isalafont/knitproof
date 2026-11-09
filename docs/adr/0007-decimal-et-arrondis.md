@@ -1,5 +1,7 @@
 # ADR 0007 — Decimal et arrondi unique
 
+Amendé par l’[ADR 0028](0028-rangs-du-bonnet-et-bonnet-a-plat.md) : un arrondi par grandeur saisie, dont les rangs.
+
 ## Contexte
 
 `float` donne des erreurs d’arrondi binaires. Les demi-mailles sont courantes (22,5 m pour 10 cm). Confondre 4 in et 10 cm décale le montage d’environ 1,6 % (architecture §8).
