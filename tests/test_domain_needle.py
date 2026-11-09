@@ -36,7 +36,8 @@ def test_mm_normalized_drops_trailing_zeros_without_exponent() -> None:
         (NeedleSystem.US, "US 6", "6"),
         (NeedleSystem.US, "us6", "6"),
         (NeedleSystem.US, "6", "6"),
-        (NeedleSystem.US, "US 10½", "10½"),
+        # ADR 0021, décision 8 : ½ se normalise en .5 en US.
+        (NeedleSystem.US, "US 10½", "10.5"),
         (NeedleSystem.US, "US 00", "00"),
         (NeedleSystem.US, "US 000", "000"),
         (NeedleSystem.US, "US 0000000", "0000000"),
@@ -94,10 +95,11 @@ def test_mm_input_refuses_a_float_zero_and_too_many_digits(mm: object) -> None:
 @pytest.mark.parametrize(
     ("system", "original"),
     [
-        (NeedleSystem.US, "10.5"),
+        # ADR 0021, décision 7 : virgule refusée en US et UK.
         (NeedleSystem.US, "10,5"),
+        (NeedleSystem.UK, "10,5"),
+        # ADR 0021, décision 7 : seules les fractions ½ et ¾ s’écrivent, pas « 1/2 ».
         (NeedleSystem.US, "US 10 1/2"),
-        (NeedleSystem.US, "10¾"),
         (NeedleSystem.US, "1\uff16"),
         (NeedleSystem.JP, "6.5"),
         (NeedleSystem.US, "UK 8"),
@@ -111,6 +113,56 @@ def test_mm_input_refuses_a_float_zero_and_too_many_digits(mm: object) -> None:
 def test_a_badly_formed_size_is_refused(system: NeedleSystem, original: str) -> None:
     with pytest.raises(ValidationError):
         size(system, original)
+
+
+@pytest.mark.parametrize(
+    ("system", "original"),
+    [
+        (NeedleSystem.US, "10.5"),
+        (NeedleSystem.US, "10¾"),
+        (NeedleSystem.US, "2.5"),
+        (NeedleSystem.US, "2½"),
+        (NeedleSystem.US, "10.75"),
+        (NeedleSystem.US, "000"),
+        (NeedleSystem.UK, "10.5"),
+        (NeedleSystem.UK, "2½"),
+    ],
+)
+def test_decimals_and_halves_and_three_quarters_are_accepted(
+    system: NeedleSystem, original: str
+) -> None:
+    # ADR 0021, décision 7 : décimales à point et fractions ½ et ¾.
+    assert size(system, original).original == original
+
+
+@pytest.mark.parametrize("a", ["2.5", "2½", "2.50", "US 2½"])
+def test_us_decimal_and_half_normalize_alike(a: str) -> None:
+    # ADR 0021, décision 8 : « 2.5 » et « 2½ » sont égaux en US.
+    assert size(NeedleSystem.US, a).normalized == "2.5"
+
+
+def test_us_three_quarters_normalizes_to_a_decimal() -> None:
+    # ADR 0021, décision 8, ¾ : 10¾ vaut 10.75 (KnitPro).
+    assert size(NeedleSystem.US, "10¾").normalized == size(NeedleSystem.US, "10.75").normalized
+
+
+def test_us_integers_keep_their_trailing_zeros() -> None:
+    assert size(NeedleSystem.US, "10").normalized == "10"
+
+
+def test_the_original_notation_is_kept() -> None:
+    assert size(NeedleSystem.US, "2½").original == "2½"
+
+
+def test_uk_compares_by_notation() -> None:
+    # ADR 0021, décision 8 : l’égalité 2.5 = 2½ est limitée au système US.
+    assert size(NeedleSystem.UK, "2.5").normalized != size(NeedleSystem.UK, "2½").normalized
+
+
+@pytest.mark.parametrize("other", ["00", "000"])
+def test_us_zero_stays_distinct_from_double_and_triple_zero(other: str) -> None:
+    # ADR 0021, décision 8 : « 00 » et « 000 » restent distincts de « 0 ».
+    assert size(NeedleSystem.US, "0").normalized != size(NeedleSystem.US, other).normalized
 
 
 def test_a_mm_size_contradicted_by_its_input_is_refused() -> None:

@@ -35,7 +35,11 @@ def needle_sizes(draw: st.DrawFn) -> NeedleSize:
         zeros = draw(st.integers(min_value=1, max_value=5))
         number = draw(
             st.sampled_from(
-                ["0" * zeros, str(draw(st.integers(1, 40))) + draw(st.sampled_from(["", "½"]))]
+                [
+                    "0" * zeros,
+                    str(draw(st.integers(1, 40)))
+                    + draw(st.sampled_from(["", "½", "¾", ".5", ".25", ".75"])),
+                ]
             )
         )
     else:
@@ -95,3 +99,10 @@ def test_material_differs_never_appears_with_an_absent_or_other_material(
 def test_no_hidden_conversion_outside_mm(a: Needle) -> None:
     if a.size.system is not NeedleSystem.MM and a.size.mm is None:
         assert a.size.known_mm is None
+
+
+@given(whole=st.integers(min_value=1, max_value=40), mm=OPTIONAL_MM)
+def test_us_n_point_5_and_n_half_compare_equal(whole: int, mm: Decimal | None) -> None:
+    point = NeedleSize(system=NeedleSystem.US, original=f"{whole}.5", mm=mm)
+    half = NeedleSize(system=NeedleSystem.US, original=f"{whole}½", mm=mm)
+    assert point.normalized == half.normalized
