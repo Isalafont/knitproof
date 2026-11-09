@@ -22,6 +22,18 @@ def head_ranges_for(
     )
 
 
+def rows_for_age(library: Library, age: Age) -> tuple[ReferenceMeasurement, ...]:
+    """Les lignes de la table de hauteurs dont les bornes contiennent l’âge (ADR 0020 §5).
+
+    Un âge peut désigner deux lignes (6 mois, 12 mois, 3 ans) : aucun milieu n’est calculé.
+    """
+    return tuple(
+        found
+        for found in _of_quantity(library, Quantity.HEIGHT)
+        if found.age is not None and found.age.contains(age)
+    )
+
+
 def _of_quantity(library: Library, quantity: Quantity) -> tuple[ReferenceMeasurement, ...]:
     return tuple(
         found for found in library.entries_of(ReferenceMeasurement) if found.quantity is quantity

@@ -10,7 +10,7 @@ from knitproof.domain.measure import LengthUnit
 from knitproof.domain.provenance import SourceKind
 from knitproof.domain.reference import ReferenceMeasurement
 from knitproof.library.loader import Library, load_library
-from knitproof.library.lookup import head_ranges_for
+from knitproof.library.lookup import head_ranges_for, rows_for_age
 
 
 @pytest.fixture(scope="module")
@@ -127,3 +127,56 @@ def test_every_head_slice_is_to_verify_with_a_pattern_or_the_council(library: Li
         any(name in item.source.reference for name in ("DROPS", "Julie Taylor", "Craft Yarn"))
         for item in found
     )
+
+
+def heights_of(library: Library, age: Age) -> list[tuple[str, Decimal]]:
+    found = rows_for_age(library, age)
+    assert all(item.value is not None and item.value.unit is LengthUnit.IN for item in found)
+    return [(item.id, item.value.value) for item in found if item.value is not None]
+
+
+@pytest.mark.parametrize(
+    ("age", "expected"),
+    [
+        (
+            months(6),
+            [("baby-3-6-mois", Decimal(7)), ("baby-6-12-mois", Decimal("7.5"))],
+        ),
+        (
+            months(12),
+            [
+                ("baby-6-12-mois", Decimal("7.5")),
+                ("toddler-12-mois-3-ans", Decimal(8)),
+            ],
+        ),
+        (
+            years(3),
+            [
+                ("toddler-12-mois-3-ans", Decimal(8)),
+                ("child-3-10-ans", Decimal("8.5")),
+            ],
+        ),
+        (years(4), [("child-3-10-ans", Decimal("8.5"))]),
+        (months(4), [("baby-3-6-mois", Decimal(7))]),
+    ],
+)
+def test_ages_with_two_heights_give_both_rows_in_inches(
+    library: Library, age: Age, expected: list[tuple[str, Decimal]]
+) -> None:
+    assert heights_of(library, age) == expected
+
+
+def test_an_age_beyond_the_numbered_rows_gives_no_row(library: Library) -> None:
+    assert rows_for_age(library, years(30)) == ()
+
+
+def test_the_twelve_rows_are_in_inches_and_to_verify(library: Library) -> None:
+    rows = [r for r in library.entries_of(ReferenceMeasurement) if r.quantity.value == "height"]
+
+    assert [r.value.value for r in rows if r.value is not None] == [
+        Decimal(x)
+        for x in ("3.5", "4", "4.5", "5", "6", "7", "7.5", "8", "8.5", "10", "11", "11.5")
+    ]
+    assert all(r.source.to_verify and "Knit Picks" in r.source.reference for r in rows)
+    assert all(r.source.read_on.isoformat() == "2026-11-02" for r in rows)
+    assert [r.age is not None for r in rows].count(True) == 4
