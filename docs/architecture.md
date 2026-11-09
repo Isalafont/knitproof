@@ -197,8 +197,10 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 | Modèle | Champs clés | Invariants |
 |---|---|---|
-| `BeanieSpecification` | `head_cm` (facultatif, ADR 0018), `age` (mois avant 2 ans, années entières ensuite, ADR 0018 ; le détail revient au ticket du champ), `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height_cm`, `folded_brim`, `total_height_cm`, `worked` (`round` en V0), `needles: list[Needle]` | `head_cm` > 0 s’il est présent ; hauteur du bord < hauteur totale ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) ; `total_height_cm` : hauteur finie, du bord porté au sommet, calotte incluse, revers replié ; `brim_height_cm` : hauteur visible du revers si `folded_brim`, sinon hauteur du bord (ADR 0020) |
-| `Ease` | `value`, `unit` (% ou cm) | unité d’origine conservée (§8) ; valeur de référence en % ([ADR 0024](adr/0024-aisance-du-bonnet.md)) |
+| `BeanieSpecification` | `age: Age`, `head: Length` (« `head_cm` » dans l’ADR 0018), `size: HeadSize`, `sex: Sex` (ADR 0026), tous facultatifs ; `yarn_id`, `body_swatch_id`, `brim_swatch_id`, `ease`, `brim_pattern_id`, `body_pattern_id`, `brim_height`, `folded_brim`, `total_height` (« `_cm` » dans l’ADR 0020), `worked` (`round` ou `flat`), `needles: tuple[Needle, ...]` | `head` > 0 s’il est présent ; `sex` seulement avec une taille adulte (ADR 0026 §9) ; `size`, `age` et `head` peuvent coexister (ADR 0020, ADR 0026 §11) ; hauteur du bord < hauteur totale, comparées en cm ; au moins une aiguille ; les aiguilles permettent la méthode (`round` ⇒ circulaires ou double pointe) ; `total_height` : hauteur finie, du bord porté au sommet, calotte incluse, revers replié ; `brim_height` : hauteur visible du revers si `folded_brim`, sinon hauteur du bord (ADR 0020) ; une spécification peut n’avoir que des aiguilles, la question vient de la résolution |
+| `Age` | `value`, `unit` (`months`, `years`) | entier ≥ 0 ; mois avant 2 ans, années à partir de 2 ans ; `in_months` dérivé, 3 ans = 36 mois ([ADR 0018](adr/0018-tour-de-tete-par-age.md) §8) |
+| `HeadSize`, `Sex` | `HeadSize` : les 17 tailles nommées (0–3 mois à 17 ans, adulte S, M, L) ; `Sex` : `female`, `male` | aucune plage dans le modèle : la grille se charge à part ([ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)) ; `is_adult` dérivé |
+| `Ease` | `value` (signé), `unit` (`percent`, `cm`) | unité d’origine conservée (§8) ; `float` refusé ; valeur de référence en % ([ADR 0024](adr/0024-aisance-du-bonnet.md)) |
 | `ResolvedBeanieInputs` | tête, jauge, aisance, hauteurs, chacun `Sourced` | seule entrée du calcul |
 | `Op` | `work(n)`, `k2tog`, `m1` (tranche 1) ; à venir : `ssk`, `k3tog`, `sk2p`, `finish` ; `consumes` et `produces` dérivés | `n ≥ 1`, `consumes ≥ 0`, `produces ≥ 1` |
 | `Repeat` | `body`, `times` (entier ; `to_end` à venir) | `body` non vide, `times ≥ 1` |
@@ -217,7 +219,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 Les modèles d’évaluation (`EvalManifest`, `EvalCase`, `ModelRun`, `FieldScore`, `BaselineRun`) sont décrits dans [`evaluation.md`](evaluation.md).
 
-**Repoussés** : profil de la personne au-delà de l’âge, autres vêtements, élasticité et mémoire des fibres (non consommées par le calcul), quantité de fil, persistance des échantillons (fichiers YAML en M1), tricot à plat, lecture de patrons PDF.
+**Repoussés** : profil de la personne au-delà de l’âge, autres vêtements, élasticité et mémoire des fibres (non consommées par le calcul), quantité de fil, persistance des échantillons (fichiers YAML en M1), lecture de patrons PDF.
 
 ## 7. Provenance et résolution des sources
 
