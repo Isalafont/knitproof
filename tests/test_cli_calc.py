@@ -1,0 +1,114 @@
+"""`knitproof calc` : sortie de référence, codes de sortie 0, 1, 2 et 3 (CLA-69)."""
+
+from pathlib import Path
+
+import pytest
+import yaml
+
+from knitproof.cli.main import main
+
+EXAMPLES = Path(__file__).parent.parent / "examples"
+REQUEST = EXAMPLES / "bonnet-3-ans.yaml"
+
+
+def _write(tmp_path: Path, text: str) -> Path:
+    path = tmp_path / "demande.yaml"
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def test_the_output_is_the_reference_file_byte_for_byte(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    code = main(["calc", str(REQUEST)])
+
+    expected = (EXAMPLES / "sorties" / "bonnet-3-ans.calc.txt").read_text("utf-8")
+    assert code == 0
+    assert capsys.readouterr().out == expected
+
+
+def test_the_reference_file_shows_the_values_of_the_engine() -> None:
+    expected = (EXAMPLES / "sorties" / "bonnet-3-ans.calc.txt").read_text("utf-8")
+
+    for shown in ("86,4 m", "88 m", "44 cm", "75 rangs", "30 rangs", "28 rangs", "17 rangs"):
+        assert shown in expected
+    for shown in ("96 m", "48 cm", "120 m", "60 cm"):
+        assert shown in expected
+
+
+def test_without_row_gauge_exit_1_with_the_questions_on_stdout(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = yaml.safe_load(REQUEST.read_text(encoding="utf-8"))
+    data["swatch"]["after_blocking"] = {"stitches": "20", "width": {"value": "10", "unit": "cm"}}
+
+    code = main(["calc", str(_write(tmp_path, yaml.safe_dump(data, allow_unicode=True)))])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "Combien de rangs" in captured.out
+    assert "Calotte" not in captured.out
+
+
+def test_a_missing_file_exits_3_on_stderr(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code = main(["calc", str(tmp_path / "absent.yaml")])
+
+    captured = capsys.readouterr()
+    assert code == 3
+    assert "introuvable" in captured.err
+    assert captured.out == ""
+
+
+def test_an_invalid_request_exits_3_without_raw_pydantic_message(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code = main(["calc", str(_write(tmp_path, "head_circumference: 48\nextra: 1\n"))])
+
+    captured = capsys.readouterr()
+    assert code == 3
+    assert "demande de bonnet invalide" in captured.err
+    assert "validation error" not in captured.err
+    assert "pydantic" not in captured.err.lower()
+
+
+def test_without_argument_exits_2() -> None:
+    with pytest.raises(SystemExit) as raised:
+        main(["calc"])
+
+    assert raised.value.code == 2
+
+
+def test_the_needle_text_is_rendered(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    data = yaml.safe_load(REQUEST.read_text(encoding="utf-8"))
+    data["needles"] = [{"size": "US 6", "kind": "double_pointed"}]
+
+    main(["calc", str(_write(tmp_path, yaml.safe_dump(data, allow_unicode=True)))])
+
+    out = capsys.readouterr().out
+    assert "Aiguilles   US 6 : 4 ou 4,25 mm selon le CYC, À VÉRIFIER sur l’emballage" in out
+
+
+def test_the_reference_file_shows_the_needles() -> None:
+    expected = (EXAMPLES / "sorties" / "bonnet-3-ans.calc.txt").read_text("utf-8")
+
+    assert "Aiguilles   4 mm\n" in expected
+
+
+def test_the_row_gauge_source_is_shown_on_the_height_line() -> None:
+    expected = (EXAMPLES / "sorties" / "bonnet-3-ans.calc.txt").read_text("utf-8")
+
+    assert "(30 rangs / 10 cm, À VÉRIFIER, d’après DROPS Children 49-25)" in expected
+
+
+def test_without_a_source_the_height_line_is_unchanged(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = yaml.safe_load(REQUEST.read_text(encoding="utf-8"))
+    for key in ("before_blocking", "after_blocking"):
+        del data["swatch"][key]["rows_source"]
+
+    main(["calc", str(_write(tmp_path, yaml.safe_dump(data, allow_unicode=True)))])
+
+    assert "75 rangs (30 rangs / 10 cm)\n" in capsys.readouterr().out
