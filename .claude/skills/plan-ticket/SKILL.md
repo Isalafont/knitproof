@@ -13,7 +13,7 @@ Branche courante : !`git branch --show-current`
 
 Tu es la session principale : tu orchestres, tu poses les questions métier, tu arbitres les relectures. Tu n’écris ni le plan ni le code.
 
-Dans les noms de fichiers, `<id>` est `$0` en minuscules (`CLA-58` donne `cla-58`). Fichiers produits, hors git : `.claude/plans/<id>-context.md`, `.claude/plans/<id>-plan.md`, `.claude/plans/<id>-linear.md`, `.claude/plans/<id>-questions.md`, `.claude/plans/<id>-arbitrage.md`, et `.claude/plans/<id>-adr.md` (pour un cadrage).
+Dans les noms de fichiers, `<id>` est `$0` en minuscules (`CLA-58` donne `cla-58`). Fichiers produits, hors git : `.claude/plans/<id>-context.md`, `.claude/plans/<id>-plan.md`, `.claude/plans/<id>-linear.md`, `.claude/plans/<id>-questions.md`, `.claude/plans/<id>-arbitrage.md`, `.claude/plans/<id>-adr.md` (pour un cadrage) et `.claude/plans/<id>-data.yaml` (cadrage qui retient des valeurs).
 
 Chaque sous-agent : outil Agent, `subagent_type: general-purpose`, avec le `model` indiqué à sa phase. Opus pour le rédacteur et les relecteurs, Sonnet pour le vérificateur de doc et l’intégrateur. Les briefs en fichier passent par leur chemin complet `${CLAUDE_SKILL_DIR}/…`. Attends la notification de fin d’un sous-agent avant d’utiliser son résultat ; ne résume jamais un résultat qui n’est pas revenu.
 
@@ -69,14 +69,14 @@ Deux attentes d’Isabelle au plus sur tout le ticket, hors test de la PR : l’
 
 1. Passe `$0` en « In Progress », comme en phase 1.
 2. **Attente 1.** Lance le rédacteur (`model: opus`) : brief `${CLAUDE_SKILL_DIR}/writer.md`, phase « questions cadrage », identifiant `$0`. Présente à Isabelle ses sources et toutes ses questions d’un seul bloc, et attends ses réponses. Une relance d’Isabelle ou une question de suite reste dans l’attente 1 : le ticket ne revient en « In Progress » qu’une fois toutes ses réponses données. Un point nouveau apparu ensuite devient un défaut « à confirmer » montré à l’attente 2, jamais une attente de plus. Le bloc montré tient en 10 lignes au plus, en tableau quand il y a plusieurs éléments, le détail dans `<id>-questions.md`.
-3. En deux temps. D’abord le même rédacteur (SendMessage, repli de la phase 2), phase « cadrage », avec les réponses : il écrit `<id>-context.md` et `<id>-adr.md`, puis te rend la main.
+3. En deux temps. D’abord le même rédacteur (SendMessage, repli de la phase 2), phase « cadrage », avec les réponses : il écrit `<id>-context.md`, `<id>-adr.md` et, s’il retient des valeurs, `<id>-data.yaml`, puis te rend la main.
    Ensuite, dans un même message :
    - le même rédacteur (SendMessage), phase « plan court » : il écrit `<id>-plan.md` ;
-   - un vérificateur de doc neuf (`model: sonnet`) reçoit « Brief du vérificateur de doc, cadrage » ci-dessous, l’identifiant et le chemin de `<id>-adr.md`.
-4. Transmets les constats du vérificateur au rédacteur, phase « finalisation cadrage » : il corrige l’ADR. Pas d’attente d’Isabelle ici ; garde les constats pour l’attente 2. Un point « introuvable » laisse la mention « À VÉRIFIER » dans le brouillon d’ADR : l’attente 2 le signale à Isabelle, et le fixup le traite avant la publication ; jamais d’ADR posé avec « À VÉRIFIER » au merge.
+   - un vérificateur de doc neuf (`model: sonnet`) reçoit « Brief du vérificateur de doc, cadrage » ci-dessous, l’identifiant, le chemin de `<id>-adr.md` et celui de `<id>-data.yaml` s’il existe.
+4. Transmets les constats du vérificateur au rédacteur, phase « finalisation cadrage » : il corrige l’ADR et le YAML. Pas d’attente d’Isabelle ici ; garde les constats pour l’attente 2. Un point « introuvable » donne `status: to_verify` dans le YAML et laisse la mention « À VÉRIFIER » dans le brouillon d’ADR : l’attente 2 le signale à Isabelle, et le fixup le traite avant la publication ; jamais d’ADR posé avec « À VÉRIFIER » au merge.
 5. Ticket réaligné : si le ticket s’écarte du template `cadrage.md` ou de la décision prise, rédige `<id>-linear.md` comme en phase 4, sans le publier ; il rejoint l’attente 2. Sinon, aucun ticket réaligné.
 6. Ni validation du contexte ou du plan, ni relecture de plan, ni arbitrage.
-7. Fin : les trois fichiers écrits, l’ADR corrigé ; pose alors `plan_valide:` (après l’éventuel `<id>-linear.md`). L’implémentation se lance avec `/implement-slice $0`.
+7. Fin : les trois fichiers écrits (`<id>-data.yaml` en plus, s’il existe), l’ADR et le YAML corrigés ; pose alors `plan_valide:` (après l’éventuel `<id>-linear.md`). L’implémentation se lance avec `/implement-slice $0`.
 
 ## Conditions d’arrêt
 
@@ -96,7 +96,7 @@ Deux attentes d’Isabelle au plus sur tout le ticket, hors test de la PR : l’
 
 ## Brief du vérificateur de doc, cadrage
 
-> Tu vérifies les sources du brouillon `.claude/plans/<id>-adr.md`. Pour chaque valeur ou règle chiffrée : la source citée existe, et elle dit ce que l’ADR lui fait dire. Tu lis les sources à leur adresse ; une page illisible (refus, 429) est « introuvable », avec l’adresse essayée. Tu lis Linear en lecture seule.
+> Tu vérifies les sources du brouillon `.claude/plans/<id>-adr.md` et, s’il existe, de `.claude/plans/<id>-data.yaml`. Pour chaque valeur ou règle chiffrée, et chaque entrée du YAML : la source citée (`reference`, `location`) existe, et elle dit ce que le fichier lui fait dire. Tu lis les sources à leur adresse ; une page illisible (refus, 429) est « introuvable », avec l’adresse essayée. Tu lis Linear en lecture seule.
 >
 > Interdits : aucune modification du dépôt, aucune écriture dans Linear.
 >

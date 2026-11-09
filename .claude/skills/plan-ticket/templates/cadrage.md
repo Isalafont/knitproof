@@ -7,7 +7,7 @@ Titre : `[Cadrage] [sujet] — [question à trancher]`
 | **Question à trancher** | \[une seule question, fermée si possible\] |
 | **Pourquoi maintenant** | \[ce qui est bloqué tant qu’on n’a pas répondu\] |
 | **Timebox** | \[1 à 5 jours\] · échéance JJ/MM |
-| **Livrable** | Décision écrite (ADR ou note), liste de tickets à créer — jamais du code |
+| **Livrable** | Décision écrite (ADR court), valeurs retenues dans un YAML sourcé, liste de tickets à créer — jamais du code |
 | **Sources à consulter** | \[documentation, essai dans un scratchpad, personne à interroger\] |
 
 ## Suites possibles

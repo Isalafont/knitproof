@@ -96,7 +96,8 @@ Retour en 35 lignes au plus, détail écrit dans `.claude/plans/<id>-questions.m
 
 Avec les réponses d’Isabelle, écris, puis rends la main :
 1. `.claude/plans/<id>-context.md`, au format de la phase « contexte », `validated:` à la date des réponses ;
-2. `.claude/plans/<id>-adr.md`, l’ADR au numéro réservé, au format court de `docs/adr/README.md` (40 lignes au plus) ; chaque valeur retenue cite sa source dans « Sources ».
+2. `.claude/plans/<id>-adr.md`, l’ADR au numéro réservé, au format court de `docs/adr/README.md` (40 lignes au plus) ; chaque valeur retenue cite sa source dans « Sources » ;
+3. `.claude/plans/<id>-data.yaml`, si le cadrage retient des valeurs : au format de `src/knitproof/library/data/README.md`, `decided_in` au chemin de l’ADR réservé. L’ADR y renvoie et ne recopie aucune donnée brute.
 
 ## Phase « plan court »
 
@@ -120,7 +121,7 @@ base: develop (<sha> ou plus récent)
 
 ## Étapes
 
-### 1. ADR posé tel quel depuis `<id>-adr.md`
+### 1. ADR posé tel quel depuis `<id>-adr.md`, `<id>-data.yaml` copié dans `src/knitproof/library/data/`
 
 Commit : `…`
 
@@ -135,7 +136,7 @@ Commit : `…`
 
 ## Phase « finalisation cadrage »
 
-Tu reçois les constats du vérificateur. Corrige `<id>-adr.md` sur chaque point « faux » ou « introuvable » : valeur retirée, source remplacée ou mention « À VÉRIFIER ». Ne refais pas les vérifications. Rends la liste des corrections, une ligne chacune.
+Tu reçois les constats du vérificateur. Corrige sur chaque point « faux » ou « introuvable » : dans `<id>-data.yaml`, valeur retirée, source remplacée ou `status: to_verify` sur l’entrée ; dans `<id>-adr.md`, source remplacée ou mention « À VÉRIFIER » à la place du texte fautif. Une correction n’allonge pas l’ADR. Ne refais pas les vérifications. Rends la liste des corrections, une ligne chacune.
 
 ## Interdits
 
