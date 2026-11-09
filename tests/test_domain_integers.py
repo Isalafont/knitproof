@@ -12,12 +12,21 @@ from pydantic import BaseModel, ValidationError
 
 import knitproof.domain
 from knitproof.domain.age import Age
-from knitproof.domain.cast_on import CastOnCheck, CastOnResult, RoundingRule, StitchMultiple
+from knitproof.domain.beanie import BeaniePlan, RowCount, RowRounding
+from knitproof.domain.cast_on import (
+    CastOnCheck,
+    CastOnResult,
+    FlatCastOn,
+    RoundingRule,
+    StitchMultiple,
+)
 from knitproof.domain.construction import CrownRule
+from knitproof.domain.crown import Crown
 from knitproof.domain.ease import EaseSize
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
 from knitproof.domain.measure import Length, LengthUnit
+from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.pattern import Pattern, RepeatBlock, Round, Work
 from knitproof.domain.reference import AgeBounds
 from knitproof.domain.simulation import RoundCount
@@ -38,6 +47,12 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "min_cast_on": 32,
         "every_round_last": 3,
     },
+    Crown: {
+        "stitches": 10,
+        "rounds": ({"start": 1, "ops": ({"work": 10},)},),
+        "decrease_rounds": 1,
+        "remaining": 10,
+    },
     EaseSize: {"head": {"low": "47", "high": "48", "unit": "cm"}, "cast_on": 92},
     Work: {"work": 10},
     RepeatBlock: {"body": ("k2tog",), "times": 2},
@@ -51,6 +66,16 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "rounding_rule": RoundingRule.NEAREST_TIE_DOWN,
         "finished_cm": Decimal(42),
     },
+    FlatCastOn: {
+        "body": {
+            "target": Length(value=Decimal(43), unit=LengthUnit.CM),
+            "raw_stitches": Decimal(86),
+            "stitches": 84,
+            "rounding_rule": RoundingRule.NEAREST_TIE_DOWN,
+            "finished_cm": Decimal(42),
+        },
+        "selvedges": 2,
+    },
     CastOnCheck: {
         "proposed": 88,
         "expected": 88,
@@ -63,6 +88,31 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "round": 1,
         "expected": 10,
         "actual": 9,
+    },
+    BeaniePlan: {
+        "worked": "round",
+        "cast_on": 10,
+        "rows": {
+            "total": {"raw": Decimal(3), "rows": 3, "rule": RowRounding.NEAREST_TIE_DOWN},
+            "brim": {"raw": Decimal(1), "rows": 1, "rule": RowRounding.NEAREST_TIE_DOWN},
+        },
+        "body": {"raw": Decimal(1), "rows": 1, "rule": RowRounding.DIFFERENCE},
+        "crown": {
+            "stitches": 10,
+            "rounds": ({"start": 1, "ops": ({"work": 10},)},),
+            "decrease_rounds": 1,
+            "remaining": 10,
+        },
+        "depth_cm": Decimal(1),
+        "finished_height": Length(value=Decimal(20), unit=LengthUnit.CM),
+        "pattern": {"cast_on": 10, "rounds": ({"start": 1, "ops": ({"work": 10},)},)},
+    },
+    RowCount: {"raw": Decimal(75), "rows": 75, "rule": RowRounding.NEAREST_TIE_DOWN},
+    Notice: {
+        "status": NoticeStatus.WARNING,
+        "code": NoticeCode.NEEDLE_CHANGE,
+        "text": "t",
+        "round": 2,
     },
     SourceLocation: {"page": 1, "line": 3},
     RoundCount: {"round": 1, "stitches": 10},

@@ -6,10 +6,13 @@ from knitproof.domain.cast_on import (
     CastOnCheck,
     CastOnRejection,
     CastOnResult,
+    FlatCastOn,
     RoundingRule,
     StitchMultiple,
 )
 from knitproof.domain.measure import DIVISION, EXACT, Length, SwatchMeasurement
+
+FLAT_SELVEDGES = 2  # une maille de lisière à chaque bord (ADR 0028)
 
 
 def stitches_for_width(target: Length, swatch: SwatchMeasurement) -> Decimal:
@@ -37,6 +40,11 @@ def cast_on(target: Length, swatch: SwatchMeasurement, stitch: StitchMultiple) -
         rounding_rule=RoundingRule.NEAREST_TIE_DOWN,
         finished_cm=finished_cm,
     )
+
+
+def flat_cast_on(target: Length, swatch: SwatchMeasurement, stitch: StitchMultiple) -> FlatCastOn:
+    """Montage à plat : calculé sur le point, la maille de lisière de chaque bord en plus."""
+    return FlatCastOn(body=cast_on(target, swatch, stitch), selvedges=FLAT_SELVEDGES)
 
 
 def check_cast_on(

@@ -4,15 +4,77 @@ Rien n’est résolu ici : une spécification peut ne contenir que des aiguilles
 vient de la résolution (tour de tête, hauteurs, aisance).
 """
 
+from decimal import Decimal
+from enum import StrEnum
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from knitproof.domain.age import Age
+from knitproof.domain.crown import Crown
 from knitproof.domain.ease import Ease
 from knitproof.domain.head_size import HeadSize, Sex
+from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import Length
 from knitproof.domain.needle import KnittingMethod, Needle, NeedleKind
+from knitproof.domain.notice import Notice
+from knitproof.domain.pattern import Pattern
+from knitproof.domain.question import PendingQuestion
+
+
+class RowRounding(StrEnum):
+    NEAREST_TIE_DOWN = "nearest_tie_down"
+    DIFFERENCE = "difference"
+    DIFFERENCE_FLAT_PARITY = "difference_flat_parity"
+
+
+class RowCount(BaseModel):
+    """Rangs d’une hauteur, avec la trace de l’arrondi (ADR 0028)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw: Decimal
+    rows: StrictPositiveInt
+    rule: RowRounding
+
+
+class KnittedRows(BaseModel):
+    """Rangs tricotés au total et rangs du bord, tous deux arrondis une fois."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    total: RowCount
+    brim: RowCount
+
+
+class BeaniePlan(BaseModel):
+    """Le bonnet en rangs : bord, corps et calotte, avec le patron qui les assemble (ADR 0028).
+
+    `body` est la différence de deux entiers ; à plat, sa règle dit si la parité l’a ajusté.
+    `cast_on` compte les lisières d’un bonnet à plat.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    worked: KnittingMethod
+    cast_on: StrictPositiveInt
+    rows: KnittedRows
+    body: RowCount
+    crown: Crown
+    depth_cm: Decimal
+    finished_height: Length
+    pattern: Pattern
+
+
+class BeanieReview(BaseModel):
+    """Le plan, ou son absence, avec les avis et les questions qui l’accompagnent."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    plan: BeaniePlan | None
+    notices: tuple[Notice, ...] = ()
+    questions: tuple[PendingQuestion, ...] = ()
+
 
 ROUND_KINDS = frozenset({NeedleKind.CIRCULAR, NeedleKind.DOUBLE_POINTED})
 

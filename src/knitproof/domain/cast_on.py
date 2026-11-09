@@ -44,6 +44,19 @@ class CastOnResult(BaseModel):
     finished_cm: Decimal
 
 
+class FlatCastOn(BaseModel):
+    """Montage d’un bonnet à plat : le montage du point, plus les lisières (ADR 0028)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    body: CastOnResult
+    selvedges: StrictPositiveInt
+
+    @property
+    def total(self) -> int:
+        return self.body.stitches + self.selvedges
+
+
 class CastOnRejection(StrEnum):
     STITCH_MULTIPLE_NOT_RESPECTED = "stitch_multiple_not_respected"
     DIFFERS_FROM_CALCULATION = "differs_from_calculation"

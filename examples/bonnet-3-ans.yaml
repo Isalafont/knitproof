@@ -8,8 +8,15 @@ yarn:
 swatch:
   stitch: stockinette
   needle: {size: {value: "4", unit: mm}}
-  before_blocking: {stitches: "22", width: {value: "10", unit: cm}}
-  after_blocking: {stitches: "20", width: {value: "10", unit: cm}}
+  # Rangs : À VÉRIFIER, d’après DROPS Children 49-25 (« 22 mailles … 30 rangs … = 10 x 10 cm »), pas une mesure de la personne.
+  before_blocking: {stitches: "22", width: {value: "10", unit: cm}, rows: "30", height: {value: "10", unit: cm}}
+  after_blocking: {stitches: "20", width: {value: "10", unit: cm}, rows: "30", height: {value: "10", unit: cm}}
 edge: {stitch: rib_2x2}
 ease: {value: "-10", unit: percent, provenance: entered}
+# Hauteurs : À VÉRIFIER. Source : texte du modèle DROPS Children 49-25 fourni par Isabelle le
+# 09/11/2026 (page illisible, 403), référence https://www.garnstudio.com/pattern.php?id=12325&cid=19 ;
+# taille 3/4 ans, 2e des tailles « 2 - 3/4 - 5/6 – 7/8 – 9/10 - 11/12 – 13/14 ans ».
+total_height: {value: "20", unit: cm, provenance: entered}
+brim_height: {value: "5", unit: cm, provenance: entered}
+folded_brim: true
 proposed_cast_on: {stitches: 120, origin: llm_only}

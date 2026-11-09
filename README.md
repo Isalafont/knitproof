@@ -22,7 +22,9 @@ Fil : 100 % mérinos superwash
 Mon échantillon, aiguilles 4 mm, en jersey :
   avant blocage : 22 m pour 10 cm
   après blocage : 20 m pour 10 cm
-Bord : côtes 2/2
+  30 rangs pour 10 cm, avant et après blocage (À VÉRIFIER, d’après DROPS 49-25)
+Bord : côtes 2/2, revers de 5 cm replié
+Hauteur finie : 20 cm
 ```
 
 Le calcul de knitproof :
@@ -33,6 +35,10 @@ Aisance      −10 % : saisie, bonnet ajusté
 Tour visé    43,2 cm (48 × 0,90)
 Montage      86,4 m calculées (43,2 × 20 / 10) → 88 m, multiple de 4 pour les côtes 2/2
              Tour fini réel : 44 cm
+Hauteur      20 cm finis + 5 cm de revers = 25 cm tricotés : 75 rangs (30 rangs / 10 cm)
+Bord         30 rangs (le revers se tricote deux fois : 2 × 5 cm)
+Calotte      17 rangs, 10 rangs de diminution, 8 m restantes, environ 5,7 cm
+Corps        28 rangs (75 − 30 − 17)
 
 ATTENTION    Avec l’échantillon avant blocage (22 m), on monterait 96 m.
              Après lavage, le superwash se détend : 96 m donneraient 48 cm,
@@ -45,6 +51,8 @@ REJETÉ       Proposition d’un LLM seul : 120 m
 ```
 
 *Résultat cible du jalon M1 ; valeur d’aisance saisie.*
+
+À plat, le même bonnet se monte sur 90 m (88 m plus une lisière à chaque bord), avec les diminutions de la calotte à l’endroit seulement : 19 rangs de calotte au lieu de 17, et un corps réglé pour que la calotte commence à l’endroit ([ADR 0028](docs/adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)). Hauteurs et jauge en rangs de l’exemple : « À VÉRIFIER ». Le changement d’aiguille dans la calotte se calcule sur la dernière aiguille saisie, celle de la calotte.
 
 ### Vos échantillons d’abord
 
