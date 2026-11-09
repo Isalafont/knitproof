@@ -16,4 +16,4 @@ entries:
       location: tableau 2, p. 3      # facultatif
 ```
 
-Les champs métier de chaque entrée sont libres ici : CLA-67 les type au chargement. Une entrée `status: to_verify` peut être livrée ; CLA-67 en fera une hypothèse « À VÉRIFIER ».
+`knitproof.library.loader.load_library` type chaque fichier par son modèle d’entrée, déclaré dans `REGISTRY` (nom de fichier vers modèle, `library/loader.py`) : un `*.yaml` absent du registre est refusé, et une erreur nomme `fichier:id`. Un décimal s’écrit en chaîne (`"50.5"`) ou en entier nu, jamais `1e3`, `1,5` ni un flottant. La sorte `model_inference` est refusée dans les données. Une entrée `status: to_verify` donne une provenance « À VÉRIFIER » (`Provenance.to_verify`).

@@ -1,5 +1,6 @@
 """Longueurs et mesure de l’échantillon (CLA-65, ADR 0007 et 0015)."""
 
+import re
 from decimal import ROUND_HALF_EVEN, Context, Decimal, Inexact, Rounded
 from enum import StrEnum
 from typing import Annotated
@@ -20,9 +21,24 @@ def _refuse_float(value: object) -> object:
     return value
 
 
+_PLAIN_DECIMAL = re.compile(r"[0-9]+(?:\.[0-9]+)?")
+
+
+def _plain_decimal(value: object) -> object:
+    """Une valeur de bibliothèque : un entier nu ou un décimal en chaîne, sans notation savante."""
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, str) and _PLAIN_DECIMAL.fullmatch(value):
+        return value
+    raise ValueError("un entier nu ou un décimal en chaîne (« 50.5 ») est attendu")
+
+
 # Au plus 5 chiffres en écriture décimale, zéros finaux retirés ; les zéros entre
 # la virgule et le premier chiffre comptent.
 PositiveDecimal = Annotated[Decimal, BeforeValidator(_refuse_float), Field(gt=0, max_digits=5)]
+
+# Valeurs des fichiers de `library/data/` : ni flottant, ni « 1e3 », ni virgule, ni signe.
+PlainDecimal = Annotated[Decimal, BeforeValidator(_plain_decimal), Field(gt=0, max_digits=5)]
 
 
 class LengthUnit(StrEnum):
