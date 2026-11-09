@@ -53,11 +53,12 @@ Ce que ruff et mypy ne vérifient pas :
 - Les adaptateurs LLM se testent sans réseau.
 - `tests/test_layer_contracts.py` prouve que les contrats mordent : ne jamais l’affaiblir.
 - `tests/` n’a pas d’`__init__.py` : deux fichiers de test de même nom font échouer mypy (« Duplicate module »), donc des noms uniques.
+- `tests/test_adr_format.py` et `tests/test_library_data.py` gardent le format des ADR et des données : ne jamais les affaiblir ; les exemptions d’ADR ne font que diminuer.
 
 ## Règles pour tous les agents
 
 - Ne jamais modifier une valeur attendue d’un test ou d’une évaluation pour faire passer un résultat.
-- Toute valeur de bibliothèque est sourcée.
+- Toute valeur de bibliothèque est sourcée, dans un YAML de `src/knitproof/library/data/` au format de son `README.md`.
 - Aucun nombre venu d’un modèle sans passage par le moteur.
 - Ne jamais assouplir un contrat import-linter ou une option mypy pour faire passer un changement.
 - Dans `.claude/`, seuls `skills/` et `settings.json` sont versionnés ; jamais `.claude/plans/`.

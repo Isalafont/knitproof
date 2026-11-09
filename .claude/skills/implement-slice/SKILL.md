@@ -25,7 +25,7 @@ Seulement si `$1` vaut `orchestre` ; sinon, rien de cette section ne s’appliqu
 
 ## Avant de déléguer
 
-1. `.claude/plans/<id>-plan.md` existe et Isabelle l’a validé ; sinon, arrête-toi et propose `/plan-ticket $0`. Cadrage (titre préfixé `[Cadrage]`) : le plan court n’a pas à être validé, mais `<id>-context.md` et `<id>-adr.md` existent aussi ; suis alors « Parcours court d’un cadrage ».
+1. `.claude/plans/<id>-plan.md` existe et Isabelle l’a validé ; sinon, arrête-toi et propose `/plan-ticket $0`. Cadrage (titre préfixé `[Cadrage]`) : le plan court n’a pas à être validé, mais `<id>-context.md` et `<id>-adr.md` existent aussi (`<id>-data.yaml` s’il existe) ; suis alors « Parcours court d’un cadrage ».
 2. La branche du frontmatter du plan existe, créée depuis `develop` à jour (`AGENTS.md`, « Branches ») ; sinon, crée-la.
 3. `git status --short` est propre.
 
@@ -57,9 +57,9 @@ Lance l’outil Agent avec `subagent_type: general-purpose` et `model: sonnet`. 
 
 Pour un titre préfixé `[Cadrage]`, les phases 5 et 6 changent ainsi ; le reste est inchangé (ADR 0022).
 
-- Phase 5 : l’implémenteur suit le plan court et copie `<id>-adr.md` dans `docs/adr/` sans le réécrire.
-- Étape 5 : la relecture du diff reçoit le plan court et le chemin de `.claude/plans/<id>-adr.md` ; tu n’en dresses pas encore l’arbitrage.
-- Étapes 5 et 6 regroupées, **attente 2** : quand la relecture est revenue et les preuves des cases producteur prêtes, montre à Isabelle d’un seul bloc l’ADR, les constats du vérificateur (gardés par `/plan-ticket`) avec les corrections faites, le tableau d’arbitrage de la relecture, les cases producteur avec leurs preuves, `<id>-linear.md` s’il existe, la DOR, les tickets de suite proposés, et ce qui sera publié. Le bloc tient en 10 lignes au plus, en tableau quand il y a plusieurs éléments ; le détail par ses chemins dans `.claude/plans/`. Signale tout « À VÉRIFIER » resté dans l’ADR : le fixup le traite avant la publication, jamais d’ADR posé avec « À VÉRIFIER » au merge. Lancé par l’orchestrateur, c’est la seule attente « Attente Isabelle » de ce skill. Après sa réponse : fixups retenus, étapes 1 à 4, puis publication dans Linear de tout ce qu’elle a accepté.
+- Phase 5 : l’implémenteur suit le plan court et copie `<id>-adr.md` dans `docs/adr/` sans le réécrire, et `<id>-data.yaml` s’il existe dans `src/knitproof/library/data/`, sous le nom de l’ADR (`0024-aisance-du-bonnet.yaml`).
+- Étape 5 : la relecture du diff reçoit le plan court et le chemin de `.claude/plans/<id>-adr.md` et celui de `<id>-data.yaml` s’il existe ; tu n’en dresses pas encore l’arbitrage.
+- Étapes 5 et 6 regroupées, **attente 2** : quand la relecture est revenue et les preuves des cases producteur prêtes, montre à Isabelle d’un seul bloc l’ADR, les constats du vérificateur (gardés par `/plan-ticket`) avec les corrections faites, le tableau d’arbitrage de la relecture, les cases producteur avec leurs preuves, `<id>-linear.md` s’il existe, la DOR, les tickets de suite proposés, et ce qui sera publié. Le bloc tient en 10 lignes au plus, en tableau quand il y a plusieurs éléments ; le détail par ses chemins dans `.claude/plans/`. Signale les entrées `status: to_verify` du YAML : elles peuvent être livrées. Signale tout « À VÉRIFIER » resté dans l’ADR : le fixup le traite avant la publication, jamais d’ADR posé avec « À VÉRIFIER » au merge. Lancé par l’orchestrateur, c’est la seule attente « Attente Isabelle » de ce skill. Après sa réponse : fixups retenus, étapes 1 à 4, puis publication dans Linear de tout ce qu’elle a accepté.
 - Étape 9 : le « ok » d’Isabelle sur le test vaut accord. Coche et publie les cases testeur et la DOD, chacune sur sa preuve, sans autre attente ; dis-lui ce qui a été publié.
 
 ## Conditions d’arrêt

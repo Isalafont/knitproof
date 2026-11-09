@@ -148,7 +148,7 @@ Une flèche signifie « dépend de ».
 |---|---|---|
 | `domain` | Modèles de données et invariants | Aucune dépendance interne |
 | `engine` | Résolution, calculs, simulation, vérification | Python pur ; aucune lecture de fichier, aucun réseau, aucun appel à un modèle |
-| `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source |
+| `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source ; fichiers dans `library/data/`, format dans son `README.md` |
 | `llm` | Objets d’extraction, appels aux modèles, conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
 | `app` | Cas d’usage : `verify_pattern`, `plan_beanie` | Seul point d’entrée pour `cli`, `api` et `web` |
