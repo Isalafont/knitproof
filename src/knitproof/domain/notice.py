@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict
 
 class NoticeStatus(StrEnum):
     WARNING = "warning"
+    NEEDS_REVIEW = "needs_review"
 
 
 class NoticeCode(StrEnum):
