@@ -1,12 +1,23 @@
-# knitproof
+<div align="center">
 
-[![CI](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FIsalafont%2Fknitproof%2Fdevelop%2Fpyproject.toml)](pyproject.toml)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
+  <img src="docs/images/logo-light.svg" alt="knitproof" height="88">
+</picture>
 
-> **Le modèle propose, le moteur prouve, la personne arbitre.**
-> Knitting patterns computed and checked by a deterministic engine, not guessed by an AI.
+**Le modèle propose, le moteur prouve, la personne arbitre.**
+
+Knitting patterns computed and checked by a deterministic engine, not guessed by an AI.
 
 **knitproof** calcule et vérifie les mailles de patrons de tricot, en commençant par le bonnet. Aujourd’hui, `knitproof calc` calcule un bonnet depuis une demande YAML et `knitproof verify` contrôle les comptes de mailles d’un patron écrit en YAML.
+
+[![CI](https://img.shields.io/github/actions/workflow/status/Isalafont/knitproof/ci.yml?branch=develop&style=flat-square&label=CI)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FIsalafont%2Fknitproof%2Fdevelop%2Fpyproject.toml&style=flat-square)](pyproject.toml)
+[![Licence : MIT](https://img.shields.io/badge/licence-MIT-lightgrey?style=flat-square)](#licence)
+
+[Vidéo](#vidéo) · [Pourquoi knitproof](#pourquoi-knitproof-) · [Ce que ça donne](#ce-que-ça-donne) · [Installer](#installer) · [Vérifier un patron YAML](#vérifier-un-patron-yaml) · [Architecture](docs/architecture.md) · [Feuille de route](#feuille-de-route)
+
+</div>
 
 Principes : un calcul déterministe, jamais confié au modèle · une provenance pour chaque valeur · l’incertain renvoyé à une personne · une fiabilité mesurée, pas promise.
 
@@ -16,6 +27,79 @@ Principes : un calcul déterministe, jamais confié au modèle · une provenance
 knitproof computes and checks knitting patterns, starting with hats. A language model may read the request or the pattern, but it never produces a stitch count: a deterministic Python engine computes every number from the measurement, the blocked gauge swatch and the fibre’s behaviour, and whatever it cannot prove goes back to a person. Every value carries its provenance. Status, November 2026: `knitproof calc` computes a hat from a request written in YAML and `knitproof verify` checks the stitch counts of a pattern written in YAML; model-based reading is planned. The rest of this README is in French.
 
 </details>
+
+## Vidéo
+
+<p align="center"><em>Visite guidée de l’architecture de knitproof.</em></p>
+
+https://github.com/user-attachments/assets/f519c0bd-ee64-499b-ba66-d231b98dff74
+
+## Pourquoi knitproof ?
+
+Un LLM à qui l’on demande un bonnet répond avec un nombre de mailles plausible : il ne le calcule pas. Une erreur de taille, un échantillon non bloqué, une fibre qui se détend au lavage, et le bonnet ne va à personne.
+
+- **Pour les tricoteuses** : un nombre de mailles calculé à partir de votre échantillon, et un avertissement quand il ne suffit pas.
+- **Pour les contributeurs** : un cœur en Python pur, des couches contrôlées et des tests qui n’ont pas besoin d’un modèle.
+- **Pour les curieux de l’IA fiable** : un modèle qui lit, un moteur qui prouve, et une fiabilité mesurée ([voir plus bas](#pourquoi-on-peut-lui-faire-confiance)).
+
+## Fonctionnalités
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Moteur prouvé**<br>
+Calcul en décimal exact ; aucun nombre venu du modèle n’entre dans un patron.
+
+</td>
+<td width="50%" valign="top">
+
+**Provenance de chaque valeur**<br>
+Chaque valeur dit d’où elle vient : votre échantillon, l’étiquette, la bibliothèque ou une décision.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**Votre échantillon d’abord**<br>
+Le calcul part de votre jauge mesurée avant et après blocage. `knitproof calc` calcule le bonnet depuis une demande YAML et contrôle le montage proposé. Disponible.
+
+</td>
+<td valign="top">
+
+**Vérifier un patron existant**<br>
+`knitproof verify` contrôle les comptes de mailles d’un patron YAML et localise l’erreur. Disponible.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**Bibliothèque sourcée**<br>
+Tailles d’aiguilles US, UK et JP, tour de tête par âge, aisance : chaque valeur cite sa source.
+
+</td>
+<td valign="top">
+
+**Une personne arbitre l’incertain**<br>
+Ce que le moteur ne peut pas prouver passe en « À VÉRIFIER » et revient à une personne. La lecture d’une demande ou d’une étiquette par un modèle est prévue (jalon M2).
+
+</td>
+</tr>
+</table>
+
+## knitproof, un LLM seul ou un calculateur ?
+
+| | knitproof | LLM seul | Calculateur de mailles classique |
+|---|---|---|---|
+| Comprend une demande en langage naturel | prévu (M2) | oui | non |
+| Calcule juste | oui, moteur déterministe | non garanti | oui |
+| Tient compte de la fibre et du blocage | oui | rarement | non |
+| Dit d’où vient chaque valeur | oui | non | non |
+| Renvoie l’incertain à une personne | oui | non | non |
+
+Le calculateur classique calcule juste mais ne comprend pas la demande ; le LLM comprend mais ne calcule pas. knitproof vise les deux, la preuve en plus (voir [Pourquoi on peut lui faire confiance](#pourquoi-on-peut-lui-faire-confiance)).
 
 Demandez à un LLM un bonnet pour un enfant de 3 ans, en lui donnant le tour de tête, la laine, l’échantillon et la taille des aiguilles : il peut vous répondre avec un nombre de mailles de bonnet adulte. Le modèle ne calcule pas, il propose un nombre plausible. Et il ignore qu’un coton, peu élastique, ne se tricote pas avec la même aisance qu’un mérinos.
 
@@ -139,8 +223,6 @@ La **bibliothèque de fibres** décrit le comportement de chaque matière (élas
 ![Carte du code de knitproof. La commande knitproof (couche cli) passe par les cas d’usage (app), qui appellent le moteur de calcul (engine) et la bibliothèque de référence (library) ; tous dépendent du vocabulaire du tricot (domain), qui ne dépend d’aucune autre couche. Les dépendances vont toujours vers le bas, jamais l’inverse. Le tout s’appuie sur Pydantic et un lecteur YAML ; les tests (pytest et Hypothesis) couvrent chaque bloc ; les couches api, web, llm, sources et evals sont réservées et encore vides.](docs/images/architecture.png)
 
 *Carte du code au 9 novembre 2026 : chaque bloc est une partie du code, chaque trait un import. Elle est générée en local avec [Floorplan](https://github.com/haydenschmitty/floorplan) dans `floorplan/`, hors du dépôt, et se refait quand le code change. Cliquer sur l’image l’ouvre en taille réelle. Le détail des couches est dans [l’architecture](docs/architecture.md).*
-
-<!-- Vidéo de la carte : glisser le fichier dans l’éditeur GitHub et coller ici le lien user-attachments obtenu -->
 
 Pour aller plus loin : [l’architecture](docs/architecture.md) (qui décide quoi, couches, modèles de données, provenance), [le plan de réalisation](docs/plan.md) et [le protocole d’évaluation](docs/evaluation.md).
 
