@@ -15,6 +15,7 @@ from knitproof.domain.age import Age
 from knitproof.domain.beanie import RowCount, RowRounding
 from knitproof.domain.cast_on import CastOnCheck, CastOnResult, RoundingRule, StitchMultiple
 from knitproof.domain.construction import CrownRule
+from knitproof.domain.crown import Crown
 from knitproof.domain.ease import EaseSize
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
@@ -38,6 +39,12 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "last_round_below": 24,
         "min_cast_on": 32,
         "every_round_last": 3,
+    },
+    Crown: {
+        "stitches": 10,
+        "rounds": ({"start": 1, "ops": ({"work": 10},)},),
+        "decrease_rounds": 1,
+        "remaining": 10,
     },
     EaseSize: {"head": {"low": "47", "high": "48", "unit": "cm"}, "cast_on": 92},
     Work: {"work": 10},
