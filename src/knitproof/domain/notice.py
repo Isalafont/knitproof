@@ -22,6 +22,8 @@ class NoticeCode(StrEnum):
     CROWN_LONE_STITCH = "crown_lone_stitch"
     NEEDLE_CHANGE = "needle_change"
     NEEDLE_TOO_LONG = "needle_too_long"
+    BODY_TOO_SHORT = "body_too_short"
+    CROWN_DEPTH_FLAT = "crown_depth_flat"
 
 
 class Notice(BaseModel):

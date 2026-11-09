@@ -12,7 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 import knitproof.domain
 from knitproof.domain.age import Age
-from knitproof.domain.beanie import RowCount, RowRounding
+from knitproof.domain.beanie import BeaniePlan, RowCount, RowRounding
 from knitproof.domain.cast_on import (
     CastOnCheck,
     CastOnResult,
@@ -88,6 +88,24 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "round": 1,
         "expected": 10,
         "actual": 9,
+    },
+    BeaniePlan: {
+        "worked": "round",
+        "cast_on": 10,
+        "rows": {
+            "total": {"raw": Decimal(3), "rows": 3, "rule": RowRounding.NEAREST_TIE_DOWN},
+            "brim": {"raw": Decimal(1), "rows": 1, "rule": RowRounding.NEAREST_TIE_DOWN},
+        },
+        "body": {"raw": Decimal(1), "rows": 1, "rule": RowRounding.DIFFERENCE},
+        "crown": {
+            "stitches": 10,
+            "rounds": ({"start": 1, "ops": ({"work": 10},)},),
+            "decrease_rounds": 1,
+            "remaining": 10,
+        },
+        "depth_cm": Decimal(1),
+        "finished_height": Length(value=Decimal(20), unit=LengthUnit.CM),
+        "pattern": {"cast_on": 10, "rounds": ({"start": 1, "ops": ({"work": 10},)},)},
     },
     RowCount: {"raw": Decimal(75), "rows": 75, "rule": RowRounding.NEAREST_TIE_DOWN},
     Notice: {
