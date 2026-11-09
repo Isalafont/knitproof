@@ -105,16 +105,15 @@ sequenceDiagram
         APP->>APP: conversion vers le domaine, provenance model_inference
     end
     APP->>LIB: fibres, points, mesures de référence
-    APP->>ENG: resolve_beanie_inputs(spec, échantillons, fil, bibliothèque)
-    ENG-->>APP: paramètres résolus + questions en attente
-    alt Une question bloque le calcul
-        APP-->>P: question (ex. « échantillon non bloqué sur un superwash »)
-        P->>APP: Decision
-    end
-    APP->>ENG: plan_beanie(paramètres)
-    ENG-->>APP: montage, rangs, calotte, constats
-    APP-->>P: rapport
+    APP->>APP: BeanieRequest : aisance appliquée, tour visé
+    APP->>ENG: plan_beanie(spécification, tour visé, échantillons)
+    ENG-->>APP: plan, avis, questions en attente
+    APP->>ENG: check_cast_on, check_needles, describe_needle
+    ENG-->>APP: alerte avant blocage, rejet, aiguilles
+    APP-->>P: Report unique (entrées, questions, plan)
 ```
+
+En M1, `knitproof calc` lit une demande déjà résolue (tour de tête, aisance, jauges, multiple du point, aiguilles saisis) : le parcours réel s’arrête à `plan_beanie` et aux contrôles ci-dessus. La résolution depuis l’âge, la taille et le fil (`resolve_beanie_inputs`, questions en attente avant calcul) revient à CLA-66 et CLA-121.
 
 ## 5. Couches
 
@@ -258,7 +257,7 @@ La provenance permet aussi d’effacer sur demande toutes les données venues d�
 - Les comptes du patron (mailles sur l’aiguille, numéros de rangs) sont des entiers : on monte 88 mailles, pas 88,5. Ce sont des entiers stricts : seul un entier YAML nu est accepté ; un `bool` (`true`), une chaîne (`"10"`) ou un nombre à virgule (`10.0`) est refusé, jamais converti (CLA-108). Les erreurs de saisie sortent en français, une ligne par champ, sans message brut de Pydantic (`app/errors.py`).
 - Les mesures sont des `Decimal`, y compris les mailles et rangs comptés sur un échantillon, où les demi-mailles sont courantes (22,5 m pour 10 cm). Aucun `float` dans `engine`.
 - Chaque longueur garde son unité d’origine. Un échantillon « 22 m pour 4 in » se mesure sur 10,16 cm, pas 10 cm : confondre les deux décale le montage d’environ 1,6 %.
-- Les tailles d’aiguilles gardent leur notation d’origine et leur système. Le moteur ne convertit jamais : deux systèmes différents ne se comparent pas, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). Sinon, l’avertissement porte la raison `sizes_not_comparable` (« À VÉRIFIER »), en `warning` et non en `needs_review` ([ADR 0016](adr/0016-tailles-d-aiguilles-sans-conversion.md)). Une taille absente de la liste sera acceptée avec un `warning`, à venir avec CLA-67 ([ADR 0021](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)). Textes des raisons, rendus par CLA-69 : `size_differs` « taille différente : la jauge de l’échantillon peut ne plus valoir pour le projet » ; `sizes_not_comparable` « À VÉRIFIER : tailles écrites dans deux systèmes, non comparées ».
+- Les tailles d’aiguilles gardent leur notation d’origine et leur système. Le moteur ne convertit jamais : deux systèmes différents ne se comparent pas, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). Sinon, l’avertissement porte la raison `sizes_not_comparable` (« À VÉRIFIER »), en `warning` et non en `needs_review` ([ADR 0016](adr/0016-tailles-d-aiguilles-sans-conversion.md)). Une taille absente de la liste est acceptée avec un `warning` `unknown_needle_size` ([ADR 0021](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)). Textes des raisons, rendus par `knitproof calc` : `size_differs` « taille différente : la jauge de l’échantillon peut ne plus valoir pour le projet » ; `sizes_not_comparable` « À VÉRIFIER : tailles écrites dans deux systèmes, non comparées ».
 - L’outil et la méthode sont distincts : des circulaires servent à plat comme en rond, des aiguilles droites seulement à plat. La méthode (`worked`) se renseigne sur l’échantillon et sur le projet ; les aiguilles droites ne permettent pas le rond ; les circulaires et les doubles pointes permettent les deux méthodes. Le contrôle vient avec CLA-66 (échantillon) et CLA-68 (projet).
 - La matière des aiguilles (métal, bois, bambou…) joue sur la tension et sur la glisse du fil, mais n’entre dans aucun calcul : aucun coefficient inventé. `material_differs` : « matière différente : la tension peut changer selon la personne » ; `other` ou absente : jamais comparée. Si les aiguilles du projet diffèrent de celles de l’échantillon, en taille ou en matière, le moteur produit un avertissement `swatch_needle_mismatch` qui invite à refaire l’échantillon.
 - Le type d’aiguilles compte pour le tricot en rond : une circulaire dont la longueur totale, de pointe à pointe, dépasse la circonférence du tricot ne permet pas de tricoter sans magic loop. Si la longueur est connue, le moteur signale le premier rang de la calotte dont la circonférence passe sous cette longueur (constat `needle_change`) ; si l’aiguille est déjà trop longue pour le corps, il émet un `warning` et non un refus. Les doubles pointes n’ont pas cette règle. Sans longueur saisie, il conseille le magic loop sur câble long ou les doubles pointes à l’entrée de la calotte ([ADR 0023](adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md)).
@@ -276,6 +275,19 @@ Invariant central, vérifié par le moteur et non par Pydantic (les comptes dép
 Une plage de rangs répète les mêmes opérations à chaque rang ; le compte annoncé porte sur le dernier rang de la plage. Une plage dont les opérations changent le nombre de mailles échoue donc dès son deuxième rang.
 
 Format YAML (figé par CLA-64), chargé par `yaml.safe_load` puis `Pattern.model_validate` ; `k2tog` et `m1` s’écrivent nus. Les exemples vivent dans [`examples/`](../examples/) ; les patrons synthétiques justes, dans `examples/synthetiques/`, que la CI parcourt récursivement. Pour vérifier un fichier, voir la section « Vérifier un patron YAML » du README.
+
+Format de la demande de bonnet (figé par CLA-69), lu par `knitproof calc` dans `BeanieRequest` (`extra="forbid"`, une clé inconnue est refusée) ; l’exemple est `examples/bonnet-3-ans.yaml` :
+
+| Clé | Contenu |
+|---|---|
+| `head_circumference`, `ease` | valeur, unité (`cm`, ou `percent` pour l’aisance) et `provenance` (`measured` ou `entered`) ; le tour visé en découle (43,2 cm = 48 × (100 − 10) / 100) |
+| `swatch` | `needle`, `stitch`, `after_blocking` (obligatoire) et `before_blocking` : mailles et largeur, rangs et hauteur facultatifs (sans rangs, le plan manque et la commande pose la question), et `rows_source` (`reference`, `to_verify`) pour une jauge en rangs tirée d’un patron, affichée sur la ligne « Hauteur » |
+| `needles` | aiguilles du projet : `size` et `kind` ; « 4 mm », « US 6 » ou « US 6 (4 mm) » (le `mm` entre parenthèses est saisi, jamais déduit) |
+| `stitch_multiple` | `repeat_multiple`, `repeat_offset`, `provenance` : saisi, aucune valeur non sourcée |
+| `total_height`, `brim_height`, `folded_brim`, `worked` | hauteurs finies, revers replié, méthode (`round` par défaut) |
+| `proposed_cast_on` | `stitches` et `origin: llm_only` : un montage proposé à contrôler, rejeté s’il diffère du calcul |
+
+L’âge, le fil et les fibres ne sont pas lus avant CLA-66 et CLA-121.
 
 Les comptes (`cast_on`, `work`, `times`, `start`, `end`, `stated_count`) sont des entiers nus ; une chaîne, un nombre à virgule ou un booléen rend le patron invalide (code 3).
 
