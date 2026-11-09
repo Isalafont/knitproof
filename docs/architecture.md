@@ -213,14 +213,14 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `Transition` | `edge_stitches`, `body_stitches`, `adjustment_round: Round \| None` (ADR 0025) | sans rang si le bord et le corps sont égaux, avec un seul rang sinon ; le rang a `start` 1, sans `end`, consomme le bord, produit le corps, et son `stated_count` vaut le corps |
 | `TransitionRefusal` | `edge_stitches`, `body_stitches`, `reason` (`too_many_decreases`, `too_many_increases`), `limit` | écart infaisable en un rang, au-delà d’un `k2tog` sur tout le rang ou d’un `m1` après chaque maille ; `limit` : corps atteignable le plus proche |
 | `CastOnCheck` | `proposed`, `expected`, `reasons` (`stitch_multiple_not_respected`, `differs_from_calculation`), `proposed_finished_cm` ; `accepted` dérivé | `proposed` ≥ 1 ; « point non respecté » implique toujours « diffère du calcul » ; pas de tolérance (cadrage CLA-105) |
-| `NeedleCheck` | `swatch`, `project`, `reasons` (`size_differs`, `sizes_not_comparable`, `material_differs`) ; `matches` dérivé | avertissement `swatch_needle_mismatch`, jamais une erreur ; raisons cumulables ; rapprochement avec `Finding` : CLA-69 |
+| `NeedleCheck` | `swatch`, `project`, `reasons` (`size_differs`, `sizes_not_comparable`, `material_differs`) ; `matches` dérivé | avertissement `swatch_needle_mismatch`, jamais une erreur ; raisons cumulables ; rapprochée de `Finding` dans `ReportEntry` (ADR 0029) |
 | `Crown`, `CrownReview` | `Crown` : `stitches`, `rounds` (numérotés depuis 1), `decrease_rounds`, `remaining` ; `CrownReview` : `crown` ou `None`, `notices`, `questions` | 8 diminutions par rang (ADR 0019) ; fin par fermeture déclarée, sur 8 à 12 m pour un montage ≥ 32 m ; `2n − 3` rangs en rond, `2n − 1` à plat, `stitches` hors lisière ([ADR 0028](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)) ; sous 32 m, pas de calotte : `needs_review` et question |
 | `RowCount`, `KnittedRows` | `RowCount` : `raw`, `rows`, `rule` ; `KnittedRows` : `total`, `brim` | un arrondi par grandeur saisie, tracé : l’égalité arrondit en dessous (ADR 0028) ; le revers se tricote deux fois |
 | `BeaniePlan`, `BeanieReview` | `BeaniePlan` : `worked`, `cast_on`, `rows`, `body`, `crown`, `depth_cm`, `finished_height`, `pattern` ; `BeanieReview` : `plan` ou `None`, `notices`, `questions` | le corps est la différence de deux entiers (`rows.total` − bord − calotte) ; à plat, `body` se règle de ± 1 rang pour que la calotte commence à l’endroit, règle tracée ; `cast_on` compte les lisières ; `needle_change` ne porte que sur la dernière aiguille saisie, celle de la calotte ; le `Pattern` passe dans `verify` ; corps sans rang : `needs_review`, sans plan |
 | `FlatCastOn` | `body: CastOnResult`, `selvedges`, `total` dérivé | montage calculé sur le point, plus une maille de lisière à chaque bord (88 m donnent 90) ; tour fini mesuré sur `body` |
-| `Finding` | `status` (`error` en tranche 1 ; `ok` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `message`, `decided_by`, `provenance` | `error` ⇒ moteur ; `warning` et `needs_review` sont portés par `Notice` (`status`, `code`, `text`, `round`), à rapprocher de `Finding` avec CLA-69 ; `needs_review` ⇒ une question en attente |
+| `Finding` | `status` (`error` en tranche 1 ; `ok` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `provenance` | `error` ⇒ moteur ; `warning` et `needs_review` sont portés par `Notice` (`status`, `code`, `text`, `round`), rapprochée de `Finding` dans `ReportEntry` ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) ; `needs_review` ⇒ une question en attente |
 | `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
-| `Report` | `findings`, `inputs`, `decisions`, `result`, `engine_version`, `library_version` | déterministe : même entrée, même rapport |
+| `ReportEntry`, `Report` | `ReportEntry` : `status` (`error`, `warning`, `needs_review`, `rejected`), `code`, `round`, `lines`, `decided_by` (`engine`, `entered`, `library`) ; `Report` : `entries`, `questions`, `result` ; à venir : `inputs`, `decisions`, `engine_version`, `library_version` | déterministe : même entrée, même rapport ; entrées dans l’ordre d’arrivée, sans tri par statut ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) |
 
 Les modèles d’évaluation (`EvalManifest`, `EvalCase`, `ModelRun`, `FieldScore`, `BaselineRun`) sont décrits dans [`evaluation.md`](evaluation.md).
 
@@ -350,6 +350,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0026 — Grille de tailles du tour de tête](adr/0026-grille-de-tailles-du-tour-de-tete.md)
 - [ADR 0027 — Tour de tête par âge d’après les patrons](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md)
 - [ADR 0028 — Rangs du bonnet et bonnet à plat](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)
+- [ADR 0029 — Rapport unique du moteur](adr/0029-rapport-unique-du-moteur.md)
 
 ## 13. Projets proches
 

@@ -29,6 +29,7 @@ from knitproof.domain.measure import Length, LengthUnit
 from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.pattern import Pattern, RepeatBlock, Round, Work
 from knitproof.domain.reference import AgeBounds
+from knitproof.domain.report import DecidedBy, ReportEntry, ReportStatus
 from knitproof.domain.simulation import RoundCount
 from knitproof.domain.transition import Transition, TransitionRefusal, TransitionRejection
 
@@ -113,6 +114,13 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "code": NoticeCode.NEEDLE_CHANGE,
         "text": "t",
         "round": 2,
+    },
+    ReportEntry: {
+        "status": ReportStatus.ERROR,
+        "code": "count_mismatch",
+        "round": 1,
+        "lines": ("t",),
+        "decided_by": DecidedBy.ENGINE,
     },
     SourceLocation: {"page": 1, "line": 3},
     RoundCount: {"round": 1, "stitches": 10},
