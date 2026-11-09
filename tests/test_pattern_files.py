@@ -29,7 +29,7 @@ def test_requested_pattern_files_have_no_finding() -> None:
 
 def _problems(path: Path) -> list[str]:
     try:
-        findings = verify_pattern(path)
+        report = verify_pattern(path)
     except PatternFileError as error:
         return [f"{path} : fichier illisible ou invalide\n{error.reason}"]
-    return [f"{path}\n{render(findings)}"] if findings else []
+    return [f"{path}\n{render(report)}"] if report.entries else []

@@ -5,8 +5,9 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError
 
-from knitproof.domain.finding import Finding
 from knitproof.domain.pattern import Pattern
+from knitproof.domain.report import Report
+from knitproof.engine.report import build_report, from_finding
 from knitproof.engine.verification import verify
 
 
@@ -19,9 +20,9 @@ class PatternFileError(Exception):
         self.reason = reason
 
 
-def verify_pattern(path: Path) -> list[Finding]:
-    """Constats du moteur sur le patron YAML de `path`."""
-    return verify(_load(path))
+def verify_pattern(path: Path) -> Report:
+    """Rapport du moteur sur le patron YAML de `path`."""
+    return build_report(from_finding(finding) for finding in verify(_load(path)))
 
 
 def _load(path: Path) -> Pattern:

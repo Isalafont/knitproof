@@ -1,8 +1,17 @@
 """`render` : rapport de vérification en rangs, sans calcul (CLA-76)."""
 
-from knitproof.cli.report import render
+from collections.abc import Sequence
+
+from knitproof.cli.report import render as render_report
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
+from knitproof.domain.report import Report
+from knitproof.engine.report import build_report, from_finding
+
+
+def render(findings: Sequence[Finding]) -> str:
+    report: Report = build_report(from_finding(finding) for finding in findings)
+    return render_report(report)
 
 
 def _finding(

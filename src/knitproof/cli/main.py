@@ -17,12 +17,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Lance la commande ; renvoie le code de sortie."""
     args = _parser().parse_args(argv)
     try:
-        findings = verify_pattern(args.pattern)
+        report = verify_pattern(args.pattern)
     except PatternFileError as error:
         print(f"knitproof : {error}", file=sys.stderr)
         return EXIT_INVALID_FILE
-    print(render(findings))
-    return EXIT_FINDINGS if findings else EXIT_NO_FINDING
+    print(render(report))
+    return EXIT_FINDINGS if report.entries else EXIT_NO_FINDING
 
 
 def _parser() -> argparse.ArgumentParser:
