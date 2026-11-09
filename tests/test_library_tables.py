@@ -5,6 +5,7 @@ from decimal import Decimal
 import pytest
 
 from knitproof.domain.age import Age, AgeUnit
+from knitproof.domain.construction import CrownRule, MagicLoopAdvice
 from knitproof.domain.ease import EaseSource, EdgeStitch, Fit
 from knitproof.domain.head_size import Sex
 from knitproof.domain.measure import LengthUnit
@@ -274,3 +275,27 @@ def test_the_tables_have_the_rows_of_adr_0021(library: Library) -> None:
         NeedleSystem.JP: 16,
         NeedleSystem.MM: 0,
     }
+
+
+def test_the_crown_values_are_loaded_as_a_person_decision_of_adr_0019(library: Library) -> None:
+    [crown] = library.entries_of(CrownRule)
+
+    assert (
+        crown.decreases_per_round,
+        crown.last_round_below,
+        crown.min_cast_on,
+        crown.every_round_last,
+    ) == (8, 24, 32, 3)
+    assert crown.source.kind is SourceKind.PERSON_DECISION
+    assert "ADR 0019" in crown.source.reference
+    assert crown.source.read_on.isoformat() == "2026-11-02"
+
+
+def test_the_magic_loop_cable_is_an_advice_with_its_two_sources(library: Library) -> None:
+    [advice] = library.entries_of(MagicLoopAdvice)
+
+    assert advice.magic_loop_cable.value == Decimal(80)
+    assert advice.magic_loop_cable.unit is LengthUnit.CM
+    assert advice.role == "advice"
+    assert "KnitPro" in advice.source.reference
+    assert "Knit Picks" in advice.source.reference

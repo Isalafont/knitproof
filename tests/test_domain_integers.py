@@ -1,5 +1,6 @@
 """Entiers du domaine : un `bool` n’est jamais un nombre."""
 
+import datetime
 import importlib
 import inspect
 import pkgutil
@@ -12,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 import knitproof.domain
 from knitproof.domain.age import Age
 from knitproof.domain.cast_on import CastOnCheck, CastOnResult, RoundingRule, StitchMultiple
+from knitproof.domain.construction import CrownRule
 from knitproof.domain.ease import EaseSize
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
@@ -24,6 +26,18 @@ from knitproof.domain.transition import Transition, TransitionRefusal, Transitio
 VALID: dict[type[BaseModel], dict[str, object]] = {
     Age: {"value": 3, "unit": "years"},
     AgeBounds: {"min_months": 3, "max_months": 6},
+    CrownRule: {
+        "id": "calotte",
+        "source": {
+            "kind": "person_decision",
+            "reference": "Isabelle, ADR 0019",
+            "read_on": datetime.date(2026, 11, 2),
+        },
+        "decreases_per_round": 8,
+        "last_round_below": 24,
+        "min_cast_on": 32,
+        "every_round_last": 3,
+    },
     EaseSize: {"head": {"low": "47", "high": "48", "unit": "cm"}, "cast_on": 92},
     Work: {"work": 10},
     RepeatBlock: {"body": ("k2tog",), "times": 2},

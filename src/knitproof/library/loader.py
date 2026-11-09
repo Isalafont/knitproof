@@ -21,6 +21,7 @@ from pydantic import (
     model_validator,
 )
 
+from knitproof.domain.construction import CrownRule, MagicLoopAdvice
 from knitproof.domain.ease import EaseSource
 from knitproof.domain.needle import NeedleTableRow
 from knitproof.domain.provenance import SourcedEntry, SourceKind
@@ -33,8 +34,10 @@ DATA_KINDS = frozenset(
 
 # Nom de fichier → modèle d’entrée. Un fichier ajouté à `data/` s’ajoute ici.
 REGISTRY: Mapping[str, type[SourcedEntry]] = {
+    "0019-calotte-du-bonnet.yaml": CrownRule,
     "0020-hauteur-finie-et-bord-replie.yaml": ReferenceMeasurement,
     "0021-table-de-reference-des-tailles-d-aiguilles.yaml": NeedleTableRow,
+    "0023-longueur-des-aiguilles-circulaires-et-magic-loop.yaml": MagicLoopAdvice,
     "0024-aisance-du-bonnet.yaml": EaseSource,
     "0027-tour-de-tete-par-age-d-apres-les-patrons.yaml": ReferenceMeasurement,
 }
