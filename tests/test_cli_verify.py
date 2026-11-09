@@ -12,6 +12,16 @@ EXAMPLES = Path(__file__).parent.parent / "examples"
 KNITPROOF = Path(sysconfig.get_path("scripts")) / "knitproof"
 
 
+def test_report_is_the_reference_output_byte_for_byte(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    code = main(["verify", str(EXAMPLES / "bonnet-erreur-rang-33.yaml")])
+
+    expected = (EXAMPLES / "sorties" / "bonnet-erreur-rang-33.verify.txt").read_text("utf-8")
+    assert code == 1
+    assert capsys.readouterr().out == expected
+
+
 def test_findings_exit_1_with_the_report_on_stdout(capsys: pytest.CaptureFixture[str]) -> None:
     code = main(["verify", str(EXAMPLES / "bonnet-erreur-rang-33.yaml")])
 

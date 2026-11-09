@@ -6,7 +6,7 @@ import pytest
 
 from knitproof.app.verification import PatternFileError, verify_pattern
 from knitproof.domain.finding import FindingCode
-from knitproof.domain.location import SourceLocation
+from knitproof.domain.report import ReportStatus
 
 EXAMPLES = Path(__file__).parent.parent / "examples"
 DEEP_YAML = b"[" * 5000 + b"]" * 5000 + b"\n"
@@ -26,18 +26,26 @@ def _unknown_op_at(start: str | None, end: str | None = None, before: int = 0) -
 
 
 def test_count_mismatch_is_reported_at_round_33() -> None:
-    findings = verify_pattern(EXAMPLES / "bonnet-erreur-rang-33.yaml")
+    report = verify_pattern(EXAMPLES / "bonnet-erreur-rang-33.yaml")
 
-    assert [(f.code, f.round, f.expected, f.actual) for f in findings] == [
-        (FindingCode.COUNT_MISMATCH, 33, 90, 89)
+    assert [(e.status, e.code, e.round) for e in report.entries] == [
+        (ReportStatus.ERROR, FindingCode.COUNT_MISMATCH.value, 33)
     ]
-    assert findings[0].location == SourceLocation(page=2, line=14)
+    assert report.entries[0].lines == (
+        "nombre de mailles incohérent",
+        "Annoncé : 89 m · Calculé : 90 m",
+        "Source : page 2, ligne 14",
+    )
+    assert report.has_errors
 
 
 def test_right_pattern_gives_no_finding() -> None:
     path = EXAMPLES / "synthetiques" / "bonnets" / "bonnet-synthetique.yaml"
 
-    assert verify_pattern(path) == []
+    report = verify_pattern(path)
+
+    assert report.entries == ()
+    assert not report.has_errors
 
 
 @pytest.mark.parametrize(

@@ -20,13 +20,13 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 | 3. Échantillon et résolution | `Swatch` avant et après blocage, table de résolution par grandeur, constat « échantillon non bloqué » (96 m contre 88 m), constat `gauge_differs_from_label` (échantillon comparé à la jauge de l’étiquette), questions en attente | questions 2, 3, 7, 9, 14 |
 | 4. Bibliothèque | Chargeur YAML typé par registre (CLA-67), `StitchPattern`, `ReferenceMeasurement`, table de correspondance des aiguilles ; chaque valeur sourcée et validée ; bibliothèque versionnée | questions 1, 10, 11 |
 | 5. Hauteur et calotte (livrée, CLA-68) | `SwatchMeasurement` avec jauge en rangs, `rounds_for_height` et `knitted_rows` (arrondi tracé), `crown_plan` en rond et à plat, `needle_change` dans la calotte, `beanie_plan` (bord, corps, calotte, `verify`), `plan_beanie` (hauteur saisie ou Knit Picks, questions en attente), exemple 3 ans ; bonnet à plat avec lisières, ADR 0028 | questions 5, 6, 12 |
-| 6. Rendu et CLI | `knitproof calc` et `knitproof verify`, fichiers de sortie de référence, test qui empêche le README de dériver | — |
+| 6. Rendu et CLI (livrée, CLA-69) | `Report` unique (ADR 0029), `calc_beanie`, `knitproof calc` et `knitproof verify`, fichiers de sortie de référence, test qui empêche le README de dériver | — |
 
 **Critère de fin**
 
-- `uv run knitproof verify examples/bonnet-erreur-rang-33.yaml` sort en code 1 avec un constat `count_mismatch` au rang 33 (attendu 90, annoncé 89).
-- `uv run knitproof calc examples/bonnet-3-ans.yaml` (aisance et hauteur saisies) donne la sortie de référence : 88 m, alerte à 96 m, rejet de 120 m, plan complet du bonnet.
-- `uv run pytest`, `uv run ruff check .`, `uv run lint-imports` et `uv run mypy` passent.
+- [x] `uv run knitproof verify examples/bonnet-erreur-rang-33.yaml` sort en code 1 avec un constat `count_mismatch` au rang 33 (attendu 90, annoncé 89).
+- [x] `uv run knitproof calc examples/bonnet-3-ans.yaml` (aisance et hauteur saisies) donne la sortie de référence : 88 m, alerte à 96 m, rejet de 120 m, plan complet du bonnet.
+- [x] `uv run pytest`, `uv run ruff check .`, `uv run lint-imports` et `uv run mypy` passent.
 
 ## M2 — Lecture et évaluation
 

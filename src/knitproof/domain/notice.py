@@ -28,6 +28,7 @@ class NoticeCode(StrEnum):
     HEIGHT_UNRESOLVED = "height_unresolved"
     BRIM_HEIGHT_MISSING = "brim_height_missing"
     ROW_GAUGE_MISSING = "row_gauge_missing"
+    UNBLOCKED_SWATCH_CAST_ON = "unblocked_swatch_cast_on"
 
 
 class Notice(BaseModel):

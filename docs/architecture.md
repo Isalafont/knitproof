@@ -105,16 +105,15 @@ sequenceDiagram
         APP->>APP: conversion vers le domaine, provenance model_inference
     end
     APP->>LIB: fibres, points, mesures de référence
-    APP->>ENG: resolve_beanie_inputs(spec, échantillons, fil, bibliothèque)
-    ENG-->>APP: paramètres résolus + questions en attente
-    alt Une question bloque le calcul
-        APP-->>P: question (ex. « échantillon non bloqué sur un superwash »)
-        P->>APP: Decision
-    end
-    APP->>ENG: plan_beanie(paramètres)
-    ENG-->>APP: montage, rangs, calotte, constats
-    APP-->>P: rapport
+    APP->>APP: BeanieRequest : aisance appliquée, tour visé
+    APP->>ENG: plan_beanie(spécification, tour visé, échantillons)
+    ENG-->>APP: plan, avis, questions en attente
+    APP->>ENG: check_cast_on, check_needles, describe_needle
+    ENG-->>APP: alerte avant blocage, rejet, aiguilles
+    APP-->>P: Report unique (entrées, questions, plan)
 ```
+
+En M1, `knitproof calc` lit une demande déjà résolue (tour de tête, aisance, jauges, multiple du point, aiguilles saisis) : le parcours réel s’arrête à `plan_beanie` et aux contrôles ci-dessus. La résolution depuis l’âge, la taille et le fil (`resolve_beanie_inputs`, questions en attente avant calcul) revient à CLA-66 et CLA-121.
 
 ## 5. Couches
 
@@ -213,14 +212,14 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `Transition` | `edge_stitches`, `body_stitches`, `adjustment_round: Round \| None` (ADR 0025) | sans rang si le bord et le corps sont égaux, avec un seul rang sinon ; le rang a `start` 1, sans `end`, consomme le bord, produit le corps, et son `stated_count` vaut le corps |
 | `TransitionRefusal` | `edge_stitches`, `body_stitches`, `reason` (`too_many_decreases`, `too_many_increases`), `limit` | écart infaisable en un rang, au-delà d’un `k2tog` sur tout le rang ou d’un `m1` après chaque maille ; `limit` : corps atteignable le plus proche |
 | `CastOnCheck` | `proposed`, `expected`, `reasons` (`stitch_multiple_not_respected`, `differs_from_calculation`), `proposed_finished_cm` ; `accepted` dérivé | `proposed` ≥ 1 ; « point non respecté » implique toujours « diffère du calcul » ; pas de tolérance (cadrage CLA-105) |
-| `NeedleCheck` | `swatch`, `project`, `reasons` (`size_differs`, `sizes_not_comparable`, `material_differs`) ; `matches` dérivé | avertissement `swatch_needle_mismatch`, jamais une erreur ; raisons cumulables ; rapprochement avec `Finding` : CLA-69 |
+| `NeedleCheck` | `swatch`, `project`, `reasons` (`size_differs`, `sizes_not_comparable`, `material_differs`) ; `matches` dérivé | avertissement `swatch_needle_mismatch`, jamais une erreur ; raisons cumulables ; rapprochée de `Finding` dans `ReportEntry` (ADR 0029) |
 | `Crown`, `CrownReview` | `Crown` : `stitches`, `rounds` (numérotés depuis 1), `decrease_rounds`, `remaining` ; `CrownReview` : `crown` ou `None`, `notices`, `questions` | 8 diminutions par rang (ADR 0019) ; fin par fermeture déclarée, sur 8 à 12 m pour un montage ≥ 32 m ; `2n − 3` rangs en rond, `2n − 1` à plat, `stitches` hors lisière ([ADR 0028](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)) ; sous 32 m, pas de calotte : `needs_review` et question |
 | `RowCount`, `KnittedRows` | `RowCount` : `raw`, `rows`, `rule` ; `KnittedRows` : `total`, `brim` | un arrondi par grandeur saisie, tracé : l’égalité arrondit en dessous (ADR 0028) ; le revers se tricote deux fois |
 | `BeaniePlan`, `BeanieReview` | `BeaniePlan` : `worked`, `cast_on`, `rows`, `body`, `crown`, `depth_cm`, `finished_height`, `pattern` ; `BeanieReview` : `plan` ou `None`, `notices`, `questions` | le corps est la différence de deux entiers (`rows.total` − bord − calotte) ; à plat, `body` se règle de ± 1 rang pour que la calotte commence à l’endroit, règle tracée ; `cast_on` compte les lisières ; `needle_change` ne porte que sur la dernière aiguille saisie, celle de la calotte ; le `Pattern` passe dans `verify` ; corps sans rang : `needs_review`, sans plan |
 | `FlatCastOn` | `body: CastOnResult`, `selvedges`, `total` dérivé | montage calculé sur le point, plus une maille de lisière à chaque bord (88 m donnent 90) ; tour fini mesuré sur `body` |
-| `Finding` | `status` (`error` en tranche 1 ; `ok` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `message`, `decided_by`, `provenance` | `error` ⇒ moteur ; `warning` et `needs_review` sont portés par `Notice` (`status`, `code`, `text`, `round`), à rapprocher de `Finding` avec CLA-69 ; `needs_review` ⇒ une question en attente |
+| `Finding` | `status` (`error` en tranche 1 ; `ok` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `provenance` | `error` ⇒ moteur ; `warning` et `needs_review` sont portés par `Notice` (`status`, `code`, `text`, `round`), rapprochée de `Finding` dans `ReportEntry` ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) ; `needs_review` ⇒ une question en attente |
 | `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
-| `Report` | `findings`, `inputs`, `decisions`, `result`, `engine_version`, `library_version` | déterministe : même entrée, même rapport |
+| `ReportEntry`, `Report` | `ReportEntry` : `status` (`error`, `warning`, `needs_review`, `rejected`), `code`, `round`, `lines`, `decided_by` (`engine`, `entered`, `library`) ; `Report` : `entries`, `questions`, `result` ; à venir : `inputs`, `decisions`, `engine_version`, `library_version` | déterministe : même entrée, même rapport ; entrées dans l’ordre d’arrivée, sans tri par statut ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) |
 
 Les modèles d’évaluation (`EvalManifest`, `EvalCase`, `ModelRun`, `FieldScore`, `BaselineRun`) sont décrits dans [`evaluation.md`](evaluation.md).
 
@@ -255,10 +254,10 @@ La provenance permet aussi d’effacer sur demande toutes les données venues d�
 
 ## 8. Nombres et arrondis
 
-- Les comptes du patron (mailles sur l’aiguille, numéros de rangs) sont des entiers : on monte 88 mailles, pas 88,5. Ce sont des entiers stricts : seul un entier YAML nu est accepté ; un `bool` (`true`), une chaîne (`"10"`) ou un nombre à virgule (`10.0`) est refusé, jamais converti (CLA-108).
+- Les comptes du patron (mailles sur l’aiguille, numéros de rangs) sont des entiers : on monte 88 mailles, pas 88,5. Ce sont des entiers stricts : seul un entier YAML nu est accepté ; un `bool` (`true`), une chaîne (`"10"`) ou un nombre à virgule (`10.0`) est refusé, jamais converti (CLA-108). Les erreurs de saisie sortent en français, une ligne par champ, sans message brut de Pydantic (`app/errors.py`).
 - Les mesures sont des `Decimal`, y compris les mailles et rangs comptés sur un échantillon, où les demi-mailles sont courantes (22,5 m pour 10 cm). Aucun `float` dans `engine`.
 - Chaque longueur garde son unité d’origine. Un échantillon « 22 m pour 4 in » se mesure sur 10,16 cm, pas 10 cm : confondre les deux décale le montage d’environ 1,6 %.
-- Les tailles d’aiguilles gardent leur notation d’origine et leur système. Le moteur ne convertit jamais : deux systèmes différents ne se comparent pas, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). Sinon, l’avertissement porte la raison `sizes_not_comparable` (« À VÉRIFIER »), en `warning` et non en `needs_review` ([ADR 0016](adr/0016-tailles-d-aiguilles-sans-conversion.md)). Une taille absente de la liste sera acceptée avec un `warning`, à venir avec CLA-67 ([ADR 0021](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)). Textes des raisons, rendus par CLA-69 : `size_differs` « taille différente : la jauge de l’échantillon peut ne plus valoir pour le projet » ; `sizes_not_comparable` « À VÉRIFIER : tailles écrites dans deux systèmes, non comparées ».
+- Les tailles d’aiguilles gardent leur notation d’origine et leur système. Le moteur ne convertit jamais : deux systèmes différents ne se comparent pas, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). Sinon, l’avertissement porte la raison `sizes_not_comparable` (« À VÉRIFIER »), en `warning` et non en `needs_review` ([ADR 0016](adr/0016-tailles-d-aiguilles-sans-conversion.md)). Une taille absente de la liste est acceptée avec un `warning` `unknown_needle_size` ([ADR 0021](adr/0021-table-de-reference-des-tailles-d-aiguilles.md)). Textes des raisons, rendus par `knitproof calc` : `size_differs` « taille différente : la jauge de l’échantillon peut ne plus valoir pour le projet » ; `sizes_not_comparable` « À VÉRIFIER : tailles écrites dans deux systèmes, non comparées ».
 - L’outil et la méthode sont distincts : des circulaires servent à plat comme en rond, des aiguilles droites seulement à plat. La méthode (`worked`) se renseigne sur l’échantillon et sur le projet ; les aiguilles droites ne permettent pas le rond ; les circulaires et les doubles pointes permettent les deux méthodes. Le contrôle vient avec CLA-66 (échantillon) et CLA-68 (projet).
 - La matière des aiguilles (métal, bois, bambou…) joue sur la tension et sur la glisse du fil, mais n’entre dans aucun calcul : aucun coefficient inventé. `material_differs` : « matière différente : la tension peut changer selon la personne » ; `other` ou absente : jamais comparée. Si les aiguilles du projet diffèrent de celles de l’échantillon, en taille ou en matière, le moteur produit un avertissement `swatch_needle_mismatch` qui invite à refaire l’échantillon.
 - Le type d’aiguilles compte pour le tricot en rond : une circulaire dont la longueur totale, de pointe à pointe, dépasse la circonférence du tricot ne permet pas de tricoter sans magic loop. Si la longueur est connue, le moteur signale le premier rang de la calotte dont la circonférence passe sous cette longueur (constat `needle_change`) ; si l’aiguille est déjà trop longue pour le corps, il émet un `warning` et non un refus. Les doubles pointes n’ont pas cette règle. Sans longueur saisie, il conseille le magic loop sur câble long ou les doubles pointes à l’entrée de la calotte ([ADR 0023](adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md)).
@@ -276,6 +275,19 @@ Invariant central, vérifié par le moteur et non par Pydantic (les comptes dép
 Une plage de rangs répète les mêmes opérations à chaque rang ; le compte annoncé porte sur le dernier rang de la plage. Une plage dont les opérations changent le nombre de mailles échoue donc dès son deuxième rang.
 
 Format YAML (figé par CLA-64), chargé par `yaml.safe_load` puis `Pattern.model_validate` ; `k2tog` et `m1` s’écrivent nus. Les exemples vivent dans [`examples/`](../examples/) ; les patrons synthétiques justes, dans `examples/synthetiques/`, que la CI parcourt récursivement. Pour vérifier un fichier, voir la section « Vérifier un patron YAML » du README.
+
+Format de la demande de bonnet (figé par CLA-69), lu par `knitproof calc` dans `BeanieRequest` (`extra="forbid"`, une clé inconnue est refusée) ; l’exemple est `examples/bonnet-3-ans.yaml` :
+
+| Clé | Contenu |
+|---|---|
+| `head_circumference`, `ease` | valeur, unité (`cm`, ou `percent` pour l’aisance) et `provenance` (`measured` ou `entered`) ; le tour visé en découle (43,2 cm = 48 × (100 − 10) / 100) |
+| `swatch` | `needle`, `stitch`, `after_blocking` (obligatoire) et `before_blocking` : mailles et largeur, rangs et hauteur facultatifs (sans rangs, le plan manque et la commande pose la question), et `rows_source` (`reference`, `to_verify`) pour une jauge en rangs tirée d’un patron, affichée sur la ligne « Hauteur » |
+| `needles` | aiguilles du projet : `size` et `kind` ; « 4 mm », « US 6 » ou « US 6 (4 mm) » (le `mm` entre parenthèses est saisi, jamais déduit) |
+| `stitch_multiple` | `repeat_multiple`, `repeat_offset`, `provenance` : saisi, aucune valeur non sourcée |
+| `total_height`, `brim_height`, `folded_brim`, `worked` | hauteurs finies, revers replié, méthode (`round` par défaut) |
+| `proposed_cast_on` | `stitches` et `origin: llm_only` : un montage proposé à contrôler, rejeté s’il diffère du calcul |
+
+L’âge, le fil et les fibres ne sont pas lus avant CLA-66 et CLA-121.
 
 Les comptes (`cast_on`, `work`, `times`, `start`, `end`, `stated_count`) sont des entiers nus ; une chaîne, un nombre à virgule ou un booléen rend le patron invalide (code 3).
 
@@ -350,6 +362,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0026 — Grille de tailles du tour de tête](adr/0026-grille-de-tailles-du-tour-de-tete.md)
 - [ADR 0027 — Tour de tête par âge d’après les patrons](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md)
 - [ADR 0028 — Rangs du bonnet et bonnet à plat](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)
+- [ADR 0029 — Rapport unique du moteur](adr/0029-rapport-unique-du-moteur.md)
 
 ## 13. Projets proches
 

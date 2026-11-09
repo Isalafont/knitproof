@@ -1,0 +1,4 @@
+ERREUR      Rang 33 — nombre de mailles incohérent
+            Annoncé : 89 m · Calculé : 90 m
+            Source : page 2, ligne 14
+            Décidé par : le moteur (calcul vérifiable)
