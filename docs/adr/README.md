@@ -12,4 +12,6 @@ Un ADR dit pourquoi on a décidé, pour ne pas refaire le débat. Il tient en 40
 - **Conséquences** : ce que la décision change, sans numéros de ligne.
 - **Sources** : une ligne par source (auteur, titre, page ou URL, date de lecture).
 
-Pas de données brutes (mesures par taille, citations longues) : elles vont dans la bibliothèque YAML, avec leur source. Pas de consignes d’édition de la doc : le diff les montre. Pas de tableau de suites : les liens sont dans Linear.
+`tests/test_adr_format.py` vérifie trois points : 40 lignes au plus, pas de section « Suites », pas de numéro de ligne ; les ADR en attente de CLA-122 y sont exemptés, et la liste ne fait que diminuer.
+
+Pas de données brutes (mesures par taille, citations longues) : elles vont dans `src/knitproof/library/data/`, au format de son `README.md`, avec leur source, et l’ADR y renvoie. Pas de consignes d’édition de la doc : le diff les montre. Pas de tableau de suites : les liens sont dans Linear.
