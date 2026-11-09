@@ -12,6 +12,7 @@ from pydantic import BaseModel, ValidationError
 import knitproof.domain
 from knitproof.domain.age import Age
 from knitproof.domain.cast_on import CastOnCheck, CastOnResult, RoundingRule, StitchMultiple
+from knitproof.domain.ease import EaseSize
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
 from knitproof.domain.measure import Length, LengthUnit
@@ -23,6 +24,7 @@ from knitproof.domain.transition import Transition, TransitionRefusal, Transitio
 VALID: dict[type[BaseModel], dict[str, object]] = {
     Age: {"value": 3, "unit": "years"},
     AgeBounds: {"min_months": 3, "max_months": 6},
+    EaseSize: {"head": {"low": "47", "high": "48", "unit": "cm"}, "cast_on": 92},
     Work: {"work": 10},
     RepeatBlock: {"body": ("k2tog",), "times": 2},
     Round: {"start": 1, "end": 2, "ops": ({"work": 10},), "stated_count": 10},

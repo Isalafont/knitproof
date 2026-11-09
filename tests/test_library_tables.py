@@ -5,6 +5,7 @@ from decimal import Decimal
 import pytest
 
 from knitproof.domain.age import Age, AgeUnit
+from knitproof.domain.ease import EaseSource, EdgeStitch, Fit
 from knitproof.domain.head_size import Sex
 from knitproof.domain.measure import LengthUnit
 from knitproof.domain.provenance import SourceKind
@@ -180,3 +181,44 @@ def test_the_twelve_rows_are_in_inches_and_to_verify(library: Library) -> None:
     assert all(r.source.to_verify and "Knit Picks" in r.source.reference for r in rows)
     assert all(r.source.read_on.isoformat() == "2026-11-02" for r in rows)
     assert [r.age is not None for r in rows].count(True) == 4
+
+
+def ease_source(library: Library, source_id: str) -> EaseSource:
+    [found] = [item for item in library.entries_of(EaseSource) if item.id == source_id]
+    return found
+
+
+def test_oslo_has_seven_sizes_with_head_range_and_cast_on(library: Library) -> None:
+    oslo = ease_source(library, "oslo-ajuste-jersey")
+
+    assert [size.cast_on for size in oslo.sizes] == [92, 96, 100, 104, 108, 112, 120]
+    assert [(size.head.low, size.head.high) for size in oslo.sizes] == [
+        (Decimal(low), Decimal(high))
+        for low, high in [(47, 48), (49, 50), (51, 52), (53, 54), (55, 56), (57, 59), (60, 63)]
+    ]
+    assert all(size.head.unit is LengthUnit.CM for size in oslo.sizes)
+    assert oslo.swatch is not None
+    assert oslo.swatch.measurement.stitches_per_10_cm == Decimal(23)
+    assert (oslo.fit, oslo.edge) == (Fit.FITTED, EdgeStitch.STOCKINETTE)
+    assert oslo.source.to_verify is True
+    assert oslo.source.read_on.isoformat() == "2026-11-05"
+    assert "PetiteKnit" in oslo.source.reference
+
+
+def test_rosebud_has_one_size_in_inches_with_the_published_brim(library: Library) -> None:
+    rosebud = ease_source(library, "rosebud-ample-cotes-2-2")
+    [size] = rosebud.sizes
+
+    assert (size.head.low, size.head.high, size.head.unit) == (
+        Decimal(20),
+        Decimal("23.75"),
+        LengthUnit.IN,
+    )
+    assert size.brim_circumference is not None
+    assert (size.brim_circumference.value, size.brim_circumference.unit) == (
+        Decimal(18),
+        LengthUnit.IN,
+    )
+    assert rosebud.swatch is None
+    assert (rosebud.fit, rosebud.edge) == (Fit.LOOSE, EdgeStitch.RIB_2X2)
+    assert "Brooklyn Tweed" in rosebud.source.reference
