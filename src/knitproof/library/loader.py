@@ -22,6 +22,7 @@ from pydantic import (
 )
 
 from knitproof.domain.provenance import SourcedEntry, SourceKind
+from knitproof.domain.reference import ReferenceMeasurement
 
 # Les sortes de source admises dans les données ; `model_inference` y est refusé (ADR 0008).
 DATA_KINDS = frozenset(
@@ -29,7 +30,9 @@ DATA_KINDS = frozenset(
 )
 
 # Nom de fichier → modèle d’entrée. Un fichier ajouté à `data/` s’ajoute ici.
-REGISTRY: Mapping[str, type[SourcedEntry]] = {}
+REGISTRY: Mapping[str, type[SourcedEntry]] = {
+    "0027-tour-de-tete-par-age-d-apres-les-patrons.yaml": ReferenceMeasurement,
+}
 
 
 class LibraryError(Exception):

@@ -25,8 +25,8 @@ _PLAIN_DECIMAL = re.compile(r"[0-9]+(?:\.[0-9]+)?")
 
 
 def _plain_decimal(value: object) -> object:
-    """Une valeur de bibliothèque : un entier nu ou un décimal en chaîne, sans notation savante."""
-    if isinstance(value, int) and not isinstance(value, bool):
+    """Entier nu, `Decimal` ou décimal en chaîne ; ni flottant, ni « 1e3 »."""
+    if isinstance(value, Decimal) or (isinstance(value, int) and not isinstance(value, bool)):
         return value
     if isinstance(value, str) and _PLAIN_DECIMAL.fullmatch(value):
         return value

@@ -16,11 +16,13 @@ from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
 from knitproof.domain.measure import Length, LengthUnit
 from knitproof.domain.pattern import Pattern, RepeatBlock, Round, Work
+from knitproof.domain.reference import AgeBounds
 from knitproof.domain.simulation import RoundCount
 from knitproof.domain.transition import Transition, TransitionRefusal, TransitionRejection
 
 VALID: dict[type[BaseModel], dict[str, object]] = {
     Age: {"value": 3, "unit": "years"},
+    AgeBounds: {"min_months": 3, "max_months": 6},
     Work: {"work": 10},
     RepeatBlock: {"body": ("k2tog",), "times": 2},
     Round: {"start": 1, "end": 2, "ops": ({"work": 10},), "stated_count": 10},
