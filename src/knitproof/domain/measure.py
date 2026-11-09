@@ -5,7 +5,7 @@ from decimal import ROUND_HALF_EVEN, Context, Decimal, Inexact, Rounded
 from enum import StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, model_validator
 
 INCH_IN_CM = Decimal("2.54")
 
@@ -62,13 +62,30 @@ class Length(BaseModel):
 
 
 class SwatchMeasurement(BaseModel):
-    """Mailles comptées sur une largeur d’échantillon (demi-mailles admises)."""
+    """Mailles comptées sur une largeur d’échantillon (demi-mailles admises).
+
+    Les rangs et leur hauteur sont facultatifs, mais vont ensemble (CLA-68, ADR 0019).
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     stitches: PositiveDecimal
     width: Length
+    rows: PositiveDecimal | None = None
+    height: Length | None = None
+
+    @model_validator(mode="after")
+    def _rows_and_height_go_together(self) -> "SwatchMeasurement":
+        if (self.rows is None) != (self.height is None):
+            raise ValueError("les rangs et leur hauteur vont ensemble : deux valeurs ou aucune")
+        return self
 
     @property
     def stitches_per_10_cm(self) -> Decimal:
         return DIVISION.divide(EXACT.multiply(self.stitches, Decimal(10)), self.width.in_cm)
+
+    @property
+    def rows_per_10_cm(self) -> Decimal | None:
+        if self.rows is None or self.height is None:
+            return None
+        return DIVISION.divide(EXACT.multiply(self.rows, Decimal(10)), self.height.in_cm)

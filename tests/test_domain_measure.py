@@ -120,3 +120,39 @@ def test_a_plain_decimal_is_a_digit_string_or_an_integer(value: object, expected
 def test_anything_else_is_not_a_plain_decimal(value: object) -> None:
     with pytest.raises(ValidationError):
         TypeAdapter(PlainDecimal).validate_python(value)
+
+
+def test_a_swatch_with_rows_but_no_height_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        SwatchMeasurement(stitches=Decimal("20"), width=cm("10"), rows=Decimal("30"))
+
+
+def test_a_swatch_with_a_height_but_no_rows_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        SwatchMeasurement(stitches=Decimal("20"), width=cm("10"), height=cm("10"))
+
+
+def test_the_row_gauge_of_30_rows_over_10_cm_is_30() -> None:
+    swatch = SwatchMeasurement(
+        stitches=Decimal("20"), width=cm("10"), rows=Decimal("30"), height=cm("10")
+    )
+
+    assert swatch.rows_per_10_cm == Decimal("30")
+
+
+def test_a_swatch_without_rows_has_no_row_gauge() -> None:
+    swatch = SwatchMeasurement(stitches=Decimal("20"), width=cm("10"))
+
+    assert swatch.rows_per_10_cm is None
+
+
+def test_a_swatch_refuses_a_float_for_rows() -> None:
+    with pytest.raises(ValidationError, match="float refusé"):
+        SwatchMeasurement.model_validate(
+            {
+                "stitches": "20",
+                "width": {"value": "10", "unit": "cm"},
+                "rows": 30.5,
+                "height": {"value": "10", "unit": "cm"},
+            }
+        )
