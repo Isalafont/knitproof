@@ -9,7 +9,7 @@ from knitproof.domain.cast_on import CastOnCheck, CastOnRejection
 from knitproof.domain.finding import Finding, FindingCode
 from knitproof.domain.measure import SwatchMeasurement
 from knitproof.domain.needle import NeedleCheck, NeedleMismatch
-from knitproof.domain.notice import Notice, NoticeStatus
+from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.question import PendingQuestion
 from knitproof.domain.report import DecidedBy, Report, ReportEntry, ReportStatus
 
@@ -66,12 +66,33 @@ def from_notice(notice: Notice) -> ReportEntry:
     )
 
 
-def from_cast_on_check(check: CastOnCheck, swatch: SwatchMeasurement) -> ReportEntry | None:
+def unblocked_swatch_notice(
+    check: CastOnCheck, before_blocking: SwatchMeasurement
+) -> Notice | None:
+    """Alerte : le montage sur l’échantillon avant blocage, et la largeur qu’il donnerait.
+
+    `check` contrôle ce montage contre le calcul après blocage ; `None` s’ils concordent.
+    """
+    if check.expected == check.proposed:
+        return None
+    text = (
+        f"Avec l’échantillon avant blocage ({_number(before_blocking.stitches)} m), "
+        f"on monterait {check.proposed} m.\n"
+        f"{check.proposed} m donneraient {_number(check.proposed_finished_cm)} cm après blocage, "
+        "sans aisance."
+    )
+    return Notice(status=NoticeStatus.WARNING, code=NoticeCode.UNBLOCKED_SWATCH_CAST_ON, text=text)
+
+
+def from_cast_on_check(
+    check: CastOnCheck, swatch: SwatchMeasurement, title: str | None = None
+) -> ReportEntry | None:
     """Un montage proposé rejeté, avec la largeur finie qu’il donnerait ; `None` si accepté."""
     if check.accepted:
         return None
     width = _number(swatch.width.in_cm)
     lines = [
+        *([title] if title is not None else []),
         *(_rejection_text(reason, check) for reason in check.reasons),
         f"Après blocage, {check.proposed} m donnent {_number(check.proposed_finished_cm)} cm "
         f"({check.proposed} {TIMES} {width} / {_number(swatch.stitches)})",
