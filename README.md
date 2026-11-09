@@ -5,6 +5,8 @@
   <img src="docs/images/logo-light.svg" alt="knitproof" height="88">
 </picture>
 
+<br><br>
+
 **Le modèle propose, le moteur prouve, la personne arbitre.**
 
 Knitting patterns computed and checked by a deterministic engine, not guessed by an AI.
