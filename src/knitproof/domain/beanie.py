@@ -4,6 +4,8 @@ Rien n’est résolu ici : une spécification peut ne contenir que des aiguilles
 vient de la résolution (tour de tête, hauteurs, aisance).
 """
 
+from decimal import Decimal
+from enum import StrEnum
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -11,8 +13,33 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from knitproof.domain.age import Age
 from knitproof.domain.ease import Ease
 from knitproof.domain.head_size import HeadSize, Sex
+from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import Length
 from knitproof.domain.needle import KnittingMethod, Needle, NeedleKind
+
+
+class RowRounding(StrEnum):
+    NEAREST_TIE_DOWN = "nearest_tie_down"
+
+
+class RowCount(BaseModel):
+    """Rangs d’une hauteur, avec la trace de l’arrondi (ADR 0028)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw: Decimal
+    rows: StrictPositiveInt
+    rule: RowRounding
+
+
+class KnittedRows(BaseModel):
+    """Rangs tricotés au total et rangs du bord, tous deux arrondis une fois."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    total: RowCount
+    brim: RowCount
+
 
 ROUND_KINDS = frozenset({NeedleKind.CIRCULAR, NeedleKind.DOUBLE_POINTED})
 

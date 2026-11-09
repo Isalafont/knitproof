@@ -12,6 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 import knitproof.domain
 from knitproof.domain.age import Age
+from knitproof.domain.beanie import RowCount, RowRounding
 from knitproof.domain.cast_on import CastOnCheck, CastOnResult, RoundingRule, StitchMultiple
 from knitproof.domain.construction import CrownRule
 from knitproof.domain.ease import EaseSize
@@ -64,6 +65,7 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "expected": 10,
         "actual": 9,
     },
+    RowCount: {"raw": Decimal(75), "rows": 75, "rule": RowRounding.NEAREST_TIE_DOWN},
     SourceLocation: {"page": 1, "line": 3},
     RoundCount: {"round": 1, "stitches": 10},
     Transition: {
