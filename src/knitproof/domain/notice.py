@@ -15,6 +15,9 @@ class NoticeStatus(StrEnum):
 
 class NoticeCode(StrEnum):
     UNKNOWN_NEEDLE_SIZE = "unknown_needle_size"
+    CROWN_ODD_STITCHES = "crown_odd_stitches"
+    CROWN_TOO_SMALL = "crown_too_small"
+    CROWN_LONE_STITCH = "crown_lone_stitch"
 
 
 class Notice(BaseModel):

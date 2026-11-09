@@ -6,10 +6,46 @@ Les seuils viennent de `CrownRule`, lu par `app` et passé ici.
 from itertools import groupby
 
 from knitproof.domain.construction import CrownRule
-from knitproof.domain.crown import Crown
+from knitproof.domain.crown import Crown, CrownReview
+from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.pattern import Op, Repeat, RepeatBlock, Round, Stitch, Work
+from knitproof.domain.question import PendingQuestion
 
 EVERY_OTHER_ROUND = 2
+
+
+LONE_STITCH_WARNING = (
+    "montage impair : une maille seule reste au dernier rang, à l’endroit"  # ADR 0019, règle 5
+)
+
+
+def crown_review(
+    stitches: int,
+    rule: CrownRule,
+    *,
+    stitch_multiple: int | None = None,
+    precise_pattern: bool | None = None,
+) -> CrownReview:
+    """La calotte avec ses avis (ADR 0019, règles 5 à 8).
+
+    `precise_pattern` dit si le point est marqué « motif précis » ; `None` quand la marque
+    n’existe pas encore : un compte impair est alors à revoir (règle 7).
+    """
+    if stitches < rule.min_cast_on:
+        return _too_small(stitches, rule)
+    crown = crown_plan(stitches, rule)
+    if stitches % Stitch.K2TOG.consumes == 0:
+        return CrownReview(crown=crown)
+    if precise_pattern is None or precise_pattern:
+        return _odd_needs_review(crown)
+    if stitch_multiple == 1:
+        notice = Notice(
+            status=NoticeStatus.WARNING,
+            code=NoticeCode.CROWN_LONE_STITCH,
+            text=LONE_STITCH_WARNING,
+        )
+        return CrownReview(crown=crown, notices=(notice,))
+    return CrownReview(crown=crown)
 
 
 def crown_plan(stitches: int, rule: CrownRule) -> Crown:
@@ -74,3 +110,31 @@ def _compact(sizes: list[int]) -> tuple[Op, ...]:
         else:
             ops.extend(section)
     return tuple(ops)
+
+
+def _too_small(stitches: int, rule: CrownRule) -> CrownReview:
+    text = (
+        f"À REVOIR : montage de {stitches} m, sous le minimum de {rule.min_cast_on} m "
+        "pour une calotte de bonnet (ADR 0019, règle 8)"
+    )
+    notice = Notice(status=NoticeStatus.NEEDS_REVIEW, code=NoticeCode.CROWN_TOO_SMALL, text=text)
+    question = PendingQuestion(
+        code=NoticeCode.CROWN_TOO_SMALL,
+        text=f"Le montage de {stitches} m est trop petit pour la calotte : que faire ?",
+        options=(),
+    )
+    return CrownReview(crown=None, notices=(notice,), questions=(question,))
+
+
+def _odd_needs_review(crown: Crown) -> CrownReview:
+    text = (
+        f"À REVOIR : montage de {crown.stitches} m, impair : une maille seule reste au dernier "
+        "rang (ADR 0019, règles 6 et 7)"
+    )
+    notice = Notice(status=NoticeStatus.NEEDS_REVIEW, code=NoticeCode.CROWN_ODD_STITCHES, text=text)
+    question = PendingQuestion(
+        code=NoticeCode.CROWN_ODD_STITCHES,
+        text="Le montage est impair : le point a-t-il un motif précis ?",
+        options=("oui", "non"),
+    )
+    return CrownReview(crown=crown, notices=(notice,), questions=(question,))

@@ -3,7 +3,9 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 from knitproof.domain.integers import StrictPositiveInt
+from knitproof.domain.notice import Notice
 from knitproof.domain.pattern import Round
+from knitproof.domain.question import PendingQuestion
 
 
 class Crown(BaseModel):
@@ -19,3 +21,13 @@ class Crown(BaseModel):
     @property
     def round_count(self) -> int:
         return self.rounds[-1].last
+
+
+class CrownReview(BaseModel):
+    """La calotte, ou son absence, avec les avis et les questions qui la concernent."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    crown: Crown | None
+    notices: tuple[Notice, ...] = ()
+    questions: tuple[PendingQuestion, ...] = ()
