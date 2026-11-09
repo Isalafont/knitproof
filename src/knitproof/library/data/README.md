@@ -10,7 +10,7 @@ entries:
     head_cm: "50.5"                  # décimal en chaîne, jamais de flottant nu ; entier nu admis
     status: to_verify                # facultatif, seule valeur admise
     source:
-      kind: reference_measurement    # ou fiber_library
+      kind: reference_measurement    # ou fiber_library, person_decision
       reference: Auteur, titre, URL
       read_on: 2026-11-09            # date de lecture, AAAA-MM-JJ
       location: tableau 2, p. 3      # facultatif
