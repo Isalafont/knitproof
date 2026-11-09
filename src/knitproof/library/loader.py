@@ -22,6 +22,7 @@ from pydantic import (
 )
 
 from knitproof.domain.ease import EaseSource
+from knitproof.domain.needle import NeedleTableRow
 from knitproof.domain.provenance import SourcedEntry, SourceKind
 from knitproof.domain.reference import ReferenceMeasurement
 
@@ -33,6 +34,7 @@ DATA_KINDS = frozenset(
 # Nom de fichier → modèle d’entrée. Un fichier ajouté à `data/` s’ajoute ici.
 REGISTRY: Mapping[str, type[SourcedEntry]] = {
     "0020-hauteur-finie-et-bord-replie.yaml": ReferenceMeasurement,
+    "0021-table-de-reference-des-tailles-d-aiguilles.yaml": NeedleTableRow,
     "0024-aisance-du-bonnet.yaml": EaseSource,
     "0027-tour-de-tete-par-age-d-apres-les-patrons.yaml": ReferenceMeasurement,
 }

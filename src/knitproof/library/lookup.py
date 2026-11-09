@@ -2,6 +2,7 @@
 
 from knitproof.domain.age import Age
 from knitproof.domain.head_size import Sex
+from knitproof.domain.needle import NeedleSize, NeedleTableRow
 from knitproof.domain.reference import Quantity, ReferenceMeasurement
 from knitproof.library.loader import Library
 
@@ -31,6 +32,19 @@ def rows_for_age(library: Library, age: Age) -> tuple[ReferenceMeasurement, ...]
         found
         for found in _of_quantity(library, Quantity.HEIGHT)
         if found.age is not None and found.age.contains(age)
+    )
+
+
+def needle_rows(library: Library, size: NeedleSize) -> tuple[NeedleTableRow, ...]:
+    """Les lignes de la table du système de cette taille ; aucune si elle manque (ADR 0021 §5).
+
+    La comparaison suit `NeedleSize.normalized` : la notation d’origine n’est pas modifiée.
+    """
+    return tuple(
+        row
+        for row in library.entries_of(NeedleTableRow)
+        if row.system is size.system
+        and NeedleSize(system=row.system, original=row.size).normalized == size.normalized
     )
 
 

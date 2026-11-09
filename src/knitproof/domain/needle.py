@@ -5,9 +5,10 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError, model_validator
 
-from knitproof.domain.measure import Length, PositiveDecimal
+from knitproof.domain.measure import Length, PlainDecimal, PositiveDecimal
+from knitproof.domain.provenance import SourcedEntry
 
 
 class NeedleSystem(StrEnum):
@@ -140,3 +141,22 @@ class NeedleCheck(BaseModel):
     @property
     def matches(self) -> bool:
         return not self.reasons
+
+
+class NeedleTableRow(SourcedEntry):
+    """Une ligne des tables de l’ADR 0021 : une taille US, UK ou JP et ses mm publiés.
+
+    Un ou deux mm : le Craft Yarn Council fait correspondre 4 et 4,25 mm à US 6. Le système
+    `mm` n’a pas de table : un mm est une mesure.
+    """
+
+    system: NeedleSystem
+    size: str
+    mm: tuple[PlainDecimal, ...] = Field(min_length=1, max_length=2)
+
+    @model_validator(mode="after")
+    def _is_a_size_of_a_tabulated_system(self) -> Self:
+        if self.system is NeedleSystem.MM:
+            raise ValueError("le système mm n’a pas de table")
+        NeedleSize(system=self.system, original=self.size)
+        return self

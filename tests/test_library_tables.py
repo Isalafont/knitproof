@@ -8,10 +8,11 @@ from knitproof.domain.age import Age, AgeUnit
 from knitproof.domain.ease import EaseSource, EdgeStitch, Fit
 from knitproof.domain.head_size import Sex
 from knitproof.domain.measure import LengthUnit
+from knitproof.domain.needle import NeedleSize, NeedleSystem, NeedleTableRow
 from knitproof.domain.provenance import SourceKind
 from knitproof.domain.reference import ReferenceMeasurement
 from knitproof.library.loader import Library, load_library
-from knitproof.library.lookup import head_ranges_for, rows_for_age
+from knitproof.library.lookup import head_ranges_for, needle_rows, rows_for_age
 
 
 @pytest.fixture(scope="module")
@@ -222,3 +223,54 @@ def test_rosebud_has_one_size_in_inches_with_the_published_brim(library: Library
     assert rosebud.swatch is None
     assert (rosebud.fit, rosebud.edge) == (Fit.LOOSE, EdgeStitch.RIB_2X2)
     assert "Brooklyn Tweed" in rosebud.source.reference
+
+
+def needle(system: NeedleSystem, original: str) -> NeedleSize:
+    return NeedleSize(system=system, original=original)
+
+
+def test_us_6_gives_4_and_4_25_mm_from_the_craft_yarn_council(library: Library) -> None:
+    [row] = needle_rows(library, needle(NeedleSystem.US, "6"))
+
+    assert row.mm == (Decimal(4), Decimal("4.25"))
+    assert "Craft Yarn Council" in row.source.reference
+    assert row.source.to_verify is True
+
+
+def test_uk_00_gives_9_mm_to_verify(library: Library) -> None:
+    [row] = needle_rows(library, needle(NeedleSystem.UK, "00"))
+
+    assert row.mm == (Decimal(9),)
+    assert row.source.to_verify is True
+    assert "Sheep and Stitch" in row.source.reference
+
+
+def test_jp_15_gives_6_6_mm_from_clover(library: Library) -> None:
+    [row] = needle_rows(library, needle(NeedleSystem.JP, "15"))
+
+    assert row.mm == (Decimal("6.6"),)
+    assert "Clover" in row.source.reference
+
+
+def test_a_size_missing_from_the_table_gives_no_row(library: Library) -> None:
+    assert needle_rows(library, needle(NeedleSystem.US, "37")) == ()
+    assert needle_rows(library, needle(NeedleSystem.MM, "3.6")) == ()
+
+
+def test_the_whole_jp_table_is_to_verify(library: Library) -> None:
+    jp = [row for row in library.entries_of(NeedleTableRow) if row.system is NeedleSystem.JP]
+
+    assert len(jp) == 16
+    assert all(row.source.to_verify for row in jp)
+
+
+def test_the_tables_have_the_rows_of_adr_0021(library: Library) -> None:
+    rows = library.entries_of(NeedleTableRow)
+    counts = {system: sum(row.system is system for row in rows) for system in NeedleSystem}
+
+    assert counts == {
+        NeedleSystem.US: 22,
+        NeedleSystem.UK: 17,
+        NeedleSystem.JP: 16,
+        NeedleSystem.MM: 0,
+    }

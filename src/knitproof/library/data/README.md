@@ -23,5 +23,6 @@ entries:
 | Fichier | Modèle d’entrée | Contenu |
 |---|---|---|
 | `0020-hauteur-finie-et-bord-replie.yaml` | `ReferenceMeasurement` | les 12 lignes de la table Knit Picks, hauteur en pouces ; bornes d’âge (mois) pour les 4 lignes à âge chiffré seulement |
+| `0021-table-de-reference-des-tailles-d-aiguilles.yaml` | `NeedleTableRow` | une ligne par taille US (22), UK (17) et JP (16) : un ou deux mm publiés, une source par système (Craft Yarn Council, Sheep and Stitch, Clover), `status: to_verify` selon l’ADR ; JP en entier À VÉRIFIER |
 | `0024-aisance-du-bonnet.yaml` | `EaseSource` | Oslo (7 tailles : plage de tête, montage, échantillon) et Rosebud (une taille : plage de tête, tour du bord publié) ; données brutes, le % est calculé par `engine/ease.py` |
 | `0027-tour-de-tete-par-age-d-apres-les-patrons.yaml` | `ReferenceMeasurement` | plages de tour de tête par tranche d’âge (bornes en mois incluses, cm), sans valeur proposée |
