@@ -1,9 +1,107 @@
-# knitproof
+<div align="center">
 
-[![CI](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
+  <img src="docs/images/logo-light.svg" alt="knitproof" height="88">
+</picture>
 
-> **Le modèle propose, le moteur prouve, la personne arbitre.**
-> Generate, verify and validate knitting patterns with AI.
+<br><br>
+
+**Le modèle propose, le moteur prouve, la personne arbitre.**
+
+Knitting patterns computed and checked by a deterministic engine, not guessed by an AI.
+
+**knitproof** calcule et vérifie les mailles de patrons de tricot, en commençant par le bonnet. Aujourd’hui, `knitproof calc` calcule un bonnet depuis une demande YAML et `knitproof verify` contrôle les comptes de mailles d’un patron écrit en YAML.
+
+[![CI](https://img.shields.io/github/actions/workflow/status/Isalafont/knitproof/ci.yml?branch=develop&style=flat-square&label=CI)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FIsalafont%2Fknitproof%2Fdevelop%2Fpyproject.toml&style=flat-square)](pyproject.toml)
+[![Licence : MIT](https://img.shields.io/badge/licence-MIT-lightgrey?style=flat-square)](#licence)
+
+[Vidéo](#vidéo) · [Pourquoi knitproof](#pourquoi-knitproof-) · [Ce que ça donne](#ce-que-ça-donne) · [Installer](#installer) · [Vérifier un patron YAML](#vérifier-un-patron-yaml) · [Architecture](docs/architecture.md) · [Feuille de route](#feuille-de-route)
+
+</div>
+
+Principes : un calcul déterministe, jamais confié au modèle · une provenance pour chaque valeur · l’incertain renvoyé à une personne · une fiabilité mesurée, pas promise.
+
+<details>
+<summary>In English</summary>
+
+knitproof computes and checks knitting patterns, starting with hats. A language model may read the request or the pattern, but it never produces a stitch count: a deterministic Python engine computes every number from the measurement, the blocked gauge swatch and the fibre’s behaviour, and whatever it cannot prove goes back to a person. Every value carries its provenance. Status, November 2026: `knitproof calc` computes a hat from a request written in YAML and `knitproof verify` checks the stitch counts of a pattern written in YAML; model-based reading is planned. The rest of this README is in French.
+
+</details>
+
+## Vidéo
+
+<p align="center"><em>Visite guidée de l’architecture de knitproof.</em></p>
+
+https://github.com/user-attachments/assets/f519c0bd-ee64-499b-ba66-d231b98dff74
+
+## Pourquoi knitproof ?
+
+Un LLM à qui l’on demande un bonnet répond avec un nombre de mailles plausible : il ne le calcule pas. Une erreur de taille, un échantillon non bloqué, une fibre qui se détend au lavage, et le bonnet ne va à personne.
+
+- **Pour les tricoteuses** : un nombre de mailles calculé à partir de votre échantillon, et un avertissement quand il ne suffit pas.
+- **Pour les contributeurs** : un cœur en Python pur, des couches contrôlées et des tests qui n’ont pas besoin d’un modèle.
+- **Pour les curieux de l’IA fiable** : un modèle qui lit, un moteur qui prouve, et une fiabilité mesurée ([voir plus bas](#pourquoi-on-peut-lui-faire-confiance)).
+
+## Fonctionnalités
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Moteur prouvé**<br>
+Calcul en décimal exact ; aucun nombre venu du modèle n’entre dans un patron.
+
+</td>
+<td width="50%" valign="top">
+
+**Provenance de chaque valeur**<br>
+Chaque valeur dit d’où elle vient : votre échantillon, l’étiquette, la bibliothèque ou une décision.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**Votre échantillon d’abord**<br>
+Le calcul part de votre jauge mesurée avant et après blocage. `knitproof calc` calcule le bonnet depuis une demande YAML et contrôle le montage proposé. Disponible.
+
+</td>
+<td valign="top">
+
+**Vérifier un patron existant**<br>
+`knitproof verify` contrôle les comptes de mailles d’un patron YAML et localise l’erreur. Disponible.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**Bibliothèque sourcée**<br>
+Tailles d’aiguilles US, UK et JP, tour de tête par âge, aisance : chaque valeur cite sa source.
+
+</td>
+<td valign="top">
+
+**Une personne arbitre l’incertain**<br>
+Ce que le moteur ne peut pas prouver passe en « À VÉRIFIER » et revient à une personne. La lecture d’une demande ou d’une étiquette par un modèle est prévue (jalon M2).
+
+</td>
+</tr>
+</table>
+
+## knitproof, un LLM seul ou un calculateur ?
+
+| | knitproof | LLM seul | Calculateur de mailles classique |
+|---|---|---|---|
+| Comprend une demande en langage naturel | prévu (M2) | oui | non |
+| Calcule juste | oui, moteur déterministe | non garanti | oui |
+| Tient compte de la fibre et du blocage | oui | rarement | non |
+| Dit d’où vient chaque valeur | oui | non | non |
+| Renvoie l’incertain à une personne | oui | non | non |
+
+Le calculateur classique calcule juste mais ne comprend pas la demande ; le LLM comprend mais ne calcule pas. knitproof vise les deux, la preuve en plus (voir [Pourquoi on peut lui faire confiance](#pourquoi-on-peut-lui-faire-confiance)).
 
 Demandez à un LLM un bonnet pour un enfant de 3 ans, en lui donnant le tour de tête, la laine, l’échantillon et la taille des aiguilles : il peut vous répondre avec un nombre de mailles de bonnet adulte. Le modèle ne calcule pas, il propose un nombre plausible. Et il ignore qu’un coton, peu élastique, ne se tricote pas avec la même aisance qu’un mérinos.
 
@@ -124,6 +222,10 @@ En violet, le **modèle** : il comprend la demande ou lit le patron et produit u
 
 La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger). Elle donne des avertissements, pas une part chiffrée de l’aisance, qui vient d’une table par ajustement et par point ([ADR 0024](docs/adr/0024-aisance-du-bonnet.md)). Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
 
+![Carte du code de knitproof. La commande knitproof (couche cli) passe par les cas d’usage (app), qui appellent le moteur de calcul (engine) et la bibliothèque de référence (library) ; tous dépendent du vocabulaire du tricot (domain), qui ne dépend d’aucune autre couche. Les dépendances vont toujours vers le bas, jamais l’inverse. Le tout s’appuie sur Pydantic et un lecteur YAML ; les tests (pytest et Hypothesis) couvrent chaque bloc ; les couches api, web, llm, sources et evals sont réservées et encore vides.](docs/images/architecture.png)
+
+*Carte du code au 9 novembre 2026 : chaque bloc est une partie du code, chaque trait un import. Elle est générée en local avec [Floorplan](https://github.com/haydenschmitty/floorplan) dans `floorplan/`, hors du dépôt, et se refait quand le code change. Cliquer sur l’image l’ouvre en taille réelle. Le détail des couches est dans [l’architecture](docs/architecture.md).*
+
 Pour aller plus loin : [l’architecture](docs/architecture.md) (qui décide quoi, couches, modèles de données, provenance), [le plan de réalisation](docs/plan.md) et [le protocole d’évaluation](docs/evaluation.md).
 
 ## Pourquoi on peut lui faire confiance
@@ -171,89 +273,43 @@ uv run lint-imports
 uv run mypy
 ```
 
-`domain` et `engine` portent le modèle de patron, le calcul du bonnet et la vérification des comptes de mailles ; `app` et `cli` portent les commandes `knitproof calc` et `knitproof verify` ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs sorties de référence vivent dans `examples/sorties/` et un test garde les blocs du README contre elles (balise `<!-- sortie : … -->` avant chaque bloc). Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
-
-Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
-
 ### Calculer un bonnet
 
-La commande `knitproof calc` lit une demande YAML (format décrit dans [`docs/architecture.md`](docs/architecture.md), section 9), applique l’aisance, calcule le plan du bonnet, contrôle le montage proposé et les aiguilles, puis rend un rapport unique sur stdout.
+La commande `knitproof calc` lit une demande YAML, calcule le plan du bonnet et contrôle le montage proposé.
 
 ```sh
 uv run knitproof calc examples/bonnet-3-ans.yaml
 ```
 
-Le code de sortie dit le résultat, et ne se lit pas comme celui de `verify` :
-
-- `0` : un plan est calculé, avec ou sans alerte ou rejet dans le rapport ;
-- `1` : des questions restent en attente (par exemple, pas de jauge en rangs), pas de plan ; les questions sortent sur stdout ;
-- `2` : erreur d’usage (fichier non précisé), message sur stderr ;
-- `3` : fichier absent, illisible ou invalide (clé inconnue, nombre trop grand), message sur stderr, sans trace Python.
-
-Pour `verify`, `1` veut dire « au moins un constat ».
-
-Les tailles d’aiguilles s’écrivent « 4 mm », « US 6 » ou « US 6 (4 mm) » ; le texte rendu garde la notation saisie et donne les mm de la table, « À VÉRIFIER » sur l’emballage. L’âge, le fil et la fibre ne sont pas lus : leur résolution revient à CLA-66 et CLA-121.
+Codes de sortie, formats et limites : [docs/commandes.md](docs/commandes.md).
 
 ### Vérifier un patron YAML
 
-La commande `knitproof verify` vérifie les comptes de mailles d’un fichier au format décrit dans [`docs/architecture.md`](docs/architecture.md), section 9. Un patron réel se range dans `local-patterns/`, que git ignore : il ne quitte pas votre machine et aucun test de la CI ne le lit.
+La commande `knitproof verify` vérifie les comptes de mailles d’un patron écrit en YAML.
 
 ```sh
 uv run knitproof verify local-patterns/mon-bonnet.yaml
 ```
 
-Le rapport sort sur stdout. Le code de sortie dit le résultat :
-
-- `0` : aucun constat ;
-- `1` : au moins un constat, rapporté sur stdout ;
-- `2` : erreur d’usage (par exemple, fichier non précisé), message sur stderr ;
-- `3` : fichier absent, illisible ou invalide, message sur stderr, sans trace Python.
-
-Les comptes (`cast_on`, `work`, `times`, `start`, `end`, `stated_count`) sont des entiers nus : une chaîne, un nombre à virgule ou un booléen rend le patron invalide (code 3).
-
-Pour vérifier plusieurs fichiers d’un coup, un test à la demande lit ceux que désigne `KNITPROOF_PATTERNS`. Depuis la racine du dépôt, un fichier, puis tous ceux d’un dossier (motif glob, entre apostrophes pour que le shell ne le développe pas) :
-
-```sh
-KNITPROOF_PATTERNS=local-patterns/mon-bonnet.yaml uv run pytest tests/test_pattern_files.py
-KNITPROOF_PATTERNS='local-patterns/*.yaml' uv run pytest tests/test_pattern_files.py
-```
-
-Lire le résultat :
-
-- `1 passed` : aucun constat, chaque compte annoncé est celui que calcule le moteur.
-- `1 failed` : une ligne par constat, le fichier, puis le même bloc que `knitproof verify`, avec le rang. Par exemple, sur `examples/bonnet-erreur-rang-33.yaml` : `Rang 33 — nombre de mailles incohérent`, puis `Annoncé : 89 m · Calculé : 90 m`. Pour un `repeat_not_fitting`, le bloc donne les mailles laissées par le rang précédent et celles que consomment les opérations ; la simulation s’arrête à ce rang.
-- Un motif qui ne trouve aucun fichier, ou un fichier invalide (opération inconnue, clé en trop), échoue avec la raison.
-- Sans la variable, le test est sauté (`1 skipped`) : `uv run pytest` ne lit jamais `local-patterns/`. Préfixer la commande, ne pas exporter la variable.
-
-Limites :
-
-- Seules `work`, `k2tog`, `m1` et `repeat` sont prises en charge ; les diminutions des patrons synthétiques sont toutes écrites en `k2tog`. Un fichier qui emploie une autre opération est rejeté, et ce rejet ne prouve pas une erreur de calcul.
-- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande et le test comptent les mailles, ils ne contrôlent pas le montage. `knitproof calc` calcule et contrôle le montage d’un seul point (multiple et reste saisi), au plus proche, en dessous en cas d’égalité ; `knitproof verify` ne le vérifie pas. Le rang d’ajustement entre bord et corps (ADR 0025) n’est exposé par aucune commande.
-- Les tailles d’aiguilles de deux systèmes (US, UK, japonais, mm) ne sont pas converties : le moteur avertit qu’il ne peut pas les comparer, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). `knitproof calc` signale la différence entre l’échantillon et le projet (`swatch_needle_mismatch`) ; `verify` ne compare pas les aiguilles.
-- Après un `repeat_not_fitting`, les comptes annoncés suivants ne sont pas comparés ([ADR 0013](docs/adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)).
-- Seuls les comptes de mailles sont vérifiés : ni mesures, ni échantillon.
-
-Les patrons synthétiques justes de `examples/synthetiques/` sont vérifiés par la CI à chaque `uv run pytest`, sans variable.
+Codes de sortie, formats et limites : [docs/commandes.md](docs/commandes.md).
 
 ### Contribuer
 
-- `main` est la production, `develop` l’intégration déployée sur la sandbox.
-- Chaque changement part de `develop` sur sa propre branche et y revient par une pull request ; `develop` passe sur `main` par une pull request.
+- `main` est la production, `develop` l’intégration déployée sur la sandbox ; chaque changement part de `develop` sur sa propre branche `feature/*` et y revient par une pull request.
 - `main` et `develop` sont protégées : pas de push direct, une pull request ne merge que si la CI est verte (tests, `ruff check`, `ruff format --check`, `lint-imports`, `mypy`). `main` n’accepte que des pull requests depuis `develop`.
-- GitHub supprime la branche distante au merge ; en local, `git fetch -p` puis `git branch -d <branche>` (sans worktree ouvert : `git fetch -p` déplace les références distantes partagées et annule le lease des worktrees).
 - Une pull request met à jour ce README et `docs/` quand elle change un comportement, une commande ou une décision.
-- ruff vérifie aussi le nommage (`N`), le style pytest (`PT`), ses propres règles (`RUF`) et les nombres magiques dans `src/` (`PLR2004`) ; l’apostrophe typographique et les espaces insécables sont permis. mypy refuse `Any` ([ADR 0012](docs/adr/0012-interdire-any-avec-mypy.md)). Les conventions que les outils ne vérifient pas sont dans `AGENTS.md`.
 
 Python 3.13, uv, pytest, Hypothesis, ruff, mypy strict, import-linter, pre-commit. Décisions d’architecture dans [`docs/adr/`](docs/adr/).
 
 ### Travailler avec les agents
 
-- Les règles de tous les agents sont dans [`AGENTS.md`](AGENTS.md), que `CLAUDE.md` importe.
-- Avec Claude Code, `/plan-ticket CLA-XX` passe le ticket en « In Progress », puis prépare son contexte et son plan (seules les questions métier posées, deux relectures arbitrées par la session, une seule validation d’Isabelle, ticket réaligné), sans écrire de code ; le rédacteur et le vérificateur lisent aussi les tickets directement liés. Le ticket réaligné suit le template de son type (US, TS, Bug, Cadrage), versionné dans `.claude/skills/plan-ticket/templates/` ; à la publication, il coche la DOR. Un cadrage suit un parcours court : sources et questions d’un bloc, puis contexte, plan court et brouillon d’ADR vérifié sur ses sources, sans validation ni relecture du plan ([ADR 0022](docs/adr/0022-parcours-court-des-cadrages.md)).
-- `/implement-slice CLA-XX` fait implémenter le plan validé par un modèle plus léger, un commit par étape ; la session revérifie, fait relire le diff par un agent neuf qui exécute ses vérifications (chaque constat avec sa preuve, tranché par la session), pousse, ouvre la PR et publie les cases producteur, passe le ticket en « In Review » quand la CI est verte, puis, après le « ok » d’Isabelle sur le test, coche les cases testeur et la DOD et merge. Chaque case est cochée sur preuve, et la validation unique et le « ok » du test valent accord pour ces publications ; toute autre écriture dans Linear attend l’accord d’Isabelle, sauf, quand l’orchestrateur lance les skills (argument `orchestre`), le passage en « Attente Isabelle » avant une validation hors test de la PR et le retour après sa réponse. Pour un cadrage, une seule validation avant la PR regroupe l’ADR, les constats, les cases producteur et leur publication ; le « ok » du test vaut accord pour les cases testeur et la DOD. Ce qui est montré à Isabelle tient en 10 lignes, en tableau quand il y a plusieurs éléments (voir `AGENTS.md`, « Échanges avec Isabelle »).
-- `/orchestrate`, lancé dans une pane herdr, propose les tickets démarrables du cycle (`--max N`, 3 par défaut), dont 2 cadrages au plus, puis lance chacun dans son worktree `../knitproof-<id>` et sa pane ; `.claude/plans/` y est un lien vers le checkout principal. Une branche se rebase sur `origin/develop`, en worktree, avant le test et avant le merge, si `develop` a avancé, puis se pousse avec `--force-with-lease` (voir l’[ADR 0017](docs/adr/0017-worktrees-et-force-with-lease.md)).
-- Les plans restent locaux dans `.claude/plans/` ; `.claude/settings.json` pré-autorise les commandes courantes (détail dans `AGENTS.md`).
+Le projet se développe avec des agents de code, encadrés par des règles écrites ([`AGENTS.md`](AGENTS.md)) :
+
+- `/plan-ticket CLA-XX` : questions métier, contexte et plan relus par deux agents, une seule validation humaine.
+- `/implement-slice CLA-XX` : un agent code étape par étape, un autre relit le diff, preuves à l’appui ; le merge attend le test humain.
+- `/orchestrate` : plusieurs tickets en parallèle, chacun dans son worktree.
+
+Le détail (statuts Linear, cadrages, rebase) est dans [`AGENTS.md`](AGENTS.md) et `.claude/skills/`.
 
 ## Licence
-
 MIT — Isabelle Lafont
