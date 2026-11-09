@@ -1,9 +1,21 @@
 # knitproof
 
 [![CI](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FIsalafont%2Fknitproof%2Fdevelop%2Fpyproject.toml)](pyproject.toml)
 
 > **Le modèle propose, le moteur prouve, la personne arbitre.**
-> Generate, verify and validate knitting patterns with AI.
+> Knitting patterns computed and checked by a deterministic engine, not guessed by an AI.
+
+**knitproof** calcule et vérifie les mailles de patrons de tricot, en commençant par le bonnet. Aujourd’hui, `knitproof calc` calcule un bonnet depuis une demande YAML et `knitproof verify` contrôle les comptes de mailles d’un patron écrit en YAML.
+
+Principes : un calcul déterministe, jamais confié au modèle · une provenance pour chaque valeur · l’incertain renvoyé à une personne · une fiabilité mesurée, pas promise.
+
+<details>
+<summary>In English</summary>
+
+knitproof computes and checks knitting patterns, starting with hats. A language model may read the request or the pattern, but it never produces a stitch count: a deterministic Python engine computes every number from the measurement, the blocked gauge swatch and the fibre’s behaviour, and whatever it cannot prove goes back to a person. Every value carries its provenance. Status, November 2026: `knitproof calc` computes a hat from a request written in YAML and `knitproof verify` checks the stitch counts of a pattern written in YAML; model-based reading is planned. The rest of this README is in French.
+
+</details>
 
 Demandez à un LLM un bonnet pour un enfant de 3 ans, en lui donnant le tour de tête, la laine, l’échantillon et la taille des aiguilles : il peut vous répondre avec un nombre de mailles de bonnet adulte. Le modèle ne calcule pas, il propose un nombre plausible. Et il ignore qu’un coton, peu élastique, ne se tricote pas avec la même aisance qu’un mérinos.
 
