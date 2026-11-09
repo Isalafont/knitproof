@@ -24,6 +24,10 @@ class NoticeCode(StrEnum):
     NEEDLE_TOO_LONG = "needle_too_long"
     BODY_TOO_SHORT = "body_too_short"
     CROWN_DEPTH_FLAT = "crown_depth_flat"
+    HEIGHT_FROM_TABLE = "height_from_table"
+    HEIGHT_UNRESOLVED = "height_unresolved"
+    BRIM_HEIGHT_MISSING = "brim_height_missing"
+    ROW_GAUGE_MISSING = "row_gauge_missing"
 
 
 class Notice(BaseModel):
