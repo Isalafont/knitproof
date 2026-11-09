@@ -27,30 +27,32 @@ Bord : côtes 2/2, revers de 5 cm replié
 Hauteur finie : 20 cm
 ```
 
-Le calcul de knitproof :
+Le calcul de knitproof, avec `uv run knitproof calc examples/bonnet-3-ans.yaml` (code de sortie 0) :
 
+<!-- sortie : examples/sorties/bonnet-3-ans.calc.txt -->
 ```text
-Échantillon  20 m / 10 cm, après blocage              source : votre échantillon
-Aisance      −10 % : saisie, bonnet ajusté
-Tour visé    43,2 cm (48 × 0,90)
-Montage      86,4 m calculées (43,2 × 20 / 10) → 88 m, multiple de 4 pour les côtes 2/2
-             Tour fini réel : 44 cm
-Hauteur      20 cm finis + 5 cm de revers = 25 cm tricotés : 75 rangs (30 rangs / 10 cm)
-Bord         30 rangs (le revers se tricote deux fois : 2 × 5 cm)
-Calotte      17 rangs, 10 rangs de diminution, 8 m restantes, environ 5,7 cm
-Corps        28 rangs (75 − 30 − 17)
+Échantillon 20 m / 10 cm, après blocage (source : votre échantillon)
+Aisance     −10 % : saisie
+Tour visé   43,2 cm (48 × 0,9)
+Montage     86,4 m calculées (43,2 × 20 / 10) → 88 m, multiple de 4
+            Tour fini réel : 44 cm
+Hauteur     20 cm finis + 5 cm de revers = 25 cm tricotés : 75 rangs (30 rangs / 10 cm, À VÉRIFIER, d’après DROPS Children 49-25)
+Bord        30 rangs (le revers se tricote deux fois : 2 × 5 cm)
+Calotte     17 rangs, 10 rangs de diminution, 8 m restantes, environ 5,7 cm
+Corps       28 rangs (75 − 30 − 17)
+Aiguilles   4 mm
 
-ATTENTION    Avec l’échantillon avant blocage (22 m), on monterait 96 m.
-             Après lavage, le superwash se détend : 96 m donneraient 48 cm,
-             sans aisance. Le bonnet glisserait.
-             Décidé par : le moteur (calcul vérifiable)
+ALERTE      Avec l’échantillon avant blocage (22 m), on monterait 96 m.
+            96 m donneraient 48 cm après blocage, sans aisance.
+            Décidé par : le moteur (calcul vérifiable)
 
-REJETÉ       Proposition d’un LLM seul : 120 m
-             Après blocage, 120 m donnent 60 cm (120 × 10 / 20) : un bonnet adulte.
-             Décidé par : le moteur (calcul vérifiable)
+REJETÉ      Proposition d’un LLM seul : 120 m
+            120 m diffèrent du montage calculé : 88 m
+            Après blocage, 120 m donnent 60 cm (120 × 10 / 20)
+            Décidé par : le moteur (calcul vérifiable)
 ```
 
-*Résultat cible du jalon M1 ; valeur d’aisance saisie.*
+L’aisance est une valeur saisie. Le moteur compare le montage sur l’échantillon avant blocage (96 m, 48 cm après lavage) et rejette le nombre proposé par un LLM (120 m, 60 cm : un bonnet adulte).
 
 À plat, le même bonnet se monte sur 90 m (88 m plus une lisière à chaque bord), avec les diminutions de la calotte à l’endroit seulement : 19 rangs de calotte au lieu de 17, et un corps réglé pour que la calotte commence à l’endroit ([ADR 0028](docs/adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)). Hauteurs et jauge en rangs de l’exemple : « À VÉRIFIER ». Le changement d’aiguille dans la calotte se calcule sur la dernière aiguille saisie, celle de la calotte.
 
@@ -79,14 +81,13 @@ Rang 33 : *9 m end., 2 m ens.*, 9 fois (89 m)
 
 Le rapport de knitproof, avec `uv run knitproof verify examples/bonnet-erreur-rang-33.yaml` (code de sortie 1) :
 
+<!-- sortie : examples/sorties/bonnet-erreur-rang-33.verify.txt -->
 ```text
 ERREUR      Rang 33 — nombre de mailles incohérent
             Annoncé : 89 m · Calculé : 90 m
             Source : page 2, ligne 14
             Décidé par : le moteur (calcul vérifiable)
 ```
-
-*Le rapport cible du jalon M1 va plus loin : les lignes « OK Montage » et « À VÉRIFIER Échantillon » arriveront avec `knitproof calc` (CLA-69), qui assemblera le montage (tranche 2) et l’échantillon (tranche 3) ; le détail « 99 − 9 diminutions » et la citation du texte source ne sont pas encore planifiés.*
 
 ## Comment c’est construit
 
@@ -170,9 +171,28 @@ uv run lint-imports
 uv run mypy
 ```
 
-`domain` et `engine` portent le modèle de patron et la vérification des comptes de mailles ; `app` et `cli` portent la commande `knitproof verify` ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; le test d’acceptation de `verify` passe ; celui de `calc` reste en échec attendu jusqu’à CLA-69, et la CI casse le jour où il passe sans qu’on retire le marqueur. Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
+`domain` et `engine` portent le modèle de patron, le calcul du bonnet et la vérification des comptes de mailles ; `app` et `cli` portent les commandes `knitproof calc` et `knitproof verify` ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs sorties de référence vivent dans `examples/sorties/` et un test garde les blocs du README contre elles (balise `<!-- sortie : … -->` avant chaque bloc). Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
+
+### Calculer un bonnet
+
+La commande `knitproof calc` lit une demande YAML (format décrit dans [`docs/architecture.md`](docs/architecture.md), section 9), applique l’aisance, calcule le plan du bonnet, contrôle le montage proposé et les aiguilles, puis rend un rapport unique sur stdout.
+
+```sh
+uv run knitproof calc examples/bonnet-3-ans.yaml
+```
+
+Le code de sortie dit le résultat, et ne se lit pas comme celui de `verify` :
+
+- `0` : un plan est calculé, avec ou sans alerte ou rejet dans le rapport ;
+- `1` : des questions restent en attente (par exemple, pas de jauge en rangs), pas de plan ; les questions sortent sur stdout ;
+- `2` : erreur d’usage (fichier non précisé), message sur stderr ;
+- `3` : fichier absent, illisible ou invalide (clé inconnue, nombre trop grand), message sur stderr, sans trace Python.
+
+Pour `verify`, `1` veut dire « au moins un constat ».
+
+Les tailles d’aiguilles s’écrivent « 4 mm », « US 6 » ou « US 6 (4 mm) » ; le texte rendu garde la notation saisie et donne les mm de la table, « À VÉRIFIER » sur l’emballage. L’âge, le fil et la fibre ne sont pas lus : leur résolution revient à CLA-66 et CLA-121.
 
 ### Vérifier un patron YAML
 
@@ -208,8 +228,8 @@ Lire le résultat :
 Limites :
 
 - Seules `work`, `k2tog`, `m1` et `repeat` sont prises en charge ; les diminutions des patrons synthétiques sont toutes écrites en `k2tog`. Un fichier qui emploie une autre opération est rejeté, et ce rejet ne prouve pas une erreur de calcul.
-- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande et le test comptent les mailles, ils ne contrôlent pas le montage. Le moteur calcule et contrôle le montage d’un seul point (multiple et reste), au plus proche, en dessous en cas d’égalité, mais `knitproof verify` ne le vérifie pas et aucune commande ne l’expose avant CLA-69. Le moteur calcule aussi le rang d’ajustement entre bord et corps (ADR 0025), mais aucune commande ne l’expose avant CLA-69.
-- Les tailles d’aiguilles de deux systèmes (US, UK, japonais, mm) ne sont pas converties : le moteur avertit qu’il ne peut pas les comparer, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). Aucune commande ne l’expose avant CLA-69.
+- Le multiple du point (côtes 2/2…) n’est pas vérifié : la commande et le test comptent les mailles, ils ne contrôlent pas le montage. `knitproof calc` calcule et contrôle le montage d’un seul point (multiple et reste saisi), au plus proche, en dessous en cas d’égalité ; `knitproof verify` ne le vérifie pas. Le rang d’ajustement entre bord et corps (ADR 0025) n’est exposé par aucune commande.
+- Les tailles d’aiguilles de deux systèmes (US, UK, japonais, mm) ne sont pas converties : le moteur avertit qu’il ne peut pas les comparer, sauf si leur taille en mm est connue des deux côtés (écrite en mm, ou saisie à côté d’une autre notation). `knitproof calc` signale la différence entre l’échantillon et le projet (`swatch_needle_mismatch`) ; `verify` ne compare pas les aiguilles.
 - Après un `repeat_not_fitting`, les comptes annoncés suivants ne sont pas comparés ([ADR 0013](docs/adr/0013-format-yaml-fige-et-poursuite-sur-le-compte-calcule.md)).
 - Seuls les comptes de mailles sont vérifiés : ni mesures, ni échantillon.
 
