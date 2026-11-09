@@ -10,6 +10,7 @@ import pytest
 from pydantic import BaseModel, ValidationError
 
 import knitproof.domain
+from knitproof.domain.age import Age
 from knitproof.domain.cast_on import CastOnCheck, CastOnResult, RoundingRule, StitchMultiple
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
@@ -19,6 +20,7 @@ from knitproof.domain.simulation import RoundCount
 from knitproof.domain.transition import Transition, TransitionRefusal, TransitionRejection
 
 VALID: dict[type[BaseModel], dict[str, object]] = {
+    Age: {"value": 3, "unit": "years"},
     Work: {"work": 10},
     RepeatBlock: {"body": ("k2tog",), "times": 2},
     Round: {"start": 1, "end": 2, "ops": ({"work": 10},), "stated_count": 10},

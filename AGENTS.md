@@ -67,7 +67,7 @@ Ce que ruff et mypy ne vérifient pas :
 - Écrire dans Linear demande toujours un accord, sauf les changements de statut faits par les skills : « In Progress » quand `/plan-ticket` commence la planification, « In Review » quand `/implement-slice` a ouvert la PR et que la CI est verte ; et, seulement lancés par `/orchestrate`, le passage en « Attente Isabelle » avant une validation, hors test de la PR, et le retour après sa réponse. La validation unique d’un ticket de code vaut accord pour publier le ticket réaligné ; les cases producteur se publient sur preuve à l’ouverture de la PR, sans autre accord. Pour un cadrage (titre préfixé `[Cadrage]`), la validation qui précède la PR couvre la publication des cases producteur, du ticket réaligné et des tickets de suite (ADR 0022). Dans les deux cas, le « ok » d’Isabelle sur le test vaut accord pour les cases testeur et la DOD.
 - `/orchestrate`, lancé dans une pane herdr, propose les tickets démarrables du cycle (`--max N`, 3 par défaut), puis lance chacun dans son worktree et sa pane ; un ticket occupe sa place jusqu’au merge ; au plus 2 cadrages à la fois, comptés dans N.
 - Un ticket `[Cadrage]` suit un parcours court : sources et questions en une validation, plan court ni validé ni relu, brouillon d’ADR vérifié sur ses sources, une relecture du diff, puis une seconde validation qui regroupe ADR, constats et publication (voir `plan-ticket` et `implement-slice`).
-- Commits sans mention d’un agent de code (Claude, Codex…).
+- Commits sans mention d’un agent de code (Claude, Codex…) ; aucun lien de session dans une PR.
 
 ## Échanges avec Isabelle
 
