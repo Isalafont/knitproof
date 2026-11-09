@@ -7,6 +7,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict
 
+from knitproof.domain.integers import StrictPositiveInt
+
 
 class NoticeStatus(StrEnum):
     WARNING = "warning"
@@ -18,6 +20,8 @@ class NoticeCode(StrEnum):
     CROWN_ODD_STITCHES = "crown_odd_stitches"
     CROWN_TOO_SMALL = "crown_too_small"
     CROWN_LONE_STITCH = "crown_lone_stitch"
+    NEEDLE_CHANGE = "needle_change"
+    NEEDLE_TOO_LONG = "needle_too_long"
 
 
 class Notice(BaseModel):
@@ -26,3 +30,4 @@ class Notice(BaseModel):
     status: NoticeStatus
     code: NoticeCode
     text: str
+    round: StrictPositiveInt | None = None

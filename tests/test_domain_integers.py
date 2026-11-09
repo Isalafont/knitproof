@@ -20,6 +20,7 @@ from knitproof.domain.ease import EaseSize
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
 from knitproof.domain.location import SourceLocation
 from knitproof.domain.measure import Length, LengthUnit
+from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.pattern import Pattern, RepeatBlock, Round, Work
 from knitproof.domain.reference import AgeBounds
 from knitproof.domain.simulation import RoundCount
@@ -73,6 +74,12 @@ VALID: dict[type[BaseModel], dict[str, object]] = {
         "actual": 9,
     },
     RowCount: {"raw": Decimal(75), "rows": 75, "rule": RowRounding.NEAREST_TIE_DOWN},
+    Notice: {
+        "status": NoticeStatus.WARNING,
+        "code": NoticeCode.NEEDLE_CHANGE,
+        "text": "t",
+        "round": 2,
+    },
     SourceLocation: {"page": 1, "line": 3},
     RoundCount: {"round": 1, "stitches": 10},
     Transition: {
