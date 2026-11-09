@@ -1,17 +1,15 @@
-# Exemple « Calculer un patron » du README.
-# Format provisoire : les tranches 2 à 6 le figent.
-garment: beanie
-age_years: 3
+# Exemple « Calculer un bonnet » du README : la demande lue par `knitproof calc`.
+# Format de la demande figé par CLA-69 (docs/architecture.md, section 9).
 head_circumference: {value: "48", unit: cm, provenance: measured}
-yarn:
-  composition: [{fiber: merino_superwash, percent: 100}]
 swatch:
   stitch: stockinette
-  needle: {size: {value: "4", unit: mm}}
-  # Rangs : À VÉRIFIER, d’après DROPS Children 49-25 (« 22 mailles … 30 rangs … = 10 x 10 cm »), pas une mesure de la personne.
-  before_blocking: {stitches: "22", width: {value: "10", unit: cm}, rows: "30", height: {value: "10", unit: cm}}
-  after_blocking: {stitches: "20", width: {value: "10", unit: cm}, rows: "30", height: {value: "10", unit: cm}}
-edge: {stitch: rib_2x2}
+  needle: {size: "4 mm", kind: straight}
+  # Rangs : d’après DROPS Children 49-25 (« 22 mailles … 30 rangs … = 10 x 10 cm »), pas une mesure de la personne.
+  before_blocking: {stitches: "22", width: {value: "10", unit: cm}, rows: "30", height: {value: "10", unit: cm}, rows_source: {reference: "DROPS Children 49-25", to_verify: true}}
+  after_blocking: {stitches: "20", width: {value: "10", unit: cm}, rows: "30", height: {value: "10", unit: cm}, rows_source: {reference: "DROPS Children 49-25", to_verify: true}}
+needles:
+  - {size: "4 mm", kind: double_pointed}
+stitch_multiple: {repeat_multiple: 4, repeat_offset: 0, provenance: entered}
 ease: {value: "-10", unit: percent, provenance: entered}
 # Hauteurs : À VÉRIFIER. Source : texte du modèle DROPS Children 49-25 fourni par Isabelle le
 # 09/11/2026 (page illisible, 403), référence https://www.garnstudio.com/pattern.php?id=12325&cid=19 ;
