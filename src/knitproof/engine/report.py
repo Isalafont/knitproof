@@ -7,12 +7,18 @@ from typing import assert_never
 from knitproof.domain.beanie import BeaniePlan
 from knitproof.domain.cast_on import CastOnCheck, CastOnRejection
 from knitproof.domain.finding import Finding, FindingCode
+from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.measure import SwatchMeasurement
 from knitproof.domain.needle import NeedleCheck, NeedleMismatch
 from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.question import PendingQuestion
 from knitproof.domain.report import DecidedBy, Report, ReportEntry, ReportStatus
 
+_GAUGE_LEAD = {
+    GaugeSource.BLOCKED: "Après blocage",
+    GaugeSource.UNBLOCKED: "Avec l’échantillon avant blocage",
+    GaugeSource.LABEL: "Avec la jauge de l’étiquette",
+}
 NEEDLE_MISMATCH_CODE = "swatch_needle_mismatch"
 TIMES = "\N{MULTIPLICATION SIGN}"  # RUF001 refuse le caractère écrit en clair
 
@@ -85,16 +91,23 @@ def unblocked_swatch_notice(
 
 
 def from_cast_on_check(
-    check: CastOnCheck, swatch: SwatchMeasurement, title: str | None = None
+    check: CastOnCheck,
+    swatch: SwatchMeasurement,
+    title: str | None = None,
+    source: GaugeSource = GaugeSource.BLOCKED,
 ) -> ReportEntry | None:
-    """Un montage proposé rejeté, avec la largeur finie qu’il donnerait ; `None` si accepté."""
+    """Un montage proposé rejeté, avec la largeur finie qu’il donnerait ; `None` si accepté.
+
+    `source` nomme d’où vient la jauge : « Après blocage » seulement pour un échantillon bloqué.
+    """
     if check.accepted:
         return None
     width = _number(swatch.width.in_cm)
     lines = [
         *([title] if title is not None else []),
         *(_rejection_text(reason, check) for reason in check.reasons),
-        f"Après blocage, {check.proposed} m donnent {_number(check.proposed_finished_cm)} cm "
+        f"{_GAUGE_LEAD[source]}, {check.proposed} m donnent "
+        f"{_number(check.proposed_finished_cm)} cm "
         f"({check.proposed} {TIMES} {width} / {_number(swatch.stitches)})",
     ]
     return ReportEntry(

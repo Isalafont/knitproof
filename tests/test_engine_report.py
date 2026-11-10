@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from knitproof.domain.cast_on import StitchMultiple
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
+from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.location import SourceLocation
 from knitproof.domain.measure import Length, LengthUnit, SwatchMeasurement
 from knitproof.domain.needle import Needle, NeedleKind, NeedleMaterial, NeedleSize, NeedleSystem
@@ -101,6 +102,19 @@ def test_a_rejected_cast_on_gives_the_finished_width() -> None:
     assert entry.code == "differs_from_calculation"
     assert entry.round is None
     assert "Après blocage, 120 m donnent 60 cm (120 \N{MULTIPLICATION SIGN} 10 / 20)" in entry.lines
+
+
+def test_a_rejected_cast_on_names_the_real_source_of_the_gauge() -> None:
+    check = check_cast_on(120, Length(value=Decimal("43.2"), unit=LengthUnit.CM), SWATCH, _mult())
+
+    unblocked = from_cast_on_check(check, SWATCH, source=GaugeSource.UNBLOCKED)
+    label = from_cast_on_check(check, SWATCH, source=GaugeSource.LABEL)
+
+    assert unblocked is not None
+    assert label is not None
+    assert unblocked.lines[-1].startswith("Avec l’échantillon avant blocage, 120 m donnent 60 cm")
+    assert label.lines[-1].startswith("Avec la jauge de l’étiquette, 120 m donnent 60 cm")
+    assert "Après blocage" not in unblocked.lines[-1] + label.lines[-1]
 
 
 def test_a_decimal_width_uses_the_decimal_comma() -> None:

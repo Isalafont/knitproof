@@ -14,12 +14,16 @@ EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "bonnet-3-ans.yaml"
 def test_the_example_gives_88_stitches_and_the_hand_computed_rows() -> None:
     request = BeanieRequest.model_validate(yaml.safe_load(EXAMPLE.read_text(encoding="utf-8")))
 
+    swatch = request.swatch
+    assert swatch is not None
+    assert swatch.after_blocking is not None
+
     review = plan_beanie(
         request.specification,
         circumference=request.circumference,
         stitch_multiple=request.multiple,
-        after_blocking=request.swatch.after_blocking,
-        before_blocking=request.swatch.before_blocking,
+        gauge=swatch.after_blocking,
+        before_blocking=swatch.before_blocking,
     )
 
     assert review.plan is not None

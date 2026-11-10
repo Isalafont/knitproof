@@ -113,7 +113,7 @@ sequenceDiagram
     APP-->>P: Report unique (entrées, questions, plan)
 ```
 
-En M1, `knitproof calc` lit une demande déjà résolue (tour de tête, aisance, jauges, multiple du point, aiguilles saisis) : le parcours réel s’arrête à `plan_beanie` et aux contrôles ci-dessus. La résolution depuis l’âge, la taille et le fil (`resolve_beanie_inputs`, questions en attente avant calcul) revient à CLA-66 et CLA-121.
+En M1, `knitproof calc` lit une demande déjà résolue (tour de tête, aisance, jauges, multiple du point, aiguilles saisis) : le parcours réel s’arrête à `plan_beanie` et aux contrôles ci-dessus. La jauge se résout selon l’ordre de confiance de la section 7 (CLA-66) ; la résolution depuis l’âge, la taille et le fil (`resolve_beanie_inputs`, questions en attente avant calcul) revient à un ticket de suite et à CLA-121.
 
 ## 5. Couches
 
@@ -179,7 +179,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `NeedleTableRow` | `system` (`us`, `uk`, `jp`), `size`, `mm` (un ou deux), `source` | une ligne des tables de l’ADR 0021, chargée par la bibliothèque ; `app/needles.py` en tire le texte d’information et l’avis |
 | `CrownRule`, `MagicLoopAdvice` | seuils de la calotte (ADR 0019) ; câble de 80 cm, un conseil (ADR 0023) | `person_decision` pour la calotte, sources de l’ADR pour le câble |
 | `FiberComposition` | parts (`fiber_id`, `percent`) | somme = 100 ; fibres connues |
-| `YarnLabel` | composition, `needle: Range[NeedleSize]`, `gauge` (fourchette, unité d’origine, état inconnu), `length_m`, `weight_g`, `care`, `superwash` | provenance au niveau de l’objet |
+| `YarnLabel` | composition, `needle: Range[NeedleSize]`, `gauge: LabelGauge` (voir « Échantillon et points »), `length_m`, `weight_g`, `care`, `superwash` | provenance au niveau de l’objet |
 | `Yarn` | `id`, `name`, `brand`, `composition`, `superwash`, `label` | — |
 | `FiberProfile` | `fiber_id`, `names`, `blocking_change` (largeur, hauteur), `sources`, `validated_by` | au moins une source ; non validé ⇒ `needs_review` |
 
@@ -191,6 +191,9 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `NeedleSize` | `system` (`mm`, `us`, `uk`, `jp`, champ explicite), `original` (notation d’origine), `mm` facultatif ; `normalized` et `known_mm` dérivés | système jamais déduit du texte ; normalisation à l’intérieur d’un système (« 00 » ≠ « 0 » en us et uk ; en us, « 2.5 » = « 2½ » et « 10¾ » = « 10.75 », en uk comparaison par notation ; en mm, valeur `Decimal` sans tolérance) ; forme validée (décimales à point, ½ et ¾ en us et uk), pas l’existence de la taille ; `mm` saisi, jamais converti (pour mm, lu dans la notation) ; table et liste des tailles : ADR 0021, chargées par CLA-67 |
 | `Needle` | `size: NeedleSize`, `kind` (`straight`, `circular`, `double_pointed`), `cable_length: Length` (facultatif), `material` (facultatif : `metal`, `wood`, `bamboo`, `plastic`, `carbon`, `other`) | `cable_length` facultatif pour `circular`, refusé pour `straight` et `double_pointed` ; `cable_length` vaut la longueur totale de l’aiguille, de pointe à pointe, pointes comprises ([ADR 0023](adr/0023-longueur-des-aiguilles-circulaires-et-magic-loop.md), point 8) ; aluminium, acier, nickel, laiton restent `metal`, verre : `other` ; la matière n’entre dans aucun calcul |
 | `SwatchMeasurement` | `stitches: Decimal`, `width: Length`, `rows: Decimal` et `height: Length` facultatifs | valeurs > 0, `float` refusé en entrée ; demi-mailles admises (ex. 22,5 m pour 10 cm, 22 m pour 4 in) ; `rows` et `height` vont ensemble, deux valeurs ou aucune ; jauge pour 10 cm dérivée (`stitches_per_10_cm`, `rows_per_10_cm`) |
+| `LabelGauge` | `stitches` (valeur ou `GaugeRange`), `width: Length`, `rows` (valeur ou `GaugeRange`) et `height: Length` facultatifs (CLA-66) | `float` refusé ; `rows` et `height` vont ensemble ; une valeur lue par YAML reste un `Decimal`, une fourchette devient un `GaugeRange` (union `left_to_right`, fixée par un test) ; c’est le type de la cible `YarnLabel.gauge`, `YarnLabel` lui-même n’étant pas encore créé |
+| `GaugeRange` | `low`, `high` | `low` < `high` ; aucun milieu n’est calculé |
+| `ResolvedGauge` | `gauge: SwatchMeasurement` ou `None`, `source` (`blocked`, `unblocked`, `label`) ou `None`, `notices`, `questions` | seule structure de résolution de la jauge (`engine.resolve_gauge`) ; la source va avec la jauge ; sans jauge, des questions en attente, jamais une valeur inventée |
 | `Swatch` | `id`, `yarn_id`, `needle: Needle`, `stitch_pattern_id`, `worked` (`round` / `flat`), `before`, `after`, `blocking_method` | aiguilles et point identiques avant et après, par construction |
 | `StitchMultiple` | `repeat_multiple`, `repeat_offset` | `multiple ≥ 1`, `0 ≤ offset < multiple` ; `accepts(n)` ; le point saisi pour le montage (CLA-65), sans `id` ni `names` |
 | `StitchPattern` | `id`, `names`, `multiple: StitchMultiple` ; à venir : marque « motif précis » (ADR 0019) | `0 ≤ offset < multiple` (par `StitchMultiple`) ; sans liste de points, qui revient à un autre ticket |
@@ -237,18 +240,18 @@ L’ordre de confiance dépend de la grandeur :
 
 | Grandeur | Ordre de confiance | Si rien n’est disponible |
 |---|---|---|
-| Échantillon | échantillon bloqué > échantillon non bloqué (règle à trancher) > étiquette ou fiche Ravelry (`needs_review`) | question en attente |
+| Échantillon | échantillon bloqué > échantillon non bloqué, « À VÉRIFIER », avec le conseil de le bloquer (laver puis sécher) > échantillon d’état de blocage inconnu : question « l’as-tu bloqué ? », sans plan > jauge de l’étiquette, « À VÉRIFIER : jauge du fabricant, état de blocage inconnu » (une fourchette sans échantillon fait demander la valeur à retenir, aucun milieu) | question en attente |
 | Tour de tête | mesure > mesure de référence par âge ou par taille nommée, proposée puis décidée par la personne (`needs_review`, [ADR 0018](adr/0018-tour-de-tete-par-age.md), [ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)) | question en attente |
 | Aisance | saisie > table de référence par couple (ajustement, point), proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md)) | question en attente |
 | Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
 
 La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
 
-Pour le tour de tête, la bibliothèque charge une plage par tranche d’âge, reprise de patrons (DROPS Children, Julie Taylor) jusqu’à 14 ans, puis du Craft Yarn Council, femme et homme, dès 15 ans ([ADR 0027](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md), qui remplace l’OMS et KiGGS pour la source du tour de tête). La plage est « À VÉRIFIER » et sans valeur proposée ; la résolution reste à CLA-66. Sans mesure, la question en attente affiche la plage et demande la mesure ; le calcul ne part qu’après la `Decision`. Une grille de tailles nommées, de 0–3 mois à l’adulte, s’ajoute à l’entrée par âge ; sa source, l’OMS puis KiGGS, se recadre avec CLA-118. Le sexe, facultatif, ne sert qu’aux tailles adultes. Un âge sans taille fait demander le tour de tête ([ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)). Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
+Pour le tour de tête, la bibliothèque charge une plage par tranche d’âge, reprise de patrons (DROPS Children, Julie Taylor) jusqu’à 14 ans, puis du Craft Yarn Council, femme et homme, dès 15 ans ([ADR 0027](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md), qui remplace l’OMS et KiGGS pour la source du tour de tête). La plage est « À VÉRIFIER » et sans valeur proposée ; la résolution reste à un ticket de suite. Sans mesure, la question en attente affiche la plage et demande la mesure ; le calcul ne part qu’après la `Decision`. Une grille de tailles nommées, de 0–3 mois à l’adulte, s’ajoute à l’entrée par âge ; sa source, l’OMS puis KiGGS, se recadre avec CLA-118. Le sexe, facultatif, ne sert qu’aux tailles adultes. Un âge sans taille fait demander le tour de tête ([ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)). Une mesure saisie prime toujours ; hors plage, elle produit un `warning`, jamais un refus ([ADR 0018](adr/0018-tour-de-tete-par-age.md)).
 
 Une étiquette et une fiche Ravelry qui divergent produisent un constat `needs_review`.
 
-Quand l’échantillon de la personne et la jauge de l’étiquette coexistent, le calcul suit toujours l’échantillon : la jauge de l’étiquette est celle de la marque, pas celle de la personne. Le moteur compare tout de même les deux et produit un constat `gauge_differs_from_label`. Sous un seuil à trancher, ce constat est `ok` et note seulement l’écart, normal selon la tension de chacune. Au-dessus, il devient `warning` : erreur de mesure, échantillon non bloqué ou autres aiguilles sont possibles. Si l’échantillon a été tricoté avec les aiguilles de l’étiquette, le constat suggère d’en changer la taille pour retrouver la jauge visée. Le moteur ne fait que suggérer : c’est la personne qui décide.
+Quand l’échantillon de la personne et la jauge de l’étiquette coexistent, le calcul suit toujours l’échantillon : la jauge de l’étiquette est celle de la marque, pas celle de la personne. Le moteur compare tout de même les deux et produit un constat `gauge_differs_from_label`. La comparaison porte sur les mailles et sur les rangs pour 10 cm ; la jauge de l’étiquette est une valeur ou une fourchette, et l’écart se mesure à la borne la plus proche, nul dans la fourchette. À partir de 5 % d’écart (seuil décidé, question 14, constante `LABEL_GAUGE_THRESHOLD_PERCENT`, comparé par produits croisés exacts), le constat est un `warning`, un par grandeur en écart : erreur de mesure, échantillon non bloqué ou autres aiguilles sont possibles. Sous 5 %, aucun constat : il n’y a pas de statut `ok`. Pour les mailles, le texte donne le sens de correction (trop de mailles pour 10 cm : aiguilles plus grosses ; pas assez : aiguilles plus fines), jamais une taille précise ; pour les rangs, il ne donne aucun conseil d’aiguilles. Le moteur ne fait que suggérer : c’est la personne qui décide.
 
 La provenance permet aussi d’effacer sur demande toutes les données venues d’une source, comme l’exige la licence de l’API Ravelry.
 
@@ -281,13 +284,14 @@ Format de la demande de bonnet (figé par CLA-69), lu par `knitproof calc` dans 
 | Clé | Contenu |
 |---|---|
 | `head_circumference`, `ease` | valeur, unité (`cm`, ou `percent` pour l’aisance) et `provenance` (`measured` ou `entered`) ; le tour visé en découle (43,2 cm = 48 × (100 − 10) / 100) |
-| `swatch` | `needle`, `stitch`, `after_blocking` (obligatoire) et `before_blocking` : mailles et largeur, rangs et hauteur facultatifs (sans rangs, le plan manque et la commande pose la question), et `rows_source` (`reference`, `to_verify`) pour une jauge en rangs tirée d’un patron, affichée sur la ligne « Hauteur » |
+| `swatch` | facultatif. `needle`, `stitch`, puis au moins une mesure parmi `after_blocking`, `before_blocking` et `unknown_blocking` (échantillon d’état de blocage inconnu, exclusif des deux autres : on répond à la question « l’as-tu bloqué ? » en renommant la clé en `after_blocking` ou `before_blocking`) : mailles et largeur, rangs et hauteur facultatifs (sans rangs, le plan manque et la commande pose la question), et `rows_source` (`reference`, `to_verify`) pour une jauge en rangs tirée d’un patron, affichée sur la ligne « Hauteur » |
+| `label_gauge` | facultatif : la jauge de l’étiquette. `stitches` en valeur ou en fourchette (`low`, `high`), `width`, et `rows` en valeur ou en fourchette avec `height`, facultatifs. Sans `swatch`, le calcul la suit, « À VÉRIFIER » ; avec `swatch`, elle ne sert qu’à la comparaison |
 | `needles` | aiguilles du projet : `size` et `kind` ; « 4 mm », « US 6 » ou « US 6 (4 mm) » (le `mm` entre parenthèses est saisi, jamais déduit) |
 | `stitch_multiple` | `repeat_multiple`, `repeat_offset`, `provenance` : saisi, aucune valeur non sourcée |
 | `total_height`, `brim_height`, `folded_brim`, `worked` | hauteurs finies, revers replié, méthode (`round` par défaut) |
 | `proposed_cast_on` | `stitches` et `origin: llm_only` : un montage proposé à contrôler, rejeté s’il diffère du calcul |
 
-L’âge, le fil et les fibres ne sont pas lus avant CLA-66 et CLA-121.
+L’âge, le fil et les fibres ne sont pas lus : leur résolution revient à un ticket de suite et à CLA-121.
 
 Les comptes (`cast_on`, `work`, `times`, `start`, `end`, `stated_count`) sont des entiers nus ; une chaîne, un nombre à virgule ou un booléen rend le patron invalide (code 3).
 

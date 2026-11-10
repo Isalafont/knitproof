@@ -26,7 +26,7 @@ Principes : un calcul déterministe, jamais confié au modèle · une provenance
 <details>
 <summary>In English</summary>
 
-knitproof computes and checks knitting patterns, starting with hats. A language model may read the request or the pattern, but it never produces a stitch count: a deterministic Python engine computes every number from the measurement, the blocked gauge swatch and the fibre’s behaviour, and whatever it cannot prove goes back to a person. Every value carries its provenance. Status, November 2026: `knitproof calc` computes a hat from a request written in YAML and `knitproof verify` checks the stitch counts of a pattern written in YAML; model-based reading is planned. The rest of this README is in French.
+knitproof computes and checks knitting patterns, starting with hats. A language model may read the request or the pattern, but it never produces a stitch count: a deterministic Python engine computes every number from the measurement, the gauge (a blocked swatch first, the yarn label as a flagged fallback) and the fibre’s behaviour, and whatever it cannot prove goes back to a person. Every value carries its provenance. Status, November 2026: `knitproof calc` computes a hat from a request written in YAML and `knitproof verify` checks the stitch counts of a pattern written in YAML; model-based reading is planned. The rest of this README is in French.
 
 </details>
 
@@ -65,7 +65,7 @@ Chaque valeur dit d’où elle vient : votre échantillon, l’étiquette, la bi
 <td valign="top">
 
 **Votre échantillon d’abord**<br>
-Le calcul part de votre jauge mesurée avant et après blocage. `knitproof calc` calcule le bonnet depuis une demande YAML et contrôle le montage proposé. Disponible.
+Le calcul part de votre jauge, de préférence mesurée après blocage ; sans échantillon, il suit l’étiquette, « À VÉRIFIER » ; avec un échantillon, il signale l’écart à l’étiquette dès 5 %. `knitproof calc` calcule le bonnet depuis une demande YAML et contrôle le montage proposé. Disponible.
 
 </td>
 <td valign="top">

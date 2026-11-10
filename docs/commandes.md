@@ -21,13 +21,13 @@ uv run knitproof calc examples/bonnet-3-ans.yaml
 Le code de sortie dit le résultat, et ne se lit pas comme celui de `verify` :
 
 - `0` : un plan est calculé, avec ou sans alerte ou rejet dans le rapport ;
-- `1` : des questions restent en attente (par exemple, pas de jauge en rangs), pas de plan ; les questions sortent sur stdout ;
+- `1` : des questions restent en attente (par exemple, pas de jauge en rangs, ou un échantillon d’état de blocage inconnu), pas de plan ; les questions sortent sur stdout ;
 - `2` : erreur d’usage (fichier non précisé), message sur stderr ;
 - `3` : fichier absent, illisible ou invalide (clé inconnue, nombre trop grand), message sur stderr, sans trace Python.
 
 Pour `verify`, `1` veut dire « au moins un constat ».
 
-Les tailles d’aiguilles s’écrivent « 4 mm », « US 6 » ou « US 6 (4 mm) » ; le texte rendu garde la notation saisie et donne les mm de la table, « À VÉRIFIER » sur l’emballage. L’âge, le fil et la fibre ne sont pas lus : leur résolution revient à CLA-66 et CLA-121.
+Les tailles d’aiguilles s’écrivent « 4 mm », « US 6 » ou « US 6 (4 mm) » ; le texte rendu garde la notation saisie et donne les mm de la table, « À VÉRIFIER » sur l’emballage. L’âge, le fil et la fibre ne sont pas lus : leur résolution revient à un ticket de suite et à CLA-121. La jauge se résout : échantillon bloqué, puis non bloqué (« À VÉRIFIER »), puis étiquette (`label_gauge`, « À VÉRIFIER ») ; un échantillon d’état de blocage inconnu (`unknown_blocking`) pose la question « l’as-tu bloqué ? » et la réponse se donne en renommant la clé.
 
 ## Vérifier un patron YAML
 

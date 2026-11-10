@@ -29,6 +29,12 @@ class NoticeCode(StrEnum):
     BRIM_HEIGHT_MISSING = "brim_height_missing"
     ROW_GAUGE_MISSING = "row_gauge_missing"
     UNBLOCKED_SWATCH_CAST_ON = "unblocked_swatch_cast_on"
+    GAUGE_UNBLOCKED = "gauge_unblocked"
+    GAUGE_FROM_LABEL = "gauge_from_label"
+    GAUGE_DIFFERS_FROM_LABEL = "gauge_differs_from_label"
+    GAUGE_BLOCKING_UNKNOWN = "gauge_blocking_unknown"
+    GAUGE_MISSING = "gauge_missing"
+    LABEL_GAUGE_RANGE = "label_gauge_range"
 
 
 class Notice(BaseModel):
