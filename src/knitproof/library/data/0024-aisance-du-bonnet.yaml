@@ -1,0 +1,44 @@
+schema_version: 1
+decided_in: docs/adr/0024-aisance-du-bonnet.md
+entries:
+  - id: oslo-ajuste-jersey
+    fit: fitted
+    edge: stockinette
+    swatch:
+      stitches: "23"
+      width:
+        value: "10"
+        unit: cm
+    sizes:
+      - head: {low: "47", high: "48", unit: cm}
+        cast_on: 92
+      - head: {low: "49", high: "50", unit: cm}
+        cast_on: 96
+      - head: {low: "51", high: "52", unit: cm}
+        cast_on: 100
+      - head: {low: "53", high: "54", unit: cm}
+        cast_on: 104
+      - head: {low: "55", high: "56", unit: cm}
+        cast_on: 108
+      - head: {low: "57", high: "59", unit: cm}
+        cast_on: 112
+      - head: {low: "60", high: "63", unit: cm}
+        cast_on: 120
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Mette Wendelboe Okkels, « Bonnet Oslo », PetiteKnit, version 3.0 (2025), patron en français ; PDF privé d’Isabelle"
+      read_on: 2026-11-05
+      location: "p. 1–2 ; échantillon 23 m = 10 cm en jersey, aiguilles 3 mm"
+  - id: rosebud-ample-cotes-2-2
+    fit: loose
+    edge: rib_2x2
+    sizes:
+      - head: {low: "20", high: "23.75", unit: in}
+        brim_circumference: {value: "18", unit: in}
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Jared Flood, « Rosebud », Brooklyn Tweed, 2011 ; PDF privé d’Isabelle"
+      read_on: 2026-11-05
+      location: "p. 2–3 ; « 18\" circumference at brim », « blocked and unstretched »"

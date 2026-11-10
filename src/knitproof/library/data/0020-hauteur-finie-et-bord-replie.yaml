@@ -1,0 +1,147 @@
+schema_version: 1
+decided_in: docs/adr/0020-hauteur-finie-et-bord-replie.md
+entries:
+  - id: preemie-1-2-lbs
+    quantity: height
+    label: "Preemie (1-2 lbs)"
+    value:
+      value: "3.5"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: preemie-3-4-lbs
+    quantity: height
+    label: "Preemie (3-4 lbs)"
+    value:
+      value: "4"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: preemie-4-5-lbs
+    quantity: height
+    label: "Preemie (4-5 lbs)"
+    value:
+      value: "4.5"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: preemie-5-5-6-lbs
+    quantity: height
+    label: "Preemie (5.5-6 lbs)"
+    value:
+      value: "5"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: newborn
+    quantity: height
+    label: "Newborn"
+    value:
+      value: "6"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: baby-3-6-mois
+    quantity: height
+    label: "Baby – 3 to 6 months"
+    age:
+      min_months: 3
+      max_months: 6
+    value:
+      value: "7"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: baby-6-12-mois
+    quantity: height
+    label: "Baby 6 to 12 months"
+    age:
+      min_months: 6
+      max_months: 12
+    value:
+      value: "7.5"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: toddler-12-mois-3-ans
+    quantity: height
+    label: "Toddler – preschooler (12 months – 3 years)"
+    age:
+      min_months: 12
+      max_months: 36
+    value:
+      value: "8"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: child-3-10-ans
+    quantity: height
+    label: "Child (3 – 10 years)"
+    age:
+      min_months: 36
+      max_months: 120
+    value:
+      value: "8.5"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: pre-teens-and-teens
+    quantity: height
+    label: "Pre-teens and Teens"
+    value:
+      value: "10"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: adult-woman
+    quantity: height
+    label: "Adult Woman"
+    value:
+      value: "11"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02
+  - id: adult-man
+    quantity: height
+    label: "Adult Man"
+    value:
+      value: "11.5"
+      unit: in
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Knit Picks, « Hat Size Charts », 17/12/2009, https://tutorials.knitpicks.com/hat-size-charts/"
+      read_on: 2026-11-02

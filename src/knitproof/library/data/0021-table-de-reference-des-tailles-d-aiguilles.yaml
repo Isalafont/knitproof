@@ -1,0 +1,470 @@
+schema_version: 1
+decided_in: docs/adr/0021-table-de-reference-des-tailles-d-aiguilles.md
+entries:
+  - id: us-000
+    system: us
+    size: "000"
+    mm: ["1.5"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-00
+    system: us
+    size: "00"
+    mm: ["1.75"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-0
+    system: us
+    size: "0"
+    mm: ["2"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-1
+    system: us
+    size: "1"
+    mm: ["2.25"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-2
+    system: us
+    size: "2"
+    mm: ["2.75"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-3
+    system: us
+    size: "3"
+    mm: ["3.125", "3.25"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-4
+    system: us
+    size: "4"
+    mm: ["3.5"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-5
+    system: us
+    size: "5"
+    mm: ["3.75"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-6
+    system: us
+    size: "6"
+    mm: ["4", "4.25"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-7
+    system: us
+    size: "7"
+    mm: ["4.5"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-8
+    system: us
+    size: "8"
+    mm: ["5"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-9
+    system: us
+    size: "9"
+    mm: ["5.25", "5.5"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-10
+    system: us
+    size: "10"
+    mm: ["5.75", "6"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-10-1-2
+    system: us
+    size: "10½"
+    mm: ["6.5"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-11
+    system: us
+    size: "11"
+    mm: ["8"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-13
+    system: us
+    size: "13"
+    mm: ["9"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-15
+    system: us
+    size: "15"
+    mm: ["10"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-17
+    system: us
+    size: "17"
+    mm: ["12.5", "12.75"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-19
+    system: us
+    size: "19"
+    mm: ["15"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-35
+    system: us
+    size: "35"
+    mm: ["19"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-50
+    system: us
+    size: "50"
+    mm: ["25"]
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: us-70
+    system: us
+    size: "70"
+    mm: ["35"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Craft Yarn Council, « Standards : Hooks and Needles », https://craftyarncouncil.com/standards/hooks-and-needles"
+      read_on: 2026-11-02
+  - id: uk-14
+    system: uk
+    size: "14"
+    mm: ["2"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-13
+    system: uk
+    size: "13"
+    mm: ["2.25"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-12
+    system: uk
+    size: "12"
+    mm: ["2.75"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-11
+    system: uk
+    size: "11"
+    mm: ["3"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-10
+    system: uk
+    size: "10"
+    mm: ["3.25"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-9
+    system: uk
+    size: "9"
+    mm: ["3.75"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-8
+    system: uk
+    size: "8"
+    mm: ["4"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-7
+    system: uk
+    size: "7"
+    mm: ["4.5"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-6
+    system: uk
+    size: "6"
+    mm: ["5"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-5
+    system: uk
+    size: "5"
+    mm: ["5.5"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-4
+    system: uk
+    size: "4"
+    mm: ["6"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-3
+    system: uk
+    size: "3"
+    mm: ["6.5"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-2
+    system: uk
+    size: "2"
+    mm: ["7"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-1
+    system: uk
+    size: "1"
+    mm: ["7.5"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-0
+    system: uk
+    size: "0"
+    mm: ["8"]
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-00
+    system: uk
+    size: "00"
+    mm: ["9"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: uk-000
+    system: uk
+    size: "000"
+    mm: ["10"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Sheep and Stitch, « Knitting needle sizes conversion chart », mis à jour le 31/08/2021, https://sheepandstitch.com/library/knitting-needle-sizes-conversion-chart/"
+      read_on: 2026-11-02
+  - id: jp-0
+    system: jp
+    size: "0"
+    mm: ["2.1"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-1
+    system: jp
+    size: "1"
+    mm: ["2.4"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-2
+    system: jp
+    size: "2"
+    mm: ["2.7"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-3
+    system: jp
+    size: "3"
+    mm: ["3"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-4
+    system: jp
+    size: "4"
+    mm: ["3.3"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-5
+    system: jp
+    size: "5"
+    mm: ["3.6"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-6
+    system: jp
+    size: "6"
+    mm: ["3.9"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-7
+    system: jp
+    size: "7"
+    mm: ["4.2"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-8
+    system: jp
+    size: "8"
+    mm: ["4.5"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-9
+    system: jp
+    size: "9"
+    mm: ["4.8"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-10
+    system: jp
+    size: "10"
+    mm: ["5.1"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-11
+    system: jp
+    size: "11"
+    mm: ["5.4"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-12
+    system: jp
+    size: "12"
+    mm: ["5.7"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-13
+    system: jp
+    size: "13"
+    mm: ["6"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-14
+    system: jp
+    size: "14"
+    mm: ["6.3"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02
+  - id: jp-15
+    system: jp
+    size: "15"
+    mm: ["6.6"]
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Clover, fiches « 匠 » 2本針 (54200 à 54215), diamètre de l’aiguille, https://clover.co.jp/products/54200/"
+      read_on: 2026-11-02

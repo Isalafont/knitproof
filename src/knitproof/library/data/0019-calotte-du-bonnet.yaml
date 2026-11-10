@@ -1,0 +1,12 @@
+schema_version: 1
+decided_in: docs/adr/0019-calotte-du-bonnet.md
+entries:
+  - id: calotte-du-bonnet
+    decreases_per_round: 8
+    last_round_below: 24
+    min_cast_on: 32
+    every_round_last: 3
+    source:
+      kind: person_decision
+      reference: "Isabelle, décisions de l’ADR 0019 (construction, rythme, dernier rang, montage trop petit), d’après sa pratique et sans source publiée"
+      read_on: 2026-11-02

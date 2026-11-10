@@ -1,0 +1,26 @@
+minimum_pre_commit_version: "4.4.0"
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --locked ruff check --fix
+        language: unsupported
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --locked ruff format
+        language: unsupported
+        types_or: [python, pyi]
+      - id: lint-imports
+        name: contrats de couches
+        entry: uv run --locked lint-imports --no-logo
+        language: unsupported
+        always_run: true
+        pass_filenames: false
+      - id: mypy
+        name: mypy strict
+        entry: uv run --locked mypy
+        language: unsupported
+        always_run: true
+        pass_filenames: false

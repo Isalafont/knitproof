@@ -1,0 +1,19 @@
+Échantillon 20 m / 10 cm, après blocage (source : votre échantillon)
+Aisance     −10 % : saisie
+Tour visé   43,2 cm (48 × 0,9)
+Montage     86,4 m calculées (43,2 × 20 / 10) → 88 m, multiple de 4
+            Tour fini réel : 44 cm
+Hauteur     20 cm finis + 5 cm de revers = 25 cm tricotés : 75 rangs (30 rangs / 10 cm, À VÉRIFIER, d’après DROPS Children 49-25)
+Bord        30 rangs (le revers se tricote deux fois : 2 × 5 cm)
+Calotte     17 rangs, 10 rangs de diminution, 8 m restantes, environ 5,7 cm
+Corps       28 rangs (75 − 30 − 17)
+Aiguilles   4 mm
+
+ALERTE      Avec l’échantillon avant blocage (22 m), on monterait 96 m.
+            96 m donneraient 48 cm après blocage, sans aisance.
+            Décidé par : le moteur (calcul vérifiable)
+
+REJETÉ      Proposition d’un LLM seul : 120 m
+            120 m diffèrent du montage calculé : 88 m
+            Après blocage, 120 m donnent 60 cm (120 × 10 / 20)
+            Décidé par : le moteur (calcul vérifiable)
