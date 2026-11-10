@@ -15,6 +15,7 @@ from knitproof.app.errors import condense
 from knitproof.domain.beanie import BeanieSpecification
 from knitproof.domain.cast_on import StitchMultiple
 from knitproof.domain.ease import Ease, EaseUnit, EdgeStitch
+from knitproof.domain.gauge import LabelGauge
 from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import EXACT, Length, LengthUnit, SwatchMeasurement
 from knitproof.domain.needle import KnittingMethod, Needle
@@ -96,14 +97,33 @@ class RequestSwatchMeasurement(SwatchMeasurement):
 
 
 class RequestSwatch(BaseModel):
-    """L’échantillon : mesuré après blocage, et avant si on l’a."""
+    """L’échantillon : après blocage, avant blocage, ou d’état de blocage inconnu.
+
+    Au moins une mesure ; `unknown_blocking` est exclusif des deux autres : on répond à la
+    question « l’as-tu bloqué ? » en renommant la clé (CLA-66).
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     stitch: EdgeStitch | None = None
     needle: RequestNeedle
     before_blocking: RequestSwatchMeasurement | None = None
-    after_blocking: RequestSwatchMeasurement
+    after_blocking: RequestSwatchMeasurement | None = None
+    unknown_blocking: RequestSwatchMeasurement | None = None
+
+    @model_validator(mode="after")
+    def _one_coherent_set_of_measures(self) -> Self:
+        known = (self.before_blocking, self.after_blocking)
+        if self.unknown_blocking is None and all(measure is None for measure in known):
+            raise ValueError(
+                "au moins une mesure : after_blocking, before_blocking ou unknown_blocking"
+            )
+        if self.unknown_blocking is not None and any(measure is not None for measure in known):
+            raise ValueError(
+                "unknown_blocking ne va pas avec after_blocking ni before_blocking : "
+                "renommer la clé selon la réponse"
+            )
+        return self
 
 
 class BeanieRequest(BaseModel):
@@ -113,7 +133,8 @@ class BeanieRequest(BaseModel):
 
     head_circumference: EnteredLength
     ease: EnteredEase
-    swatch: RequestSwatch
+    swatch: RequestSwatch | None = None
+    label_gauge: LabelGauge | None = None
     needles: tuple[RequestNeedle, ...]
     stitch_multiple: EnteredStitchMultiple
     total_height: EnteredLength | None = None

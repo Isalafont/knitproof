@@ -5,11 +5,11 @@ elle vient, les avis et les questions en attente.
 """
 
 from enum import StrEnum
-from typing import Self
+from typing import Annotated, Self
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, model_validator
 
-from knitproof.domain.measure import Length, PositiveDecimal, SwatchMeasurement
+from knitproof.domain.measure import Length, PositiveDecimal, SwatchMeasurement, _refuse_float
 from knitproof.domain.notice import Notice
 from knitproof.domain.question import PendingQuestion
 
@@ -32,14 +32,20 @@ class GaugeRange(BaseModel):
 # `left_to_right` : la doc de pydantic garantit cet ordre, le mode « smart » peut changer.
 
 
+# Le refus du flottant se fait avant l’union : un seul message, à l’emplacement de la clé.
+type LabelValue = Annotated[
+    PositiveDecimal | GaugeRange, Field(union_mode="left_to_right"), BeforeValidator(_refuse_float)
+]
+
+
 class LabelGauge(BaseModel):
     """La jauge du fabricant : mailles sur une largeur, rangs sur une hauteur (facultatifs)."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    stitches: PositiveDecimal | GaugeRange = Field(union_mode="left_to_right")
+    stitches: LabelValue
     width: Length
-    rows: PositiveDecimal | GaugeRange | None = Field(default=None, union_mode="left_to_right")
+    rows: LabelValue | None = None
     height: Length | None = None
 
     @model_validator(mode="after")

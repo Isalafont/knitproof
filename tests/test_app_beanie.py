@@ -6,6 +6,7 @@ from knitproof.app.beanie import plan_beanie
 from knitproof.domain.age import Age, AgeUnit
 from knitproof.domain.beanie import BeanieReview, BeanieSpecification
 from knitproof.domain.cast_on import StitchMultiple
+from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.measure import Length, LengthUnit, SwatchMeasurement
 from knitproof.domain.needle import (
     KnittingMethod,
@@ -45,6 +46,7 @@ def plan(
     circumference: str = "43.2",
     after_blocking: SwatchMeasurement | None = None,
     worked: KnittingMethod = KnittingMethod.ROUND,
+    source: GaugeSource = GaugeSource.BLOCKED,
 ) -> BeanieReview:
     spec = BeanieSpecification(
         age=age,
@@ -58,7 +60,8 @@ def plan(
         spec,
         circumference=cm(circumference),
         stitch_multiple=RIBBING,
-        after_blocking=after_blocking or swatch("20"),
+        gauge=after_blocking or swatch("20"),
+        source=source,
         before_blocking=swatch("22"),
     )
 
@@ -146,6 +149,30 @@ def test_a_missing_row_gauge_is_asked() -> None:
 
     assert review.plan is None
     assert [q.code for q in review.questions] == [NoticeCode.ROW_GAUGE_MISSING]
+
+
+def test_the_row_gauge_question_names_the_blocked_swatch_by_default() -> None:
+    review = plan(after_blocking=swatch("20", rows=None))
+
+    assert "l’échantillon, après blocage" in review.questions[0].text
+
+
+def test_the_row_gauge_question_names_the_unblocked_swatch() -> None:
+    review = plan(after_blocking=swatch("20", rows=None), source=GaugeSource.UNBLOCKED)
+
+    assert review.plan is None
+    (question,) = review.questions
+    assert question.code == NoticeCode.ROW_GAUGE_MISSING
+    assert "avant blocage" in question.text
+    assert "après blocage" not in question.text
+
+
+def test_the_row_gauge_question_names_the_label() -> None:
+    review = plan(after_blocking=swatch("20", rows=None), source=GaugeSource.LABEL)
+
+    (question,) = review.questions
+    assert "l’étiquette" in question.text
+    assert "blocage" not in question.text
 
 
 def test_every_missing_input_is_asked_at_once() -> None:

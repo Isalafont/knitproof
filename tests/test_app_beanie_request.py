@@ -56,6 +56,8 @@ def test_the_example_gives_the_multiple_swatches_and_the_proposed_cast_on() -> N
     request = BeanieRequest.model_validate(_data())
 
     assert request.multiple == StitchMultiple(repeat_multiple=4, repeat_offset=0)
+    assert request.swatch is not None
+    assert request.swatch.after_blocking is not None
     assert request.swatch.after_blocking.stitches == Decimal(20)
     assert request.swatch.before_blocking is not None
     assert request.swatch.before_blocking.stitches == Decimal(22)
@@ -123,7 +125,10 @@ def test_the_row_gauge_accepts_a_source() -> None:
         "rows_source": {"reference": "DROPS Children 49-25", "to_verify": True},
     }
 
-    source = BeanieRequest.model_validate(data).swatch.after_blocking.rows_source
+    request = BeanieRequest.model_validate(data)
+    assert request.swatch is not None
+    assert request.swatch.after_blocking is not None
+    source = request.swatch.after_blocking.rows_source
 
     assert source is not None
     assert (source.reference, source.to_verify) == ("DROPS Children 49-25", True)
@@ -137,4 +142,65 @@ def test_the_row_gauge_source_is_optional() -> None:
         key: value for key, value in swatch["after_blocking"].items() if key != "rows_source"
     }
 
-    assert BeanieRequest.model_validate(data).swatch.after_blocking.rows_source is None
+    request = BeanieRequest.model_validate(data)
+    assert request.swatch is not None
+    assert request.swatch.after_blocking is not None
+    assert request.swatch.after_blocking.rows_source is None
+
+
+MEASURE = {"stitches": "20", "width": {"value": "10", "unit": "cm"}}
+LABEL = {"stitches": "20", "width": {"value": "10", "unit": "cm"}}
+
+
+def _swatch_with(**measures: object) -> dict[str, object]:
+    data = _data()
+    data["swatch"] = {"stitch": "stockinette", "needle": {"size": "4 mm", "kind": "straight"}}
+    swatch = data["swatch"]
+    assert isinstance(swatch, dict)
+    swatch.update(measures)
+    return data
+
+
+def test_an_unknown_blocking_measure_alone_is_accepted() -> None:
+    request = BeanieRequest.model_validate(_swatch_with(unknown_blocking=MEASURE))
+
+    assert request.swatch is not None
+    assert request.swatch.unknown_blocking is not None
+    assert request.swatch.after_blocking is None
+
+
+@pytest.mark.parametrize("other", ["after_blocking", "before_blocking"])
+def test_an_unknown_blocking_measure_with_another_one_is_refused(other: str) -> None:
+    data = _swatch_with(unknown_blocking=MEASURE, **{other: MEASURE})
+
+    with pytest.raises(ValidationError, match="unknown_blocking"):
+        BeanieRequest.model_validate(data)
+
+
+def test_a_swatch_without_any_measure_is_refused() -> None:
+    with pytest.raises(ValidationError, match="au moins une mesure"):
+        BeanieRequest.model_validate(_swatch_with())
+
+
+def test_a_request_without_swatch_reads_the_label_gauge() -> None:
+    data = _data()
+    del data["swatch"]
+    data["label_gauge"] = LABEL
+
+    request = BeanieRequest.model_validate(data)
+
+    assert request.swatch is None
+    assert request.label_gauge is not None
+    assert request.label_gauge.stitches == Decimal(20)
+
+
+def test_a_float_in_the_label_gauge_gives_a_readable_message() -> None:
+    data = {**_data(), "label_gauge": {**LABEL, "stitches": 20.5}}
+
+    with pytest.raises(ValidationError) as raised:
+        BeanieRequest.model_validate(data)
+
+    message = condense(raised.value, data)
+    assert "float refusé" in message
+    assert "label_gauge.stitches" in message
+    assert "Input should be" not in message

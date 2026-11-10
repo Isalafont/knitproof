@@ -5,8 +5,9 @@ from typing import assert_never
 
 from knitproof.app.beanie import BeanieCalc
 from knitproof.domain.beanie import BeaniePlan
+from knitproof.domain.cast_on import CastOnResult
 from knitproof.domain.ease import EaseUnit
-from knitproof.domain.measure import Length
+from knitproof.domain.measure import Length, SwatchMeasurement
 from knitproof.domain.report import Report, ReportEntry, ReportStatus
 
 _TIMES = "\N{MULTIPLICATION SIGN}"
@@ -51,8 +52,8 @@ def render_calc(calc: BeanieCalc) -> str:
     """Le résumé du plan, puis les entrées du rapport, puis les questions en attente."""
     report = calc.report
     blocks = []
-    if report.result is not None:
-        blocks.append(_summary(calc, report.result))
+    if report.result is not None and calc.cast_on is not None and calc.gauge.gauge is not None:
+        blocks.append(_summary(calc, report.result, calc.cast_on, calc.gauge.gauge))
     blocks.extend(_describe(entry) for entry in report.entries)
     blocks.extend(_ask(question.text) for question in report.questions)
     return "\n\n".join(blocks)
@@ -62,12 +63,12 @@ def _ask(text: str) -> str:
     return f"{'QUESTION':<{_COLUMN}}{text}"
 
 
-def _summary(calc: BeanieCalc, plan: BeaniePlan) -> str:
+def _summary(
+    calc: BeanieCalc, plan: BeaniePlan, cast: CastOnResult, swatch: SwatchMeasurement
+) -> str:
     request = calc.request
-    swatch = request.swatch.after_blocking
     ease = request.ease
     head = request.head_circumference
-    cast = calc.cast_on
     rows = swatch.rows_per_10_cm
     ease_text = _signed(ease.value) + (" %" if ease.unit is EaseUnit.PERCENT else f" {ease.unit}")
     if ease.unit is EaseUnit.PERCENT:
@@ -132,7 +133,12 @@ def _height(calc: BeanieCalc, plan: BeaniePlan, rows: Decimal | None) -> str:
 
 
 def _rows_source(calc: BeanieCalc) -> str:
-    source = calc.request.swatch.after_blocking.rows_source
+    swatch = calc.request.swatch
+    source = (
+        None
+        if swatch is None or swatch.after_blocking is None
+        else swatch.after_blocking.rows_source
+    )
     if source is None:
         return ""
     check = ", À VÉRIFIER" if source.to_verify else ""
