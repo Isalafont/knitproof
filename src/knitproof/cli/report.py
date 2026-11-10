@@ -7,6 +7,7 @@ from knitproof.app.beanie import BeanieCalc
 from knitproof.domain.beanie import BeaniePlan
 from knitproof.domain.cast_on import CastOnResult
 from knitproof.domain.ease import EaseUnit
+from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.measure import Length, SwatchMeasurement
 from knitproof.domain.report import Report, ReportEntry, ReportStatus
 
@@ -84,11 +85,7 @@ def _summary(
         f" \N{RIGHTWARDS ARROW} {cast.stitches} m, multiple de {mult}"
     )
     lines = [
-        (
-            "Échantillon",
-            f"{_number(swatch.stitches_per_10_cm)} m / 10 cm, après blocage"
-            " (source : votre échantillon)",
-        ),
+        ("Échantillon", f"{_number(swatch.stitches_per_10_cm)} m / 10 cm, {_gauge_source(calc)}"),
         ("Aisance", f"{ease_text} : {_ENTERED[request.ease.provenance.value]}"),
         ("Tour visé", f"{_length(calc.circumference)} ({factor})"),
         ("Montage", cast_line),
@@ -118,6 +115,20 @@ def _summary(
     return "\n".join(f"{label:<{_COLUMN}}{text}" for label, text in lines)
 
 
+def _gauge_source(calc: BeanieCalc) -> str:
+    match calc.gauge.source:
+        case GaugeSource.BLOCKED:
+            return "après blocage (source : votre échantillon)"
+        case GaugeSource.UNBLOCKED:
+            return "avant blocage, À VÉRIFIER (source : votre échantillon)"
+        case GaugeSource.LABEL:
+            return "étiquette, À VÉRIFIER (source : fabricant)"
+        case None:
+            raise ValueError("une jauge résolue a une source")
+        case _:
+            assert_never(calc.gauge.source)
+
+
 def _height(calc: BeanieCalc, plan: BeaniePlan, rows: Decimal | None) -> str:
     request = calc.request
     finished = _length(plan.finished_height)
@@ -133,12 +144,18 @@ def _height(calc: BeanieCalc, plan: BeaniePlan, rows: Decimal | None) -> str:
 
 
 def _rows_source(calc: BeanieCalc) -> str:
+    """La source des rangs, relue dans la demande selon la source de la jauge retenue."""
     swatch = calc.request.swatch
-    source = (
-        None
-        if swatch is None or swatch.after_blocking is None
-        else swatch.after_blocking.rows_source
-    )
+    measure = None
+    if swatch is not None:
+        match calc.gauge.source:
+            case GaugeSource.BLOCKED:
+                measure = swatch.after_blocking
+            case GaugeSource.UNBLOCKED:
+                measure = swatch.before_blocking
+            case _:
+                measure = None
+    source = None if measure is None else measure.rows_source
     if source is None:
         return ""
     check = ", À VÉRIFIER" if source.to_verify else ""

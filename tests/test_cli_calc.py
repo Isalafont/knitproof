@@ -112,3 +112,110 @@ def test_without_a_source_the_height_line_is_unchanged(
     main(["calc", str(_write(tmp_path, yaml.safe_dump(data, allow_unicode=True)))])
 
     assert "75 rangs (30 rangs / 10 cm)\n" in capsys.readouterr().out
+
+
+def _data() -> dict[str, object]:
+    loaded = yaml.safe_load(REQUEST.read_text(encoding="utf-8"))
+    assert isinstance(loaded, dict)
+    return loaded
+
+
+def _run(
+    tmp_path: Path, data: dict[str, object], capsys: pytest.CaptureFixture[str]
+) -> tuple[int, str, str]:
+    code = main(["calc", str(_write(tmp_path, yaml.safe_dump(data, allow_unicode=True)))])
+    captured = capsys.readouterr()
+    return code, captured.out, captured.err
+
+
+def _swatch(data: dict[str, object]) -> dict[str, object]:
+    swatch = data["swatch"]
+    assert isinstance(swatch, dict)
+    return swatch
+
+
+def test_a_before_blocking_swatch_alone_shows_its_source_to_verify(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    del _swatch(data)["after_blocking"]
+    del data["proposed_cast_on"]
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert "22 m / 10 cm, avant blocage, À VÉRIFIER (source : votre échantillon)" in out
+    assert "bloquer (laver puis sécher)" in out
+    assert "(30 rangs / 10 cm, À VÉRIFIER, d’après DROPS Children 49-25)" in out
+
+
+def test_an_unknown_blocking_swatch_exits_1_with_the_question_and_no_summary(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    swatch = _swatch(data)
+    swatch["unknown_blocking"] = swatch.pop("after_blocking")
+    del swatch["before_blocking"]
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 1
+    assert "L’as-tu bloqué (lavé puis séché) ?" in out
+    assert "Échantillon" not in out
+    assert "Calotte" not in out
+
+
+def test_unknown_blocking_with_another_measure_exits_3(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    swatch = _swatch(data)
+    swatch["unknown_blocking"] = dict(swatch["after_blocking"])  # type: ignore[call-overload]
+
+    code, _, err = _run(tmp_path, data, capsys)
+
+    assert code == 3
+    assert "unknown_blocking" in err
+
+
+def test_a_label_without_swatch_shows_the_label_source(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    del data["swatch"], data["proposed_cast_on"]
+    width = {"value": "10", "unit": "cm"}
+    data["label_gauge"] = {"stitches": "20", "width": width, "rows": "30", "height": width}
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert "20 m / 10 cm, étiquette, À VÉRIFIER (source : fabricant)" in out
+    assert "jauge du fabricant, état de blocage inconnu" in out
+    assert "(30 rangs / 10 cm)" in out
+
+
+def test_neither_swatch_nor_label_exits_1_with_the_question(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    del data["swatch"], data["proposed_cast_on"]
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 1
+    assert "QUESTION" in out
+    assert "Échantillon" not in out
+
+
+def test_a_swatch_far_from_the_label_warns_and_keeps_the_blocked_summary(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["label_gauge"] = {"stitches": "24", "width": {"value": "10", "unit": "cm"}}
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert "ALERTE" in out
+    assert "pas assez de mailles pour 10 cm : aiguilles plus fines" in out
+    assert "20 m / 10 cm, après blocage (source : votre échantillon)" in out
