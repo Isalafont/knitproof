@@ -4,12 +4,23 @@ Pur : ni fichier, ni réseau, ni modèle ; aucune valeur n’est inventée, une 
 devient une question en attente.
 """
 
+from decimal import Decimal
+
 from knitproof.domain.gauge import GaugeRange, GaugeSource, LabelGauge, ResolvedGauge
-from knitproof.domain.measure import SwatchMeasurement
+from knitproof.domain.measure import DIVISION, EXACT, Length, SwatchMeasurement
 from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.question import PendingQuestion
 
 _BLOCK = "bloquer (laver puis sécher)"
+
+# Décision d’Isabelle, question 14 (27/10/2026) : un écart d’au moins 5 % avec l’étiquette est
+# signalé ; modifiable.
+LABEL_GAUGE_THRESHOLD_PERCENT = 5
+_HUNDRED = Decimal(100)
+
+_ROWS_TEXT = (
+    "ta jauge en rangs diffère de l’étiquette ; la hauteur est calculée sur ton échantillon"
+)
 
 
 def resolve_gauge(
@@ -94,3 +105,72 @@ def _blocking_question() -> PendingQuestion:
 
 def _question(code: NoticeCode, text: str) -> PendingQuestion:
     return PendingQuestion(code=code, text=text, options=())
+
+
+def gauge_differs_from_label(swatch: SwatchMeasurement, label: LabelGauge) -> tuple[Notice, ...]:
+    """Un `warning` par grandeur (mailles, rangs) à au moins 5 % de la borne la plus proche.
+
+    Dans la fourchette, ou sous le seuil, aucun constat. Le texte donne le sens de correction
+    des mailles, jamais une taille d’aiguilles ni une décision.
+    """
+    notices = []
+    stitches = _gap(swatch.stitches, swatch.width, label.stitches, label.width)
+    if stitches is not None:
+        direction = (
+            "trop de mailles pour 10 cm : aiguilles plus grosses"
+            if stitches > 0
+            else "pas assez de mailles pour 10 cm : aiguilles plus fines"
+        )
+        text = (
+            f"Ton échantillon : {_per_10_cm(swatch.stitches, swatch.width)} m pour 10 cm ; "
+            f"étiquette : {_label_text(label.stitches, label.width)} m pour 10 cm\n{direction}"
+        )
+        notices.append(_notice(text))
+    if (
+        swatch.rows is not None
+        and swatch.height is not None
+        and label.rows is not None
+        and label.height is not None
+        and _gap(swatch.rows, swatch.height, label.rows, label.height) is not None
+    ):
+        notices.append(_notice(_ROWS_TEXT))
+    return tuple(notices)
+
+
+def _gap(
+    value: Decimal, length: Length, label: Decimal | GaugeRange, label_length: Length
+) -> int | None:
+    """Le sens (+1 trop, -1 pas assez) d’un écart d’au moins 5 % à la borne la plus proche.
+
+    Produits croisés exacts : l’écart relatif `|S/Ws - L/Wl| / (L/Wl)` vaut au moins 5 % quand
+    `100 * |S*Wl - L*Ws| >= 5 * L*Ws` ; aucun quotient, donc aucun arrondi au seuil.
+    """
+    bounds = (label.low, label.high) if isinstance(label, GaugeRange) else (label, label)
+    scaled = EXACT.multiply(value, label_length.in_cm)
+    for bound, sign in ((bounds[0], -1), (bounds[1], 1)):
+        reference = EXACT.multiply(bound, length.in_cm)
+        if (scaled - reference) * sign <= 0:
+            continue
+        gap = EXACT.multiply(_HUNDRED, abs(EXACT.subtract(scaled, reference)))
+        if gap >= EXACT.multiply(LABEL_GAUGE_THRESHOLD_PERCENT, reference):
+            return sign
+    return None
+
+
+def _notice(text: str) -> Notice:
+    return Notice(status=NoticeStatus.WARNING, code=NoticeCode.GAUGE_DIFFERS_FROM_LABEL, text=text)
+
+
+def _per_10_cm(value: Decimal, length: Length) -> str:
+    """Pour l’affichage seulement : le quotient n’entre dans aucun contrôle."""
+    return _shown(DIVISION.divide(EXACT.multiply(value, Decimal(10)), length.in_cm))
+
+
+def _label_text(label: Decimal | GaugeRange, length: Length) -> str:
+    if isinstance(label, GaugeRange):
+        return f"{_per_10_cm(label.low, length)} à {_per_10_cm(label.high, length)}"
+    return _per_10_cm(label, length)
+
+
+def _shown(value: Decimal) -> str:
+    return format(value.quantize(Decimal("0.01")).normalize(), "f").replace(".", ",")
