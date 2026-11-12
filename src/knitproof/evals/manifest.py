@@ -88,7 +88,18 @@ def load_split(split: Split, root: Traversable | None = None) -> tuple[EvalCase,
         (item for item in folder.iterdir() if item.name.endswith(".yaml")),
         key=lambda item: item.name,
     )
-    cases = [_load_case(item) for item in sources if item.name != MANIFEST_NAME]
+    cases: list[EvalCase] = []
+    files_of: dict[str, str] = {}
+    for item in sources:
+        if item.name == MANIFEST_NAME:
+            continue
+        case = _load_case(item)
+        if case.id in files_of:
+            raise EvalDataError(
+                f"{split.value}/{case.id} : id en double dans {files_of[case.id]} et {item.name}"
+            )
+        files_of[case.id] = item.name
+        cases.append(case)
     listed = {entry.case_id: entry for entry in manifest.entries}
     found = {case.id for case in cases}
     for case in cases:

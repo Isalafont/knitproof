@@ -146,3 +146,29 @@ def test_distinct_dev_and_test_cases_load(tmp_path: Path) -> None:
     sets = load_eval_sets(tmp_path)
     assert [case.id for case in sets[Split.DEV]] == ["cas-1"]
     assert [case.id for case in sets[Split.TEST]] == ["cas-2"]
+
+
+def test_a_quoted_iso_date_is_refused_only_by_the_date_guard(tmp_path: Path) -> None:
+    case = _case()
+    folder = tmp_path / "dev"
+    folder.mkdir()
+    (folder / "cas-1.yaml").write_text(yaml.safe_dump(case), encoding="utf-8")
+    digest = case_hash(EvalCase.model_validate(case))
+    (folder / "manifest.yaml").write_text(
+        "version: 1\nsplit: dev\nentries:\n"
+        f'  - case_id: cas-1\n    sha256: "{digest}"\n'
+        '    annotated_by: Isabelle Lafont\n    annotated_on: "2026-11-12"\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(EvalDataError, match="annotated_on"):
+        load_split(Split.DEV, tmp_path)
+
+
+def test_two_files_with_the_same_case_id_are_refused(tmp_path: Path) -> None:
+    _write(tmp_path, "dev", [_case("cas-1")])
+    (tmp_path / "dev" / "autre.yaml").write_text(yaml.safe_dump(_case("cas-1")), encoding="utf-8")
+    with pytest.raises(EvalDataError) as error:
+        load_split(Split.DEV, tmp_path)
+    assert "cas-1" in str(error.value)
+    assert "autre.yaml" in str(error.value)
+    assert "cas-1.yaml" in str(error.value)

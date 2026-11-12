@@ -377,6 +377,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0029 — Rapport unique du moteur](adr/0029-rapport-unique-du-moteur.md)
 - [ADR 0030 — Vocabulaire des fibres et laines de référence](adr/0030-laines-de-reference.md)
 - [ADR 0031 — Aisance d’après les patrons et la laine](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)
+- [ADR 0032 — Protocole d’évaluation figé](adr/0032-protocole-d-evaluation-fige.md)
 
 ## 13. Projets proches
 
