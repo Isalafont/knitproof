@@ -376,3 +376,23 @@ def test_a_flat_body_without_adjustment_shows_the_plain_difference(
     _, out, _ = _run(tmp_path, _flat("20"), capsys)
 
     assert f"Corps       28 rangs (75 {MINUS} 30 {MINUS} 17)\n" in out
+
+
+def test_the_cast_on_line_shows_the_offset_of_the_stitch_multiple_in_the_round(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["stitch_multiple"] = {"repeat_multiple": 4, "repeat_offset": 2, "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert f"Montage     86,4 m calculées (43,2 {TIMES} 20 / 10) → 86 m, multiple de 4 + 2\n" in out
+
+
+def test_the_cast_on_line_shows_the_offset_of_the_stitch_multiple_when_flat(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("20"), capsys)
+
+    assert f"Montage     86,4 m calculées (43,2 {TIMES} 20 / 10) → 86 m, multiple de 4 + 2\n" in out

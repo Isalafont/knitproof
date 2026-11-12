@@ -80,7 +80,10 @@ def _summary(
             f"{_number(head_cm)} {'+' if ease.value >= 0 else _MINUS} {_number(abs(ease.value))}"
         )
     conversions = _conversions(request)
-    mult = request.multiple.repeat_multiple
+    multiple = request.multiple
+    mult = f"{multiple.repeat_multiple}" + (
+        f" + {multiple.repeat_offset}" if multiple.repeat_offset else ""
+    )
     cast_line = (
         f"{_number(cast.raw_stitches)} m calculées "
         f"({_number(calc.circumference.in_cm)} {_TIMES} {_number(swatch.stitches_per_10_cm)} / 10)"
