@@ -27,6 +27,7 @@ from knitproof.domain.fiber import Fiber, name_key
 from knitproof.domain.needle import NeedleTableRow
 from knitproof.domain.provenance import SourcedEntry, SourceKind
 from knitproof.domain.reference import ReferenceMeasurement
+from knitproof.domain.yarn import Yarn
 
 # Les sortes de source admises dans les données ; `model_inference` y est refusé (ADR 0008).
 DATA_KINDS = frozenset(
@@ -42,6 +43,7 @@ REGISTRY: Mapping[str, type[SourcedEntry]] = {
     "0024-aisance-du-bonnet.yaml": EaseSource,
     "0027-tour-de-tete-par-age-d-apres-les-patrons.yaml": ReferenceMeasurement,
     "0030-fibres.yaml": Fiber,
+    "0030-laines-de-reference.yaml": Yarn,
 }
 
 
@@ -106,6 +108,7 @@ def load_library(
         raise LibraryError(f"{name} : fichier du registre absent de library/data/")
     loaded = {name: _load_file(name, present[name], registry[name]) for name in sorted(present)}
     _check_fiber_names(loaded)
+    _check_known_fibers(loaded)
     return Library(loaded)
 
 
@@ -125,6 +128,20 @@ def _check_fiber_names(loaded: Mapping[str, tuple[SourcedEntry, ...]]) -> None:
                         f"avec {other_file}:{other_id}"
                     )
                 owners.setdefault(key, (name, entry.id))
+
+
+def _check_known_fibers(loaded: Mapping[str, tuple[SourcedEntry, ...]]) -> None:
+    """Chaque fibre d’une composition est un `id` du vocabulaire, tous fichiers confondus."""
+    known = {
+        entry.id for entries in loaded.values() for entry in entries if isinstance(entry, Fiber)
+    }
+    for name in sorted(loaded):
+        for entry in loaded[name]:
+            if not isinstance(entry, Yarn):
+                continue
+            for part in entry.composition.parts:
+                if part.fiber not in known:
+                    raise LibraryError(f"{name}:{entry.id} : fibre inconnue {part.fiber}")
 
 
 def _load_file(
