@@ -149,3 +149,17 @@ def test_a_swatch_date_cannot_be_a_datetime() -> None:
     moment = datetime.datetime(2026, 11, 13, 10, 0, tzinfo=datetime.UTC)
     with pytest.raises(ValidationError, match="knitted_on"):
         YarnSwatch.model_validate({**SWATCH, "knitted_on": moment})
+
+
+def test_the_yarn_weight_is_kept_as_the_maker_writes_it() -> None:
+    text = "A (23 - 26 mailles) / 2 ply / lace"
+    assert YarnLabel.model_validate({"yarn_weight": text}).yarn_weight == text
+
+
+def test_the_yarn_weight_is_optional() -> None:
+    assert YarnLabel.model_validate({}).yarn_weight is None
+
+
+def test_a_blank_yarn_weight_is_refused() -> None:
+    with pytest.raises(ValidationError, match="yarn_weight"):
+        YarnLabel.model_validate({"yarn_weight": ""})

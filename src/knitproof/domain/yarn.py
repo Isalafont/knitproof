@@ -38,6 +38,7 @@ class YarnLabel(BaseModel):
     length_m: PlainDecimal | None = None
     weight_g: PlainDecimal | None = None
     care: str | None = None
+    yarn_weight: Text | None = None
 
 
 class YarnSwatch(BaseModel):

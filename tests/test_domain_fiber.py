@@ -55,7 +55,7 @@ def test_the_name_key_ignores_case_and_unicode_form() -> None:
 
 def test_a_blend_of_strings_is_accepted() -> None:
     composition = FiberComposition.model_validate(
-        {"parts": [share("merino", "80", "uld"), share("polyamide", "20", "nylon")]}
+        {"parts": [share("merino", "80", "uld"), share("nylon", "20", "nylon")]}
     )
     assert composition.parts[0].percent == Decimal(80)
     assert composition.parts[1].label_term == "nylon"
