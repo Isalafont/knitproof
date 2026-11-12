@@ -1,5 +1,7 @@
 # ADR 0005 — Accès aux modèles via pydanticAI
 
+Amendé par l’[ADR 0033](0033-anthropic-et-mistral-en-direct.md) (Anthropic, Mistral en direct).
+
 ## Contexte
 
 M2 compare plusieurs modèles, dont au moins un ouvert ou souverain (`evaluation.md`).

@@ -66,7 +66,7 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 - Mode de sortie structurée consigné.
 - Température et nombre de passages fixés.
 - Date de chaque passage.
-- Au moins un modèle ouvert ou souverain (via OpenGateLLM ou une API compatible OpenAI).
+- Au moins un modèle ouvert ou souverain (Mistral en direct, OpenGateLLM ou API compatible OpenAI).
 
 ## Exécution
 
@@ -91,4 +91,4 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 
 ## Modifications
 
-Aucune.
+- 12/11/2026 — Mistral en direct ajouté comme accès souverain (CLA-127, ADR 0033) ; motif : aucune mesure faite.

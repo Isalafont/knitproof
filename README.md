@@ -293,6 +293,8 @@ uv run knitproof verify local-patterns/mon-bonnet.yaml
 
 Codes de sortie, formats et limites : [docs/commandes.md](docs/commandes.md).
 
+Les modèles (Anthropic, Mistral) se configurent par l’environnement : voir « Modèles » dans [docs/commandes.md](docs/commandes.md).
+
 ### Contribuer
 
 - `main` est la production, `develop` l’intégration déployée sur la sandbox ; chaque changement part de `develop` sur sa propre branche `feature/*` et y revient par une pull request.
