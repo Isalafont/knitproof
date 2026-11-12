@@ -246,7 +246,7 @@ L’ordre de confiance dépend de la grandeur :
 |---|---|---|
 | Échantillon | échantillon bloqué > échantillon non bloqué, « À VÉRIFIER », avec le conseil de le bloquer (laver puis sécher) > échantillon d’état de blocage inconnu : question « l’as-tu bloqué ? », sans plan > jauge de l’étiquette, « À VÉRIFIER : jauge du fabricant, état de blocage inconnu » (une fourchette sans échantillon fait demander la valeur à retenir, aucun milieu) | question en attente |
 | Tour de tête | mesure > mesure de référence par âge ou par taille nommée, proposée puis décidée par la personne (`needs_review`, [ADR 0018](adr/0018-tour-de-tete-par-age.md), [ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)) | question en attente |
-| Aisance | saisie > table de référence par couple (ajustement, point), proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md)) | question en attente |
+| Aisance | saisie > patrons sources par (ajustement, point du bord, point de l’échantillon, famille de la laine), puis base −5 % si aucun ne correspond, proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md), [ADR 0031](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)) | question en attente |
 | Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
 
 La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
@@ -295,7 +295,7 @@ Format de la demande de bonnet (figé par CLA-69), lu par `knitproof calc` dans 
 | `total_height`, `brim_height`, `folded_brim`, `worked` | hauteurs finies, revers replié, méthode (`round` par défaut) |
 | `proposed_cast_on` | `stitches` et `origin: llm_only` : un montage proposé à contrôler, rejeté s’il diffère du calcul |
 
-L’âge, le fil et les fibres ne sont pas lus par le moteur : la bibliothèque charge le vocabulaire des fibres et les laines de référence (CLA-121, ADR 0030), leur résolution revient à un ticket de suite.
+L’âge, le fil et les fibres ne sont pas lus par `knitproof calc` (la famille de la laine ne sert qu’à `propose_ease`, ADR 0031) : la bibliothèque charge le vocabulaire des fibres et les laines de référence (CLA-121, ADR 0030), leur résolution revient à un ticket de suite.
 
 Les comptes (`cast_on`, `work`, `times`, `start`, `end`, `stated_count`) sont des entiers nus ; une chaîne, un nombre à virgule ou un booléen rend le patron invalide (code 3).
 
@@ -372,6 +372,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0028 — Rangs du bonnet et bonnet à plat](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)
 - [ADR 0029 — Rapport unique du moteur](adr/0029-rapport-unique-du-moteur.md)
 - [ADR 0030 — Vocabulaire des fibres et laines de référence](adr/0030-laines-de-reference.md)
+- [ADR 0031 — Aisance d’après les patrons et la laine](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)
 
 ## 13. Projets proches
 

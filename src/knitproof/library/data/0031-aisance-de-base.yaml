@@ -1,0 +1,13 @@
+schema_version: 1
+decided_in: docs/adr/0031-aisance-d-apres-les-patrons-et-la-laine.md
+entries:
+  - id: base-ajuste-cotes-echantillon-jersey
+    fit: fitted
+    edges: [rib_1x1, rib_2x2]
+    swatch_stitch: stockinette
+    value: "-5"
+    status: to_verify
+    source:
+      kind: person_decision
+      reference: "Décision d’Isabelle, 12/11/2026 (ADR 0031) : base de −5 % pour un bonnet ajusté à bord en côtes, échantillon en jersey"
+      read_on: 2026-11-12

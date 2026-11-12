@@ -1,5 +1,7 @@
 # ADR 0024 — Aisance du bonnet
 
+Amendé par l’[ADR 0031](0031-aisance-d-apres-les-patrons-et-la-laine.md) (points 3 et 5).
+
 ## Contexte
 
 L’aisance est l’écart entre le tour du bonnet fini et le tour de tête. Elle est négative quand le bonnet est plus petit que la tête : c’est ce qui le fait tenir. Le moteur s’en sert pour passer du tour de tête au tour visé, puis au montage (ADR 0015).

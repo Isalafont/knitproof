@@ -22,7 +22,7 @@ from pydantic import (
 )
 
 from knitproof.domain.construction import CrownRule, MagicLoopAdvice
-from knitproof.domain.ease import EaseSource
+from knitproof.domain.ease import BaseEase, EaseSource
 from knitproof.domain.fiber import Fiber, name_key
 from knitproof.domain.needle import NeedleTableRow
 from knitproof.domain.provenance import SourcedEntry, SourceKind
@@ -43,6 +43,8 @@ REGISTRY: Mapping[str, type[SourcedEntry]] = {
     "0024-aisance-du-bonnet.yaml": EaseSource,
     "0027-tour-de-tete-par-age-d-apres-les-patrons.yaml": ReferenceMeasurement,
     "0030-fibres.yaml": Fiber,
+    "0031-aisance-d-apres-les-patrons.yaml": EaseSource,
+    "0031-aisance-de-base.yaml": BaseEase,
     "0030-laines-de-reference.yaml": Yarn,
 }
 
