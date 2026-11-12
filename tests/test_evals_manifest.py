@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from knitproof.evals.case import EvalCase, case_hash
-from knitproof.evals.manifest import EvalDataError, EvalManifest, Split, load_split
+from knitproof.evals.manifest import EvalDataError, EvalManifest, Split, load_eval_sets, load_split
 
 
 def _case(case_id: str = "cas-1", target: str = "44") -> dict[str, object]:
@@ -122,3 +122,27 @@ def test_an_empty_manifest_is_allowed(tmp_path: Path) -> None:
 
 def test_the_manifest_model_allows_no_entries() -> None:
     assert EvalManifest.model_validate({"version": 1, "split": "test", "entries": []}).entries == ()
+
+
+def test_the_same_id_in_dev_and_test_is_refused(tmp_path: Path) -> None:
+    _write(tmp_path, "dev", [_case("cas-1", "44")])
+    _write(tmp_path, "test", [_case("cas-1", "45")])
+    with pytest.raises(EvalDataError, match="cas-1"):
+        load_eval_sets(tmp_path)
+
+
+def test_a_dev_case_copied_into_test_under_another_id_is_refused(tmp_path: Path) -> None:
+    _write(tmp_path, "dev", [_case("cas-1")])
+    _write(tmp_path, "test", [_case("cas-copie")])
+    with pytest.raises(EvalDataError) as error:
+        load_eval_sets(tmp_path)
+    assert "cas-1" in str(error.value)
+    assert "cas-copie" in str(error.value)
+
+
+def test_distinct_dev_and_test_cases_load(tmp_path: Path) -> None:
+    _write(tmp_path, "dev", [_case("cas-1", "44")])
+    _write(tmp_path, "test", [_case("cas-2", "45")])
+    sets = load_eval_sets(tmp_path)
+    assert [case.id for case in sets[Split.DEV]] == ["cas-1"]
+    assert [case.id for case in sets[Split.TEST]] == ["cas-2"]

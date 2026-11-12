@@ -21,7 +21,7 @@ Figé le 12/11/2026 ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)). Toute
 
 ## Jeux de données
 
-- **Deux jeux séparés** : `dev` pour mettre au point les prompts, `test` réservé à la mesure finale et jamais consulté pendant la mise au point.
+- **Deux jeux séparés** : `dev` pour mettre au point les prompts, `test` réservé à la mesure finale et jamais consulté pendant la mise au point. Un même `id`, ou un même contenu sous un autre `id`, dans les deux jeux est refusé au chargement.
 - **Sources** : photos d’étiquettes prises par Isabelle (métadonnées EXIF retirées), demandes rédigées pour l’occasion, patrons écrits pour le projet. Aucun patron du commerce ; les patrons gratuits de Ravelry restent en usage privé.
 - **Mémorisation** : les patrons populaires ont pu être appris par les modèles. Les cas du jeu `test` sont écrits pour le projet.
 - **Annotation** : chaque entrée du manifeste indique qui a annoté le cas et quand.

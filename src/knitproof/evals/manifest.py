@@ -1,6 +1,7 @@
 """Le manifeste haché d’un split et sa vérification contre les cas (ADR 0032)."""
 
 import datetime
+from collections.abc import Mapping
 from enum import StrEnum
 from importlib.resources import files
 from importlib.resources.abc import Traversable
@@ -19,7 +20,7 @@ from pydantic import (
 
 from knitproof.domain.provenance import _only_a_date
 from knitproof.domain.yarn import Text
-from knitproof.evals.case import EvalCase, case_hash
+from knitproof.evals.case import EvalCase, case_hash, content_hash
 
 MANIFEST_NAME = "manifest.yaml"
 
@@ -61,6 +62,21 @@ class EvalManifest(BaseModel):
                 raise ValueError(f"case_id en double : {entry.case_id}")
             seen.add(entry.case_id)
         return self
+
+
+def load_eval_sets(root: Traversable | None = None) -> Mapping[Split, tuple[EvalCase, ...]]:
+    """Charge `dev` et `test` et refuse un même `id` ou un même contenu dans les deux."""
+    sets = {split: load_split(split, root) for split in Split}
+    dev, test = sets[Split.DEV], sets[Split.TEST]
+    for case in test:
+        for other in dev:
+            if case.id == other.id:
+                raise EvalDataError(f"{case.id} : même id dans dev et test")
+            if content_hash(case) == content_hash(other):
+                raise EvalDataError(
+                    f"{other.id} (dev) et {case.id} (test) : même contenu sous deux id"
+                )
+    return sets
 
 
 def load_split(split: Split, root: Traversable | None = None) -> tuple[EvalCase, ...]:

@@ -1,0 +1,7 @@
+version: 1
+split: dev
+entries:
+  - case_id: exemple-bonnet-3-ans
+    sha256: "50730f55d6470cf3bc26b40cfa4953a20ba08a5761700aaa8bfef944a7a71904"
+    annotated_by: Isabelle Lafont
+    annotated_on: 2026-11-12

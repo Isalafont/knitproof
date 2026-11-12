@@ -14,6 +14,7 @@ Décisions d’Isabelle du 12/11/2026.
 | Taille des jeux | 5 cas `dev` et 15 cas `test` par évaluation |
 | Lecture juste | exacte par champ, aucune tolérance |
 | Données | `evals/data/<split>/`, un manifeste haché par split, vérifié par pytest |
+| Séparation | même `id`, ou même contenu sous un autre `id`, refusé entre `dev` et `test` |
 
 ## Alternatives écartées
 

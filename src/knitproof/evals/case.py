@@ -51,10 +51,14 @@ class EvalCase(BaseModel):
 
 def case_hash(case: EvalCase) -> str:
     """SHA-256 du JSON canonique du cas validé : insensible à la mise en forme du YAML."""
-    canonical = json.dumps(
-        case.model_dump(mode="json"),
-        sort_keys=True,
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
+    return _digest(case.model_dump(mode="json"))
+
+
+def content_hash(case: EvalCase) -> str:
+    """Comme `case_hash`, sans l’`id` : une copie sous un autre `id` a le même contenu."""
+    return _digest(case.model_dump(mode="json", exclude={"id"}))
+
+
+def _digest(dumped: dict[str, object]) -> str:
+    canonical = json.dumps(dumped, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
