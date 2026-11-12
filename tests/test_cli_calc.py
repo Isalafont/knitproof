@@ -9,6 +9,8 @@ from knitproof.cli.main import main
 
 EXAMPLES = Path(__file__).parent.parent / "examples"
 REQUEST = EXAMPLES / "bonnet-3-ans.yaml"
+TIMES = "\N{MULTIPLICATION SIGN}"
+MINUS = "\N{MINUS SIGN}"
 
 
 def _write(tmp_path: Path, text: str) -> Path:
@@ -219,3 +221,32 @@ def test_a_swatch_far_from_the_label_warns_and_keeps_the_blocked_summary(
     assert "ALERTE" in out
     assert "pas assez de mailles pour 10 cm : aiguilles plus fines" in out
     assert "20 m / 10 cm, après blocage (source : votre échantillon)" in out
+
+
+def test_a_head_in_inches_with_percent_ease_shows_the_formulas_in_cm(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    del data["proposed_cast_on"]
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert f"Tour visé   45,72 cm (50,8 {TIMES} 0,9)" in out
+    assert f"91,44 m calculées (45,72 {TIMES} 20 / 10) → 92 m" in out
+
+
+def test_a_head_in_inches_with_cm_ease_shows_the_head_in_cm(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    data["ease"] = {"value": "-2", "unit": "cm", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert f"Tour visé   48,8 cm (50,8 {MINUS} 2)" in out
+    assert f"(48,8 {TIMES} 20 / 10) → 96 m" in out

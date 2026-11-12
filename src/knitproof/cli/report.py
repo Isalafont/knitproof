@@ -69,25 +69,25 @@ def _summary(
 ) -> str:
     request = calc.request
     ease = request.ease
-    head = request.head_circumference
+    head_cm = request.head_circumference.in_cm
     rows = swatch.rows_per_10_cm
     ease_text = _signed(ease.value) + (" %" if ease.unit is EaseUnit.PERCENT else f" {ease.unit}")
     if ease.unit is EaseUnit.PERCENT:
-        factor = f"{_number(head.value)} {_TIMES} {_number((100 + ease.value).scaleb(-2))}"
+        factor = f"{_number(head_cm)} {_TIMES} {_number((100 + ease.value).scaleb(-2))}"
     else:
         factor = (
-            f"{_number(head.value)} {'+' if ease.value >= 0 else _MINUS} {_number(abs(ease.value))}"
+            f"{_number(head_cm)} {'+' if ease.value >= 0 else _MINUS} {_number(abs(ease.value))}"
         )
     mult = request.multiple.repeat_multiple
     cast_line = (
         f"{_number(cast.raw_stitches)} m calculées "
-        f"({_number(calc.circumference.value)} {_TIMES} {_number(swatch.stitches_per_10_cm)} / 10)"
+        f"({_number(calc.circumference.in_cm)} {_TIMES} {_number(swatch.stitches_per_10_cm)} / 10)"
         f" \N{RIGHTWARDS ARROW} {cast.stitches} m, multiple de {mult}"
     )
     lines = [
         ("Échantillon", f"{_number(swatch.stitches_per_10_cm)} m / 10 cm, {_gauge_source(calc)}"),
         ("Aisance", f"{ease_text} : {_ENTERED[request.ease.provenance.value]}"),
-        ("Tour visé", f"{_length(calc.circumference)} ({factor})"),
+        ("Tour visé", f"{_cm(calc.circumference)} ({factor})"),
         ("Montage", cast_line),
         ("", f"Tour fini réel : {_number(cast.finished_cm)} cm"),
     ]
@@ -168,6 +168,10 @@ def _brim(calc: BeanieCalc, plan: BeaniePlan) -> str:
     if calc.request.folded_brim and height is not None:
         return f"{count} rangs (le revers se tricote deux fois : 2 {_TIMES} {_length(height)})"
     return f"{count} rangs"
+
+
+def _cm(length: Length) -> str:
+    return f"{_number(length.in_cm)} cm"
 
 
 def _length(length: Length) -> str:
