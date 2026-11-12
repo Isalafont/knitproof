@@ -71,6 +71,11 @@ def test_every_admitted_kind_passes(tmp_path: Path, kind: str) -> None:
         ("read_on: 2026-11-09", "read_on: 2026-13-45", "illisible"),
         (
             "      location: table 2\n",
+            "      location: table 2\n      extracted_by: x\n",
+            "extracted_by",
+        ),
+        (
+            "      location: table 2\n",
             "      location: table 2\n  - id: oms-0-3-mois\n    source:\n"
             "      kind: fiber_library\n      reference: x\n      read_on: 2026-11-09\n",
             "id en double",
@@ -179,6 +184,8 @@ def _entry_problems(label: str, entry: object) -> list[str]:
         problems.append(f"{label} : source.read_on doit être une date AAAA-MM-JJ")
     if "location" in source and not isinstance(source["location"], str):
         problems.append(f"{label} : source.location doit être un texte")
+    if "extracted_by" in source:
+        problems.append(f"{label} : source.extracted_by refusé en données")
     return problems
 
 

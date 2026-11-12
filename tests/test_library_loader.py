@@ -165,6 +165,21 @@ def test_a_model_inference_source_is_refused_in_the_data(tmp_path: Path) -> None
         load(tmp_path)
 
 
+def test_a_reading_in_the_data_is_refused(tmp_path: Path) -> None:
+    reading = (
+        "      extracted_by:\n"
+        "        provider: anthropic\n"
+        "        model: m\n"
+        "        model_version: v\n"
+        "        prompt_id: p\n"
+        f"        prompt_sha256: {'a' * 64}\n"
+    )
+    write(tmp_path, HEADER + ENTRY + reading)
+
+    with pytest.raises(LibraryError, match=r"rows\.yaml.*a : source\.extracted_by refusé"):
+        load(tmp_path)
+
+
 def test_a_person_decision_source_is_admitted(tmp_path: Path) -> None:
     write(tmp_path, HEADER + ENTRY.replace("reference_measurement", "person_decision"))
 

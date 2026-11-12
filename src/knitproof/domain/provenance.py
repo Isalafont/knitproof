@@ -2,7 +2,7 @@
 
 import datetime
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 
 from pydantic import (
     BaseModel,
@@ -11,6 +11,8 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
+
+from knitproof.domain.reading import ModelReading
 
 
 class SourceKind(StrEnum):
@@ -39,6 +41,7 @@ class Provenance(BaseModel):
 
     `location` est un texte libre (« tableau 2, p. 3 »), distinct de `SourceLocation`
     (page et ligne d’un patron). `to_verify` marque une valeur « À VÉRIFIER ».
+    `extracted_by` trace le modèle qui a lu la source ; `model_inference` l’exige.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -48,6 +51,13 @@ class Provenance(BaseModel):
     read_on: Annotated[datetime.date, BeforeValidator(_only_a_date)]
     location: str | None = None
     to_verify: bool = False
+    extracted_by: ModelReading | None = None
+
+    @model_validator(mode="after")
+    def _a_model_inference_names_its_reading(self) -> Self:
+        if self.kind is SourceKind.MODEL_INFERENCE and self.extracted_by is None:
+            raise ValueError("model_inference exige extracted_by")
+        return self
 
 
 class SourcedEntry(BaseModel):

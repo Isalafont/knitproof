@@ -77,6 +77,8 @@ class DataFile[EntryT: SourcedEntry](BaseModel):
             seen.add(entry.id)
             if entry.source.kind not in DATA_KINDS:
                 raise ValueError(f"{entry.id} : source.kind {entry.source.kind} refusé en données")
+            if entry.source.extracted_by is not None:
+                raise ValueError(f"{entry.id} : source.extracted_by refusé en données")
         return self
 
 
