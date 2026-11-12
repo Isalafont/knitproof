@@ -26,7 +26,7 @@ Principes : un calcul déterministe, jamais confié au modèle · une provenance
 <details>
 <summary>In English</summary>
 
-knitproof computes and checks knitting patterns, starting with hats. A language model may read the request or the pattern, but it never produces a stitch count: a deterministic Python engine computes every number from the measurement, the gauge (a blocked swatch first, the yarn label as a flagged fallback) and the fibre’s behaviour, and whatever it cannot prove goes back to a person. Every value carries its provenance. Status, November 2026: `knitproof calc` computes a hat from a request written in YAML and `knitproof verify` checks the stitch counts of a pattern written in YAML; model-based reading is planned. The rest of this README is in French.
+knitproof computes and checks knitting patterns, starting with hats. A language model may read the request or the pattern, but it never produces a stitch count: a deterministic Python engine computes every number from the measurement, the gauge (a blocked swatch first, the yarn label as a flagged fallback) and the yarn’s swatch, and whatever it cannot prove goes back to a person. Every value carries its provenance. Status, November 2026: `knitproof calc` computes a hat from a request written in YAML and `knitproof verify` checks the stitch counts of a pattern written in YAML; model-based reading is planned. The rest of this README is in French.
 
 </details>
 
@@ -105,7 +105,7 @@ Le calculateur classique calcule juste mais ne comprend pas la demande ; le LLM 
 
 Demandez à un LLM un bonnet pour un enfant de 3 ans, en lui donnant le tour de tête, la laine, l’échantillon et la taille des aiguilles : il peut vous répondre avec un nombre de mailles de bonnet adulte. Le modèle ne calcule pas, il propose un nombre plausible. Et il ignore qu’un coton, peu élastique, ne se tricote pas avec la même aisance qu’un mérinos.
 
-**knitproof ne fait pas confiance au modèle pour compter.** Le modèle comprend la demande ; un moteur déterministe calcule les mailles à partir de la mesure, de l’échantillon et du comportement de la fibre ; ce qui ne peut pas être calculé avec certitude revient à une personne.
+**knitproof ne fait pas confiance au modèle pour compter.** Le modèle comprend la demande ; un moteur déterministe calcule les mailles à partir de la mesure, de l’échantillon de la laine ; ce qui ne peut pas être calculé avec certitude revient à une personne.
 
 ## Ce que ça donne
 
@@ -160,7 +160,7 @@ Le moteur ne calcule qu’avec des valeurs dont il connaît l’origine, dans ce
 
 1. **Votre échantillon**, mesuré avant et après blocage, avec la composition du fil et la taille des aiguilles. C’est la seule mesure qui reflète votre fil, vos aiguilles et votre main.
 2. **L’étiquette du fil** : composition, échantillon et aiguilles conseillés par le fabricant, métrage, consignes de lavage. Une photo de l’étiquette suffit : le modèle la lit, le moteur s’en sert.
-3. **La bibliothèque de fibres**, pour ce que l’échantillon et l’étiquette ne disent pas : élasticité, détente au lavage (forte pour un superwash).
+3. **La bibliothèque de fibres**, un vocabulaire qui dit quels noms désignent une même fibre ; le comportement au lavage ne vient pas de la fibre mais de l’échantillon tricoté de la laine ([ADR 0030](docs/adr/0030-laines-de-reference.md)).
 4. **Les mesures de référence** par âge et par taille, quand la personne n’a pas pu être mesurée. Pour un tour de tête, la plage par âge vient de patrons (DROPS Children, Julie Taylor) jusqu’à 14 ans, puis du [Craft Yarn Council](https://www.craftyarncouncil.com/standards/head-circumference-chart), femme et homme, dès 15 ans ; elle reste « À VÉRIFIER », sans valeur proposée (à 3 ans : 50 à 52 cm) ([ADR 0027](docs/adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md)). Les tableaux du tricot divergent : 19 in (environ 48 cm) pour « 12 mois à 3 ans » selon [Knit Picks](https://tutorials.knitpicks.com/hat-size-charts/). D’où l’intérêt de mesurer. La grille de tailles nommées reste décrite dans l’[ADR 0026](docs/adr/0026-grille-de-tailles-du-tour-de-tete.md).
 5. **Rien d’autre.** Une valeur manquante est demandée, jamais inventée.
 
@@ -220,7 +220,7 @@ flowchart LR
 
 En violet, le **modèle** : il comprend la demande ou lit le patron et produit une structure typée, jamais un nombre de mailles. En vert, le **moteur** : du Python pur, sans IA, qui calcule les mailles à partir de votre échantillon bloqué, de la mesure et de l’aisance selon l’ajustement voulu et le point, puis vérifie les invariants (mailles avant et après, divisibilité des motifs). En orange, la **personne** : elle tranche ce qu’aucun calcul ne peut prouver.
 
-La **bibliothèque de fibres** décrit le comportement de chaque matière (élasticité, mémoire, tendance à s’allonger). Elle donne des avertissements, pas une part chiffrée de l’aisance, qui vient d’une table par ajustement et par point ([ADR 0024](docs/adr/0024-aisance-du-bonnet.md)). Ses valeurs sont sourcées et validées par une personne qui tricote, jamais inventées par un modèle.
+La **bibliothèque de fibres** est un vocabulaire : elle ne porte ni détente ni avertissement, le comportement venant de l’échantillon de la laine ([ADR 0030](docs/adr/0030-laines-de-reference.md)). La part de l’aisance vient d’une table par ajustement et par point ([ADR 0024](docs/adr/0024-aisance-du-bonnet.md)). Ses noms viennent des étiquettes et c’est Isabelle qui décide lesquels désignent une même fibre.
 
 ![Carte du code de knitproof. La commande knitproof (couche cli) passe par les cas d’usage (app), qui appellent le moteur de calcul (engine) et la bibliothèque de référence (library) ; tous dépendent du vocabulaire du tricot (domain), qui ne dépend d’aucune autre couche. Les dépendances vont toujours vers le bas, jamais l’inverse. Le tout s’appuie sur Pydantic et un lecteur YAML ; les tests (pytest et Hypothesis) couvrent chaque bloc ; les couches api, web, llm, sources et evals sont réservées et encore vides.](docs/images/architecture.png)
 
@@ -245,7 +245,7 @@ Quand deux modèles, ou deux passages du même modèle, ne lisent pas la même v
 | Jalon | Livrable |
 |---|---|
 | M0 — Cadrage | Plan détaillé, architecture, décisions documentées, conventions, intégration continue |
-| M1 — Moteur | Calcul d’un bonnet à partir de la mesure, de vos échantillons (avant et après blocage) et de la fibre ; vérification d’un patron ; sans IA |
+| M1 — Moteur | Calcul d’un bonnet à partir de la mesure, de vos échantillons (avant et après blocage) et de l’échantillon de la laine ; vérification d’un patron ; sans IA |
 | M2 — Lecture et mesure | Lecture d’étiquettes en photo et de demandes par un modèle, fils recherchés sur Ravelry, évaluation chiffrée par modèle face à un LLM seul |
 | M3 — Démo | Interface web accessible (RGAA), API, conteneur, déploiement continu |
 

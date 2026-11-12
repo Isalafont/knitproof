@@ -1,6 +1,6 @@
 # ADR 0010 — Mélanges de fibres
 
-Remplacé en partie par l’ADR 0024 (aisance).
+Remplacé en partie par l’ADR 0024 (aisance) et par l’ADR 0030 (fibres et laines).
 
 ## Contexte
 

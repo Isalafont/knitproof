@@ -1,6 +1,7 @@
-"""Lectures de la bibliothèque : tour de tête par âge, hauteurs par âge (CLA-67)."""
+"""Lectures de la bibliothèque : tour de tête et hauteurs par âge, fibres par nom (CLA-67)."""
 
 from knitproof.domain.age import Age
+from knitproof.domain.fiber import Fiber, name_key
 from knitproof.domain.head_size import Sex
 from knitproof.domain.needle import NeedleSize, NeedleTableRow
 from knitproof.domain.reference import Quantity, ReferenceMeasurement
@@ -46,6 +47,15 @@ def needle_rows(library: Library, size: NeedleSize) -> tuple[NeedleTableRow, ...
         if row.system is size.system
         and NeedleSize(system=row.system, original=row.size).normalized == size.normalized
     )
+
+
+def fiber_named(library: Library, name: str) -> Fiber | None:
+    """La fibre que ce nom désigne, NFC et `casefold()` des deux côtés ; l’accent est gardé."""
+    key = name_key(name)
+    for fiber in library.entries_of(Fiber):
+        if any(name_key(known) == key for known in fiber.names):
+            return fiber
+    return None
 
 
 def _of_quantity(library: Library, quantity: Quantity) -> tuple[ReferenceMeasurement, ...]:

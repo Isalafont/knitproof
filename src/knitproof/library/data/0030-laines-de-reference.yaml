@@ -1,0 +1,247 @@
+schema_version: 1
+decided_in: docs/adr/0030-laines-de-reference.md
+entries:
+  - id: drops-air
+    brand: DROPS
+    name: Air
+    composition:
+      parts:
+        - {fiber: alpaca, label_term: Alpaga, percent: 65}
+        - {fiber: polyamide, label_term: Polyamide, percent: 28}
+        - {fiber: merino, label_term: laine mérinos, percent: 7}
+    superwash: false
+    label:
+      gauge:
+        stitches: "17"
+        width: {value: "10", unit: cm}
+        rows: "22"
+        height: {value: "10", unit: cm}
+      needles:
+        - {system: mm, original: 5 mm}
+      length_m: 150
+      weight_g: 50
+      care: Lavage à la main, 30 °C max / Séchage à plat / Feutrage possible
+      yarn_weight: C (16 - 19 mailles) / 10 ply / aran / worsted
+    source:
+      kind: reference_measurement
+      reference: https://www.garnstudio.com/yarn.php?show=drops-air&cid=8
+      read_on: 2026-11-12
+      location: "titre de la page : « Une laine moyennement épaisse composée de bébé alpaga et de laine mérinos » ; la composition écrit « 7% Laine » ; 50 g = environ 150 m"
+  - id: drops-lima
+    brand: DROPS
+    name: Lima
+    composition:
+      parts:
+        - {fiber: wool, label_term: Laine, percent: 65}
+        - {fiber: alpaca, label_term: Alpaga, percent: 35}
+    superwash: false
+    label:
+      gauge:
+        stitches: "21"
+        width: {value: "10", unit: cm}
+        rows: "28"
+        height: {value: "10", unit: cm}
+      needles:
+        - {system: mm, original: 4 mm}
+      length_m: 100
+      weight_g: 50
+      care: Lavage à la main, 30 °C max / Séchage à plat / Feutrage possible
+      yarn_weight: B (20 - 22 mailles) / 8 ply / DK / worsted
+    source:
+      kind: reference_measurement
+      reference: https://www.garnstudio.com/yarn.php?show=drops-lima&cid=8
+      read_on: 2026-11-12
+      location: 50 g = environ 100 m
+  - id: drops-fiesta
+    brand: DROPS
+    name: Fiesta
+    composition:
+      parts:
+        - {fiber: wool, label_term: Laine, percent: 75}
+        - {fiber: polyamide, label_term: Polyamide, percent: 25}
+    superwash: true
+    label:
+      gauge:
+        stitches: "21"
+        width: {value: "10", unit: cm}
+        rows: "28"
+        height: {value: "10", unit: cm}
+      needles:
+        - {system: mm, original: 4 mm}
+      length_m: 110
+      weight_g: 50
+      care: Lavage en machine cycle délicat 40 °C / Ne pas utiliser d’assouplissant / Séchage à plat
+      yarn_weight: B (20 - 22 mailles) / 8 ply / DK
+    source:
+      kind: reference_measurement
+      reference: https://www.garnstudio.com/yarn.php?show=drops-fiesta&cid=8
+      read_on: 2026-11-12
+      location: 50 g = environ 110 m
+  - id: drops-merino-extra-fine
+    brand: DROPS
+    name: Merino Extra Fine
+    composition:
+      parts:
+        - {fiber: merino, label_term: laine mérinos, percent: 100}
+    superwash: true
+    label:
+      gauge:
+        stitches: "21"
+        width: {value: "10", unit: cm}
+        rows: "28"
+        height: {value: "10", unit: cm}
+      needles:
+        - {system: mm, original: 4 mm}
+      length_m: 105
+      weight_g: 50
+      care: Lavage en machine cycle délicat 40 °C / Ne pas utiliser d’assouplissant / Séchage à plat
+      yarn_weight: B (20 - 22 mailles) / 8 ply / DK / worsted
+    source:
+      kind: reference_measurement
+      reference: https://www.garnstudio.com/yarn.php?show=drops-merino-extra-fine&cid=8
+      read_on: 2026-11-12
+      location: "titre de la page : « Une laine mérinos extra fine traitée superwash » ; la composition écrit « 100% Laine » ; ligne « Superwash : oui » relue sur la page le 12/11/2026 ; 50 g = environ 105 m"
+  - id: drops-baby-merino
+    brand: DROPS
+    name: Baby Merino
+    composition:
+      parts:
+        - {fiber: merino, label_term: laine mérinos, percent: 100}
+    superwash: true
+    label:
+      gauge:
+        stitches: "24"
+        width: {value: "10", unit: cm}
+        rows: "32"
+        height: {value: "10", unit: cm}
+      needles:
+        - {system: mm, original: 3 mm}
+      length_m: 175
+      weight_g: 50
+      care: Lavage en machine cycle délicat 40 °C / Ne pas utiliser d’assouplissant / Séchage à plat
+      yarn_weight: A (23 - 26 mailles) / 5 ply / sport
+    source:
+      kind: reference_measurement
+      reference: https://www.garnstudio.com/yarn.php?show=drops-baby-merino&cid=8
+      read_on: 2026-11-12
+      location: "titre de la page : « Une laine mérinos extra fine traitée superwash » ; la composition écrit « 100% Laine » ; ligne « Superwash : oui » relue sur la page le 12/11/2026 ; 50 g = environ 175 m"
+  - id: drops-kid-silk
+    brand: DROPS
+    name: Kid-Silk
+    composition:
+      parts:
+        - {fiber: mohair, label_term: Mohair, percent: 75}
+        - {fiber: silk, label_term: Soie, percent: 25}
+    superwash: null
+    label:
+      gauge:
+        stitches: "23"
+        width: {value: "10", unit: cm}
+        rows: "30"
+        height: {value: "10", unit: cm}
+      needles:
+        - {system: mm, original: "3,5 mm"}
+      length_m: 210
+      weight_g: 25
+      care: Lavage à la main, 30 °C max / Séchage à plat
+      yarn_weight: A (23 - 26 mailles) / 2 ply / lace
+    source:
+      kind: reference_measurement
+      reference: https://www.garnstudio.com/yarn.php?show=drops-kid-silk&cid=8
+      read_on: 2026-11-12
+      location: "la description du fabricant précise : 75 % mohair super kid et 25 % de soie du mûrier ; 25 g = environ 210 m ; la page n’a pas de ligne Superwash"
+  - id: filcolana-arwetta
+    brand: Filcolana
+    name: Arwetta
+    composition:
+      parts:
+        - {fiber: merino, label_term: merinould, percent: 80}
+        - {fiber: nylon, label_term: nylon, percent: 20}
+    superwash: true
+    label:
+      gauge:
+        stitches: {low: "28", high: "32"}
+        width: {value: "10", unit: cm}
+        rows: {low: "36", high: "42"}
+        height: {value: "10", unit: cm}
+      needles:
+        - {system: mm, original: "2,5 mm"}
+        - {system: mm, original: 3 mm}
+      length_m: 210
+      weight_g: 50
+      yarn_weight: Light Fingering
+      care: Kan maskinvaskes
+    source:
+      kind: reference_measurement
+      reference: https://filcolana.dk/yarns/arwetta.html
+      read_on: 2026-11-12
+      location: "ligne « Fiber : 80% superwashbehandlet uld og 20% nylon » ; composition rédigée « spundet af 80% merinould og 20% nylon », d’où merino ; 210 m / 50 g ; 2,5-3 mm ; 28-32 m x 36-42 p / 10 x 10 cm ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/filcolana-arwetta-classic, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"
+  - id: sandnes-garn-sunday
+    brand: Sandnes Garn
+    name: Sunday
+    composition:
+      parts:
+        - {fiber: merino, label_term: merinoull, percent: 100}
+    superwash: false
+    label:
+      gauge:
+        stitches: "28"
+        width: {value: "4", unit: in}
+      needles:
+        - {system: mm, original: 3 mm}
+      length_m: 235
+      weight_g: 50
+      yarn_weight: Fingering (14 wpi)
+      care: "Vasker du i maskin anbefaler vi at alle ullplagg vaskes separat på ullprogram for en mest skånsom behandling. På grunn av merinoullens unike absorberingsevne er det viktig å sentrifugere håndstrikkede plagg godt, før det tørkes flatt, gjerne oppå et håndkle. Bruk aldri vaskepose når du vasker håndstrikkede plagg i ull. Dette skaper friksjon som kan føre til at plagget tover."
+    source:
+      kind: reference_measurement
+      reference: https://www.sandnesgarn.no/sunday
+      read_on: 2026-11-12
+      location: "« ikke-superwash behandlet » ; Ca. 235 meter pr. 50 gram ; Pinne nr 3 ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"
+  - id: sandnes-garn-double-sunday
+    brand: Sandnes Garn
+    name: Double Sunday
+    composition:
+      parts:
+        - {fiber: merino, label_term: merinoull, percent: 100}
+    superwash: false
+    label:
+      gauge:
+        stitches: {low: "20", high: "21"}
+        width: {value: "4", unit: in}
+      needles:
+        - {system: mm, original: 3.5 mm}
+        - {system: mm, original: 4 mm}
+      length_m: 108
+      weight_g: 50
+      yarn_weight: DK (11 wpi)
+      care: "Vasker du i maskin anbefaler vi at alle ullplagg vaskes separat på ullprogram for en mest skånsom behandling. På grunn av merinoullens unike absorberingsevne er det viktig å sentrifugere håndstrikkede plagg godt, før det tørkes flatt, gjerne oppå et håndkle. Bruk aldri vaskepose når du vasker håndstrikkede plagg i ull. Dette skaper friksjon som kan føre til at plagget tover."
+    source:
+      kind: reference_measurement
+      reference: https://www.sandnesgarn.no/double-sunday
+      read_on: 2026-11-12
+      location: "« ikke-superwash behandlet » ; Ca. 108 meter pr. 50 gram ; Pinne nr 3½-4, écrit 3.5 en mm ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-double-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-double-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"
+  - id: sandnes-garn-tynn-silk-mohair
+    brand: Sandnes Garn
+    name: Tynn Silk Mohair
+    composition:
+      parts:
+        - {fiber: mohair, label_term: mohair, percent: 57}
+        - {fiber: silk, label_term: silke, percent: 28}
+        - {fiber: wool, label_term: ull, percent: 15}
+    superwash: null
+    label:
+      gauge:
+        stitches: {low: "18", high: "24"}
+        width: {value: "4", unit: in}
+      needles:
+        - {system: mm, original: 3 mm}
+        - {system: mm, original: 5 mm}
+      length_m: 212
+      weight_g: 25
+      yarn_weight: Lace
+    source:
+      kind: reference_measurement
+      reference: https://www.sandnesgarn.no/tynn-silk-mohair
+      read_on: 2026-11-12
+      location: "Ca. 212 meter pr. 25 gram ; Pinne nr 3-5 ; « Silke fra Kina, Mohair fra Sør-Afrika » ; superwash non précisé ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-tynn-silk-mohair, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; entretien non repris (texte lu en partie seulement) ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-tynn-silk-mohair, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"

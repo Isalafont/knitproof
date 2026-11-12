@@ -1,19 +1,23 @@
 """Les tables de `library/data/` rendent les valeurs sourcées de leurs ADR (CLA-67)."""
 
+import unicodedata
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
 from knitproof.domain.age import Age, AgeUnit
 from knitproof.domain.construction import CrownRule, MagicLoopAdvice
 from knitproof.domain.ease import EaseSource, EdgeStitch, Fit
+from knitproof.domain.fiber import Fiber, name_key
 from knitproof.domain.head_size import Sex
 from knitproof.domain.measure import LengthUnit
 from knitproof.domain.needle import NeedleSize, NeedleSystem, NeedleTableRow
 from knitproof.domain.provenance import SourceKind
 from knitproof.domain.reference import ReferenceMeasurement
+from knitproof.domain.yarn import Yarn
 from knitproof.library.loader import Library, load_library
-from knitproof.library.lookup import head_ranges_for, needle_rows, rows_for_age
+from knitproof.library.lookup import fiber_named, head_ranges_for, needle_rows, rows_for_age
 
 
 @pytest.fixture(scope="module")
@@ -299,3 +303,292 @@ def test_the_magic_loop_cable_is_an_advice_with_its_two_sources(library: Library
     assert advice.role == "advice"
     assert "KnitPro" in advice.source.reference
     assert "Knit Picks" in advice.source.reference
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("alpaga", "alpaca"),
+        ("Alpaca", "alpaca"),
+        ("MERINOULL", "merino"),
+        ("merinould", "merino"),
+        ("nylon", "nylon"),
+        ("Polyamide", "polyamide"),
+        ("Soie", "silk"),
+    ],
+)
+def test_a_fiber_is_found_by_any_of_its_names(library: Library, name: str, expected: str) -> None:
+    found = fiber_named(library, name)
+
+    assert found is not None
+    assert found.id == expected
+
+
+def test_an_unknown_fiber_name_gives_none(library: Library) -> None:
+    assert fiber_named(library, "angora") is None
+
+
+def test_the_accent_is_kept_and_the_unicode_form_ignored_in_a_lookup(tmp_path: Path) -> None:
+    (tmp_path / "0030-fibres.yaml").write_text(
+        "schema_version: 1\n"
+        "decided_in: docs/adr/0030-laines-de-reference.md\n"
+        "entries:\n"
+        "  - id: merino\n"
+        "    names: [mérinos]\n"
+        "    source: {kind: person_decision, reference: test, read_on: 2026-11-12}\n",
+        encoding="utf-8",
+    )
+    loaded = load_library(tmp_path, registry={"0030-fibres.yaml": Fiber})
+
+    assert fiber_named(loaded, unicodedata.normalize("NFD", "mérinos")) is not None
+    assert fiber_named(loaded, "merinos") is None
+
+
+def test_the_fibers_are_a_person_decision_of_adr_0030(library: Library) -> None:
+    fibers = library.entries_of(Fiber)
+
+    assert fibers
+    assert all(fiber.source.kind is SourceKind.PERSON_DECISION for fiber in fibers)
+    assert all("12/11/2026" in fiber.source.reference for fiber in fibers)
+
+
+def test_a_fiber_added_to_a_directory_loads_without_code_change(tmp_path: Path) -> None:
+    (tmp_path / "0030-fibres.yaml").write_text(
+        "schema_version: 1\n"
+        "decided_in: docs/adr/0030-laines-de-reference.md\n"
+        "entries:\n"
+        "  - id: angora\n"
+        "    names: [angora]\n"
+        "    source:\n"
+        "      kind: person_decision\n"
+        "      reference: test\n"
+        "      read_on: 2026-11-12\n",
+        encoding="utf-8",
+    )
+
+    added = load_library(tmp_path, registry={"0030-fibres.yaml": Fiber})
+
+    assert fiber_named(added, "Angora") is not None
+
+
+# Les laines citées par les patrons (ADR 0030) : dans le YAML, ou nommées ici avec leur raison.
+# La liste vit dans ce test, indépendante du YAML.
+EXPECTED_YARNS = frozenset(
+    {
+        "drops-merino-extra-fine",
+        "drops-baby-merino",
+        "drops-air",
+        "drops-lima",
+        "drops-kid-silk",
+        "drops-fiesta",
+        "madelinetosh-tosh-vintage",
+        "brooklyn-tweed-shelter",
+        "brooklyn-tweed-arbor",
+        "de-rerum-natura-gilliatt",
+        "rainbow-heirloom-sweater",
+        "the-uncommon-thread-uncommon-everyday",
+        "the-uncommon-thread-bfl-fingering",
+        "purl-soho-daily-wool-worsted",
+        "purl-soho-worsted-twist",
+        "blue-sky-fibers-organic-cotton-skinny",
+        "sandnes-garn-sunday",
+        "sandnes-garn-double-sunday",
+        "sandnes-garn-tynn-silk-mohair",
+        "filcolana-arwetta",
+        "sweet-fiber-cashmerino-worsted",
+        "la-bien-aimee-merino-aran",
+        "isager-silk-mohair",
+        "von-broich-brushed-lace",
+    }
+)
+NOT_YET_READ = "non encore relue"
+MISSING_YARNS: dict[str, str] = {
+    yarn_id: NOT_YET_READ
+    for yarn_id in (
+        "madelinetosh-tosh-vintage",
+        "brooklyn-tweed-shelter",
+        "brooklyn-tweed-arbor",
+        "de-rerum-natura-gilliatt",
+        "rainbow-heirloom-sweater",
+        "the-uncommon-thread-uncommon-everyday",
+        "the-uncommon-thread-bfl-fingering",
+        "purl-soho-daily-wool-worsted",
+        "purl-soho-worsted-twist",
+        "blue-sky-fibers-organic-cotton-skinny",
+        "sweet-fiber-cashmerino-worsted",
+        "la-bien-aimee-merino-aran",
+        "isager-silk-mohair",
+        "von-broich-brushed-lace",
+    )
+}
+
+
+def yarn_of(library: Library, yarn_id: str) -> Yarn:
+    [found] = [yarn for yarn in library.entries_of(Yarn) if yarn.id == yarn_id]
+    return found
+
+
+def test_every_expected_yarn_is_loaded_or_named_as_missing(library: Library) -> None:
+    loaded = {yarn.id for yarn in library.entries_of(Yarn)}
+
+    assert loaded | MISSING_YARNS.keys() >= EXPECTED_YARNS
+    assert loaded <= EXPECTED_YARNS
+
+
+def test_a_missing_yarn_is_not_loaded_and_has_a_reason(library: Library) -> None:
+    loaded = {yarn.id for yarn in library.entries_of(Yarn)}
+
+    assert not loaded & MISSING_YARNS.keys()
+    assert all(MISSING_YARNS.values())
+
+
+def test_kid_silk_is_75_mohair_25_silk(library: Library) -> None:
+    parts = yarn_of(library, "drops-kid-silk").composition.parts
+
+    assert [(part.fiber, part.percent) for part in parts] == [
+        ("mohair", Decimal(75)),
+        ("silk", Decimal(25)),
+    ]
+
+
+def test_arwetta_is_80_merino_20_nylon(library: Library) -> None:
+    yarn = yarn_of(library, "filcolana-arwetta")
+
+    assert [(p.fiber, p.percent, p.label_term) for p in yarn.composition.parts] == [
+        ("merino", Decimal(80), "merinould"),
+        ("nylon", Decimal(20), "nylon"),
+    ]
+    assert yarn.status is None
+    assert yarn.superwash is True
+
+
+def test_the_yarn_sources_are_the_manufacturer_page_read_on_12_november(library: Library) -> None:
+    for yarn in library.entries_of(Yarn):
+        assert yarn.source.kind is SourceKind.REFERENCE_MEASUREMENT
+        assert yarn.source.reference.startswith("https://")
+        assert yarn.source.read_on.isoformat() == "2026-11-12"
+        assert yarn.swatches == ()
+
+
+def test_a_value_the_page_does_not_give_stays_absent(library: Library) -> None:
+    sandnes = ("sandnes-garn-sunday", "sandnes-garn-double-sunday", "sandnes-garn-tynn-silk-mohair")
+
+    assert yarn_of(library, "sandnes-garn-tynn-silk-mohair").label.care is None
+    assert yarn_of(library, "drops-kid-silk").superwash is None
+    for yarn_id in sandnes:
+        gauge = yarn_of(library, yarn_id).label.gauge
+        assert gauge is not None
+        assert gauge.rows is None
+        assert gauge.height is None
+
+
+def test_the_sandnes_gauges_come_from_the_ravelry_page_in_stitches_per_4_inches(
+    library: Library,
+) -> None:
+    sunday = yarn_of(library, "sandnes-garn-sunday")
+
+    assert sunday.label.gauge is not None
+    assert sunday.label.gauge.stitches == Decimal(28)
+    assert sunday.label.gauge.width.unit is LengthUnit.IN
+    assert sunday.label.gauge.width.value == Decimal(4)
+    assert sunday.label.care is not None
+    assert sunday.label.care.startswith("Vasker du i maskin")
+    assert sunday.source.reference == "https://www.sandnesgarn.no/sunday"
+    assert "ravelry.com/yarns/library/sandnes-garn-sunday" in (sunday.source.location or "")
+    assert "pas par l’API" in (sunday.source.location or "")
+
+
+def test_a_yarn_added_to_a_directory_loads_without_code_change(tmp_path: Path) -> None:
+    fibers = (
+        "schema_version: 1\n"
+        "decided_in: docs/adr/0030-laines-de-reference.md\n"
+        "entries:\n"
+        "  - id: wool\n"
+        "    names: [Laine]\n"
+        "    source: {kind: person_decision, reference: test, read_on: 2026-11-12}\n"
+    )
+    yarns = (
+        "schema_version: 1\n"
+        "decided_in: docs/adr/0030-laines-de-reference.md\n"
+        "entries:\n"
+        "  - id: new-yarn\n"
+        "    brand: Marque\n"
+        "    name: Nouvelle\n"
+        "    composition: {parts: [{fiber: wool, label_term: Laine, percent: 100}]}\n"
+        "    superwash: null\n"
+        "    label: {}\n"
+        "    source: {kind: reference_measurement, reference: test, read_on: 2026-11-12}\n"
+    )
+    (tmp_path / "0030-fibres.yaml").write_text(fibers, encoding="utf-8")
+    (tmp_path / "0030-laines-de-reference.yaml").write_text(yarns, encoding="utf-8")
+
+    added = load_library(
+        tmp_path, registry={"0030-fibres.yaml": Fiber, "0030-laines-de-reference.yaml": Yarn}
+    )
+
+    assert [yarn.id for yarn in added.entries_of(Yarn)] == ["new-yarn"]
+
+
+def test_the_drops_merino_yarns_are_merino_as_the_page_title_writes_it(library: Library) -> None:
+    for yarn_id in ("drops-merino-extra-fine", "drops-baby-merino"):
+        yarn = yarn_of(library, yarn_id)
+
+        assert [(p.fiber, p.label_term, p.percent) for p in yarn.composition.parts] == [
+            ("merino", "laine mérinos", Decimal(100))
+        ]
+        assert yarn.status is None
+        assert yarn.superwash is True
+    air = yarn_of(library, "drops-air")
+    assert [(p.fiber, p.label_term) for p in air.composition.parts] == [
+        ("alpaca", "Alpaga"),
+        ("polyamide", "Polyamide"),
+        ("merino", "laine mérinos"),
+    ]
+    assert air.status is None
+
+
+def test_every_fiber_name_is_a_label_term_of_a_loaded_yarn(library: Library) -> None:
+    terms = {
+        (part.fiber, name_key(part.label_term))
+        for yarn in library.entries_of(Yarn)
+        for part in yarn.composition.parts
+    }
+    for fiber in library.entries_of(Fiber):
+        for name in fiber.names:
+            if (fiber.id, name_key(name)) not in terms:
+                assert (fiber.id, name) == ("alpaca", "alpaca"), f"{fiber.id} : {name}"
+
+
+def test_every_label_term_is_a_name_of_its_fiber(library: Library) -> None:
+    names = {
+        fiber.id: {name_key(name) for name in fiber.names} for fiber in library.entries_of(Fiber)
+    }
+    for yarn in library.entries_of(Yarn):
+        for part in yarn.composition.parts:
+            assert name_key(part.label_term) in names[part.fiber], f"{yarn.id} : {part.label_term}"
+
+
+def test_the_yarn_weight_is_kept_as_written_by_the_maker_or_ravelry(library: Library) -> None:
+    assert (
+        yarn_of(library, "drops-kid-silk").label.yarn_weight == "A (23 - 26 mailles) / 2 ply / lace"
+    )
+    assert yarn_of(library, "drops-air").label.yarn_weight == (
+        "C (16 - 19 mailles) / 10 ply / aran / worsted"
+    )
+    assert yarn_of(library, "filcolana-arwetta").label.yarn_weight == "Light Fingering"
+    assert yarn_of(library, "sandnes-garn-sunday").label.yarn_weight == "Fingering (14 wpi)"
+    assert yarn_of(library, "sandnes-garn-double-sunday").label.yarn_weight == "DK (11 wpi)"
+    assert yarn_of(library, "sandnes-garn-tynn-silk-mohair").label.yarn_weight == "Lace"
+
+
+def test_the_ten_yarns_have_a_yarn_weight(library: Library) -> None:
+    assert all(yarn.label.yarn_weight for yarn in library.entries_of(Yarn))
+
+
+def test_nylon_and_polyamide_are_two_different_fibers(library: Library) -> None:
+    nylon = fiber_named(library, "nylon")
+    polyamide = fiber_named(library, "Polyamide")
+
+    assert nylon is not None
+    assert polyamide is not None
+    assert nylon.id != polyamide.id
