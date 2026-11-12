@@ -30,7 +30,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 
 ## M2 — Lecture et évaluation
 
-1. Protocole d’évaluation ([`evaluation.md`](evaluation.md)) figé avant tout prompt.
+1. Protocole d’évaluation ([`evaluation.md`](evaluation.md)) figé avant tout prompt. Fait (CLA-126).
 2. Adaptateur `llm` sur pydanticAI ([ADR 0005](adr/0005-acces-aux-modeles-via-pydanticai.md)), dont au moins un modèle ouvert ou souverain.
 3. Ligne de base « LLM seul » sur les demandes de bonnet.
 4. Étiquette en photo → `YarnLabel` (photos personnelles, sans EXIF).
@@ -45,7 +45,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 
 1. API JSON (FastAPI, OpenAPI) au-dessus de `app`.
 2. Interface accessible en React et React Aria Components ([ADR 0006](adr/0006-portes-http-fastapi-et-react-aria.md)).
-3. Docker ; déploiement continu de `develop` sur la sandbox et de `main` en production ; la CI ajoute le manifeste et le rejeu de l’évaluation, sans appel payant.
+3. Docker ; déploiement continu de `develop` sur la sandbox et de `main` en production ; la CI ajoute le rejeu de l’évaluation, sans appel payant (le manifeste est vérifié dès M2).
 4. Audit RGAA publié ; axe-core en CI.
 
 **Critère de fin** : URL publique ; `docker run` démarre l’API ; CI verte ; audit RGAA sans non-conformité bloquante sur le parcours de calcul.

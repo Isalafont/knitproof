@@ -152,7 +152,7 @@ Une flèche signifie « dépend de ».
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
 | `app` | Cas d’usage : `verify_pattern`, `plan_beanie` | Seul point d’entrée pour `cli`, `api` et `web` |
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
-| `evals` | Jeux d’évaluation et mesures | Voir [`evaluation.md`](evaluation.md) |
+| `evals` | Jeux d’évaluation et mesures | Voir [`evaluation.md`](evaluation.md) ; cas et manifestes hachés dans `evals/data/<split>/` ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)) |
 
 Les dépendances entre couches sont vérifiées par import-linter (CLA-57) ; les contrats sont dans `[tool.importlinter]` de `pyproject.toml`. `cli`, `api`, `web` et `evals` peuvent importer `domain` pour typer ce qu’ils affichent ; ils n’atteignent `engine`, `library`, `llm` et `sources` qu’en passant par `app` (et `llm` pour `evals`). L’API JSON et l’interface web sont deux portes vers le même cœur : l’interface React s’ajoute sans toucher au moteur ([ADR 0006](adr/0006-portes-http-fastapi-et-react-aria.md)).
 
