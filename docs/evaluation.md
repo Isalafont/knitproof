@@ -7,6 +7,8 @@ Ce protocole est écrit **avant** tout prompt, et figé avant la première mesur
 
 Le calcul ne dépend d’aucun modèle : à entrée identique, le moteur donne le même résultat. Ce qui varie d’un modèle à l’autre, c’est la lecture, et c’est elle qu’on mesure.
 
+Figé le 12/11/2026 ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)). Toute modification s’inscrit dans « Modifications », datée, avec son motif.
+
 ## Ce qu’on évalue
 
 | Évaluation | Entrée | Sortie attendue |
@@ -19,12 +21,14 @@ Le calcul ne dépend d’aucun modèle : à entrée identique, le moteur donne l
 
 ## Jeux de données
 
-- **Deux jeux séparés** : `dev` pour mettre au point les prompts, `test` réservé à la mesure finale et jamais consulté pendant la mise au point.
+- **Deux jeux séparés** : `dev` pour mettre au point les prompts, `test` réservé à la mesure finale et jamais consulté pendant la mise au point. Un même `id`, ou un même contenu sous un autre `id`, dans les deux jeux est refusé au chargement.
 - **Sources** : photos d’étiquettes prises par Isabelle (métadonnées EXIF retirées), demandes rédigées pour l’occasion, patrons écrits pour le projet. Aucun patron du commerce ; les patrons gratuits de Ravelry restent en usage privé.
 - **Mémorisation** : les patrons populaires ont pu être appris par les modèles. Les cas du jeu `test` sont écrits pour le projet.
-- **Annotation** : chaque cas indique qui l’a annoté et quand.
+- **Annotation** : chaque entrée du manifeste indique qui a annoté le cas et quand.
 - **Manifeste versionné** : un hachage par cas, vérifié en CI. Toute modification d’une valeur attendue est consignée avec son motif. Une valeur attendue n’est jamais modifiée pour faire passer un résultat.
-- **Taille** : fixée avant la première mesure ; les résultats sont publiés en k/N.
+- **Taille** : 5 cas `dev` et 15 cas `test` par évaluation (ligne de base, étiquette, demande) ; résultats en k/N.
+- **Emplacement** : `src/knitproof/evals/data/<split>/`, un cas par fichier YAML, un `manifest.yaml` par split.
+- **Cas d’exemple** : l’`id` préfixé `exemple-` marque un cas d’exemple de format, jamais compté dans les 5 cas `dev` d’une évaluation réelle.
 
 ## Erreurs injectées
 
@@ -44,8 +48,8 @@ Chaque cas peut porter une erreur volontaire, décrite par un type :
 
 | Mesure | Définition |
 |---|---|
-| Montage correct | Ligne de base et knitproof : le tour fini obtenu respecte le tour visé, à une tolérance fixée avant la mesure |
-| Lecture juste | Par champ : exacte, ou dans la tolérance déclarée pour ce champ |
+| Montage correct | Ligne de base et knitproof : le tour fini obtenu est à ±1 cm du tour visé (tête et aisance comprises) |
+| Lecture juste | Par champ : exactement la valeur de la source ; nombres tels qu’imprimés, texte comparé sans casse ni espaces superflus ; aucune tolérance ; champ absent de la source : attendu vide (voir Abstention correcte) |
 | Champ inventé | Valeur produite alors qu’elle est absente de la source : l’erreur qui contredit « jamais inventée » |
 | Abstention correcte | Champ laissé vide quand la source ne le contient pas |
 | Erreur détectée | Erreur injectée signalée et localisée |
@@ -73,10 +77,10 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 
 | Modèle | Champs clés |
 |---|---|
-| `EvalManifest` | `version`, `split` (`dev` / `test`), hachage par cas, annotatrice |
+| `EvalManifest` | `version`, `split` (`dev` / `test`), et par entrée : `id` du cas, hachage SHA-256, annotatrice, date |
 | `EvalCase` | `id`, `input`, `expected`, `injected_error`, `absent_fields` |
 | `ModelRun` | modèle, version, prompt, température, mode de sortie structurée, jetons, coût, latence, date |
-| `FieldScore`, `EvalResult` | exact, dans la tolérance, inventé, abstention ; erreur détectée et localisée |
+| `FieldScore`, `EvalResult` | exact, inventé, abstention ; erreur détectée et localisée |
 | `BaselineRun` | réponse du LLM seul, comparée au moteur |
 
 ## Tableau publié
@@ -85,8 +89,6 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 |---|---|---|---|---|---|---|---|---|
 | à venir (M2) | | | | | | | | |
 
-## Questions ouvertes
+## Modifications
 
-- Tolérance du « montage correct » : en centimètres de tour fini, ou en nombre de mailles ?
-- Taille des jeux `dev` et `test`.
-- Tolérances par champ (ex. métrage d’une étiquette).
+Aucune.

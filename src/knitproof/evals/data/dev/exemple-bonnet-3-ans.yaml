@@ -1,0 +1,4 @@
+id: exemple-bonnet-3-ans
+input: "Bonnet pour 3 ans, tour de tête 48 cm, aisance −10 %, échantillon bloqué 20 m pour 10 cm, côtes 2/2."
+expected:
+  target_circumference_cm: "43.2"
