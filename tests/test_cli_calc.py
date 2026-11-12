@@ -309,3 +309,30 @@ def test_several_inputs_in_inches_are_joined_by_a_spaced_semicolon(
     _, out, _ = _run(tmp_path, data, capsys)
 
     assert "Conversions 20 in = 50,8 cm (tour de tête) ; 8 in = 20,32 cm (hauteur finie)\n" in out
+
+
+def test_a_height_in_inches_is_shown_in_cm_on_the_height_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "20,32 cm finis + 5 cm de revers = 25,32 cm tricotés : 76 rangs" in out
+
+
+def test_a_brim_in_inches_is_shown_in_cm_on_the_brim_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    data["brim_height"] = {"value": "2", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert f"le revers se tricote deux fois : 2 {TIMES} 5,08 cm)" in out
+    assert "2 in = 5,08 cm (bord)" in out
+    assert "20,32 cm finis + 5,08 cm de revers = 25,4 cm tricotés" in out

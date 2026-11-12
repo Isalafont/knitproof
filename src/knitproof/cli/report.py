@@ -134,13 +134,13 @@ def _gauge_source(calc: BeanieCalc) -> str:
 
 def _height(calc: BeanieCalc, plan: BeaniePlan, rows: Decimal | None) -> str:
     request = calc.request
-    finished = _length(plan.finished_height)
+    finished = _cm(plan.finished_height)
     gauge = "" if rows is None else f" ({_number(rows)} rangs / 10 cm{_rows_source(calc)})"
     count = plan.rows.total.rows
     if request.folded_brim and request.brim_height is not None:
         knitted = plan.finished_height.in_cm + request.brim_height.in_cm
         return (
-            f"{finished} finis + {_length(request.brim_height)} de revers "
+            f"{finished} finis + {_cm(request.brim_height)} de revers "
             f"= {_number(knitted)} cm tricotés : {count} rangs{gauge}"
         )
     return f"{finished} finis : {count} rangs{gauge}"
@@ -169,7 +169,7 @@ def _brim(calc: BeanieCalc, plan: BeaniePlan) -> str:
     height = calc.request.brim_height
     count = plan.rows.brim.rows
     if calc.request.folded_brim and height is not None:
-        return f"{count} rangs (le revers se tricote deux fois : 2 {_TIMES} {_length(height)})"
+        return f"{count} rangs (le revers se tricote deux fois : 2 {_TIMES} {_cm(height)})"
     return f"{count} rangs"
 
 
@@ -190,10 +190,6 @@ def _conversions(request: BeanieRequest) -> list[tuple[str, str]]:
 
 def _cm(length: Length) -> str:
     return f"{_number(length.in_cm)} cm"
-
-
-def _length(length: Length) -> str:
-    return f"{_number(length.value)} {length.unit.value}"
 
 
 def _signed(value: Decimal) -> str:
