@@ -1,5 +1,10 @@
 """La configuration des modèles est lue dans l’environnement (CLA-127, ADR 0033)."""
 
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from knitproof.llm.config import ModelConfig, Provider, load_config
@@ -130,3 +135,29 @@ def test_the_key_appears_neither_in_the_repr_nor_in_an_error() -> None:
     with pytest.raises(LlmError) as raised:
         load_config("anthropic", environ("anthropic", KNITPROOF_LLM_RETRIES="x"))
     assert KEY not in str(raised.value)
+
+
+def test_a_failing_live_test_never_prints_the_key() -> None:
+    project = Path(__file__).resolve().parents[1]
+    secret = "cle-reconnaissable-0123456789"
+    env = {
+        "ANTHROPIC_API_KEY": secret,
+        "KNITPROOF_ANTHROPIC_MODEL": "claude-sonnet-4-5-20250929",
+        "PATH": os.environ.get("PATH", ""),
+    }
+
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "tests/test_llm_live.py", "-m", "live", "-k", "anthropic"],
+        cwd=project,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+
+    output = result.stdout + result.stderr
+    assert result.returncode == 1
+    assert "KNITPROOF_LLM_RETRIES" in output
+    assert secret not in output
+    assert secret[:8] not in output
