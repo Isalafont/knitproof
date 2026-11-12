@@ -250,3 +250,62 @@ def test_a_head_in_inches_with_cm_ease_shows_the_head_in_cm(
     assert code == 0
     assert f"Tour visé   48,8 cm (50,8 {MINUS} 2)" in out
     assert f"(48,8 {TIMES} 20 / 10) → 96 m" in out
+
+
+def test_a_head_in_inches_is_recalled_in_a_conversions_line_before_the_target(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Conversions 20 in = 50,8 cm (tour de tête)\n" in out
+    assert out.index("Conversions") < out.index("Tour visé")
+
+
+def test_a_height_in_inches_is_recalled_in_the_conversions_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Conversions 8 in = 20,32 cm (hauteur finie)\n" in out
+
+
+def test_the_conversions_line_only_cites_the_inputs_in_inches(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "hauteur finie" not in out
+    assert "bord)" not in out
+
+
+def test_without_inches_there_is_no_conversions_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _data(), capsys)
+
+    assert "Conversions" not in out
+
+
+def test_several_inputs_in_inches_are_joined_by_a_spaced_semicolon(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Conversions 20 in = 50,8 cm (tour de tête) ; 8 in = 20,32 cm (hauteur finie)\n" in out

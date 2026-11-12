@@ -4,11 +4,12 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from typing import assert_never
 
 from knitproof.app.beanie import BeanieCalc
+from knitproof.app.beanie_request import BeanieRequest
 from knitproof.domain.beanie import BeaniePlan
 from knitproof.domain.cast_on import CastOnResult
 from knitproof.domain.ease import EaseUnit
 from knitproof.domain.gauge import GaugeSource
-from knitproof.domain.measure import Length, SwatchMeasurement
+from knitproof.domain.measure import Length, LengthUnit, SwatchMeasurement
 from knitproof.domain.report import Report, ReportEntry, ReportStatus
 
 _TIMES = "\N{MULTIPLICATION SIGN}"
@@ -78,15 +79,17 @@ def _summary(
         factor = (
             f"{_number(head_cm)} {'+' if ease.value >= 0 else _MINUS} {_number(abs(ease.value))}"
         )
+    conversions = _conversions(request)
     mult = request.multiple.repeat_multiple
     cast_line = (
         f"{_number(cast.raw_stitches)} m calculées "
         f"({_number(calc.circumference.in_cm)} {_TIMES} {_number(swatch.stitches_per_10_cm)} / 10)"
         f" \N{RIGHTWARDS ARROW} {cast.stitches} m, multiple de {mult}"
     )
-    lines = [
+    lines: list[tuple[str, str]] = [
         ("Échantillon", f"{_number(swatch.stitches_per_10_cm)} m / 10 cm, {_gauge_source(calc)}"),
         ("Aisance", f"{ease_text} : {_ENTERED[request.ease.provenance.value]}"),
+        *conversions,
         ("Tour visé", f"{_cm(calc.circumference)} ({factor})"),
         ("Montage", cast_line),
         ("", f"Tour fini réel : {_number(cast.finished_cm)} cm"),
@@ -168,6 +171,21 @@ def _brim(calc: BeanieCalc, plan: BeaniePlan) -> str:
     if calc.request.folded_brim and height is not None:
         return f"{count} rangs (le revers se tricote deux fois : 2 {_TIMES} {_length(height)})"
     return f"{count} rangs"
+
+
+def _conversions(request: BeanieRequest) -> list[tuple[str, str]]:
+    """Une ligne qui rappelle chaque saisie en pouces, convertie en cm ; rien sans pouces."""
+    inputs = (
+        (request.head_circumference, "tour de tête"),
+        (request.total_height, "hauteur finie"),
+        (request.brim_height, "bord"),
+    )
+    shown = [
+        f"{_number(length.value)} in = {_cm(length)} ({name})"
+        for length, name in inputs
+        if length is not None and length.unit is LengthUnit.IN
+    ]
+    return [("Conversions", " ; ".join(shown))] if shown else []
 
 
 def _cm(length: Length) -> str:
