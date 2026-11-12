@@ -9,6 +9,8 @@ from knitproof.cli.main import main
 
 EXAMPLES = Path(__file__).parent.parent / "examples"
 REQUEST = EXAMPLES / "bonnet-3-ans.yaml"
+TIMES = "\N{MULTIPLICATION SIGN}"
+MINUS = "\N{MINUS SIGN}"
 
 
 def _write(tmp_path: Path, text: str) -> Path:
@@ -219,3 +221,178 @@ def test_a_swatch_far_from_the_label_warns_and_keeps_the_blocked_summary(
     assert "ALERTE" in out
     assert "pas assez de mailles pour 10 cm : aiguilles plus fines" in out
     assert "20 m / 10 cm, après blocage (source : votre échantillon)" in out
+
+
+def test_a_head_in_inches_with_percent_ease_shows_the_formulas_in_cm(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    del data["proposed_cast_on"]
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert f"Tour visé   45,72 cm (50,8 {TIMES} 0,9)" in out
+    assert f"91,44 m calculées (45,72 {TIMES} 20 / 10) → 92 m" in out
+
+
+def test_a_head_in_inches_with_cm_ease_shows_the_head_in_cm(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    data["ease"] = {"value": "-2", "unit": "cm", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert f"Tour visé   48,8 cm (50,8 {MINUS} 2)" in out
+    assert f"(48,8 {TIMES} 20 / 10) → 96 m" in out
+
+
+def test_a_head_in_inches_is_recalled_in_a_conversions_line_before_the_target(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Conversions 20 in = 50,8 cm (tour de tête)\n" in out
+    assert out.index("Conversions") < out.index("Tour visé")
+
+
+def test_a_height_in_inches_is_recalled_in_the_conversions_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Conversions 8 in = 20,32 cm (hauteur finie)\n" in out
+
+
+def test_the_conversions_line_only_cites_the_inputs_in_inches(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "hauteur finie" not in out
+    assert "bord)" not in out
+
+
+def test_without_inches_there_is_no_conversions_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _data(), capsys)
+
+    assert "Conversions" not in out
+
+
+def test_several_inputs_in_inches_are_joined_by_a_spaced_semicolon(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["head_circumference"] = {"value": "20", "unit": "in", "provenance": "measured"}
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Conversions 20 in = 50,8 cm (tour de tête) ; 8 in = 20,32 cm (hauteur finie)\n" in out
+
+
+def test_a_height_in_inches_is_shown_in_cm_on_the_height_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "20,32 cm finis + 5 cm de revers = 25,32 cm tricotés : 76 rangs" in out
+
+
+def test_a_brim_in_inches_is_shown_in_cm_on_the_brim_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["total_height"] = {"value": "8", "unit": "in", "provenance": "entered"}
+    data["brim_height"] = {"value": "2", "unit": "in", "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert f"le revers se tricote deux fois : 2 {TIMES} 5,08 cm)" in out
+    assert "2 in = 5,08 cm (bord)" in out
+    assert "20,32 cm finis + 5,08 cm de revers = 25,4 cm tricotés" in out
+
+
+def _flat(height: str, brim: str = "5") -> dict[str, object]:
+    data = _data()
+    data["worked"] = "flat"
+    data["stitch_multiple"] = {"repeat_multiple": 4, "repeat_offset": 2, "provenance": "entered"}
+    data["total_height"] = {"value": height, "unit": "cm", "provenance": "entered"}
+    data["brim_height"] = {"value": brim, "unit": "cm", "provenance": "entered"}
+    del data["proposed_cast_on"]
+    return data
+
+
+def test_a_flat_body_adjusted_down_for_parity_shows_the_difference_then_the_adjustment(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("19"), capsys)
+
+    assert (
+        f"Corps       24 rangs (72 {MINUS} 30 {MINUS} 17 = 25, {MINUS} 1 : "
+        "bord et corps en nombre pair à plat)\n"
+    ) in out
+
+
+def test_a_flat_body_adjusted_up_for_parity_shows_the_difference_then_the_adjustment(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("16", "3.5"), capsys)
+
+    assert (
+        f"Corps       21 rangs (58 {MINUS} 21 {MINUS} 17 = 20, + 1 : "
+        "bord et corps en nombre pair à plat)\n"
+    ) in out
+
+
+def test_a_flat_body_without_adjustment_shows_the_plain_difference(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("20"), capsys)
+
+    assert f"Corps       28 rangs (75 {MINUS} 30 {MINUS} 17)\n" in out
+
+
+def test_the_cast_on_line_shows_the_offset_of_the_stitch_multiple_in_the_round(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["stitch_multiple"] = {"repeat_multiple": 4, "repeat_offset": 2, "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert f"Montage     86,4 m calculées (43,2 {TIMES} 20 / 10) → 86 m, multiple de 4 + 2\n" in out
+
+
+def test_the_cast_on_line_shows_the_offset_of_the_stitch_multiple_when_flat(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("20"), capsys)
+
+    assert f"Montage     86,4 m calculées (43,2 {TIMES} 20 / 10) → 86 m, multiple de 4 + 2\n" in out

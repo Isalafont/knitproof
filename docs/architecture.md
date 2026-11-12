@@ -273,7 +273,7 @@ La provenance permet aussi d’effacer sur demande toutes les données venues d�
 - Un arrondi par grandeur saisie, chacun avec une règle paramétrée et tracée dans le résultat : le montage (`CastOnResult`), les rangs tricotés au total et ceux du bord (`RowCount`). Le corps est la différence de deux entiers, et la profondeur de calotte se déduit de ses rangs ([ADR 0028](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md), qui amende l’ADR 0007).
 - Un bonnet à plat se monte sur le multiple du point plus une maille de lisière à chaque bord ; la calotte se calcule hors lisière, avec `k2tog` à l’endroit seulement. Pas de `needle_change` à plat, et la profondeur de calotte y est « À VÉRIFIER » (ADR 0028).
 - Les quotients (nombre brut de mailles, largeur finie, jauge pour 10 cm) sont des `Decimal` à 28 chiffres significatifs, `ROUND_HALF_EVEN`, calculés par `DIVISION.divide` et non par `/` ; ils ne servent qu’à la trace, le montage se décidant exactement par produits croisés ([ADR 0015](adr/0015-quotients-decimaux-et-montage-exact.md)).
-- La mise en forme française (« 43,2 cm ») relève du rendu, pas du domaine.
+- La mise en forme française (« 43,2 cm ») relève du rendu, pas du domaine. Les données gardent leur unité d’origine, le rendu convertit : le résumé de `knitproof calc` parle en cm, une saisie en pouces est convertie et rappelée sur la ligne « Conversions ». À plat, le corps ajusté pour la parité montre la différence puis l’ajustement (« 72 − 30 − 17 = 25, − 1 : bord et corps en nombre pair à plat »).
 
 ## 9. Représentation d’un patron
 
