@@ -112,3 +112,45 @@ def test_an_unknown_status_is_refused() -> None:
                 "source": {"kind": "fiber_library", "reference": "x", "read_on": READ_ON},
             }
         )
+
+
+READING = {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-5",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "prompt_id": "extract-v1",
+    "prompt_sha256": "a" * 64,
+}
+
+
+def test_a_model_inference_without_a_reading_is_refused() -> None:
+    with pytest.raises(ValidationError, match="model_inference"):
+        Provenance(kind=SourceKind.MODEL_INFERENCE, reference="photo", read_on=READ_ON)
+
+
+def test_a_model_inference_with_a_reading_is_accepted() -> None:
+    provenance = Provenance.model_validate(
+        {
+            "kind": "model_inference",
+            "reference": "photo",
+            "read_on": READ_ON,
+            "extracted_by": READING,
+        }
+    )
+
+    assert provenance.extracted_by is not None
+    assert provenance.extracted_by.model == "claude-sonnet-4-5"
+
+
+def test_a_yarn_label_may_carry_a_reading() -> None:
+    provenance = Provenance.model_validate(
+        {"kind": "yarn_label", "reference": "photo", "read_on": READ_ON, "extracted_by": READING}
+    )
+
+    assert provenance.extracted_by is not None
+
+
+def test_the_other_kinds_need_no_reading() -> None:
+    provenance = Provenance(kind=SourceKind.USER_INPUT, reference="saisie", read_on=READ_ON)
+
+    assert provenance.extracted_by is None

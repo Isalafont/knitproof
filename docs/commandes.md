@@ -4,11 +4,32 @@ Détail des commandes de knitproof, de l’organisation du code et de la contrib
 
 ## Organisation du code
 
-`domain` et `engine` portent le modèle de patron, le calcul du bonnet et la vérification des comptes de mailles ; `app` et `cli` portent les commandes `knitproof calc` et `knitproof verify` ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs sorties de référence vivent dans `examples/sorties/` et un test garde les blocs du README contre elles (balise `<!-- sortie : … -->` avant chaque bloc). Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
+`domain` et `engine` portent le modèle de patron, le calcul du bonnet et la vérification des comptes de mailles ; `app` et `cli` portent les commandes `knitproof calc` et `knitproof verify` ; `llm` porte la configuration, la fabrique d’agents et l’appel de sortie structurée (voir « Modèles ») ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs sorties de référence vivent dans `examples/sorties/` et un test garde les blocs du README contre elles (balise `<!-- sortie : … -->` avant chaque bloc). Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
 
 ## Données Ravelry
 
 Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses identifiants d’API. Le fichier `.env` n’est jamais versionné.
+
+## Modèles
+
+La couche `llm` appelle Anthropic et Mistral par pydanticAI ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md)). Les variables se lisent dans l’environnement ; `.env.example` les liste, sans valeur.
+
+| Variable | Rôle |
+|---|---|
+| `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY` | clé du fournisseur, obligatoire pour lui |
+| `KNITPROOF_ANTHROPIC_MODEL`, `KNITPROOF_MISTRAL_MODEL` | identifiant figé du modèle, obligatoire ; `-latest` refusé |
+| `KNITPROOF_ANTHROPIC_BASE_URL`, `KNITPROOF_MISTRAL_BASE_URL` | adresse de l’API, facultative |
+| `KNITPROOF_LLM_TEMPERATURE` | entre 0 et 1, facultative |
+| `KNITPROOF_LLM_RETRIES` | relances de sortie, obligatoire (0 ou plus) |
+
+La température est facultative parce que certains modèles la refusent : Sonnet 5.5 répond 400 si `temperature` est posé ([doc Anthropic](https://platform.claude.com/docs/en/models/sonnet-5-5/overview)) et pydanticAI la retire pour Opus 4.7, 4.8, 5 et 5.5 ([doc pydanticAI](https://pydantic.dev/docs/ai/models/anthropic/)). Absente, rien n’est envoyé.
+
+`uv run pytest` n’appelle jamais un fournisseur : les requêtes réelles sont interdites en test. L’appel de contrôle, un par fournisseur, se lance à la main :
+
+```sh
+uv run --env-file .env pytest -m live -k anthropic
+uv run --env-file .env pytest -m live -k mistral
+```
 
 ## Calculer un bonnet
 

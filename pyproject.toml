@@ -10,6 +10,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.14.1",
+    "pydantic-ai-slim[anthropic,mistral]>=2.68.0",
     "pyyaml>=6.0.3",
 ]
 
@@ -33,6 +34,8 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not live'"
+markers = ["live: appel réel à un fournisseur, lancé à la main"]
 xfail_strict = true
 
 [tool.ruff]

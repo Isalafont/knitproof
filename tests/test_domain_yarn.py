@@ -129,7 +129,14 @@ def test_the_superwash_is_stated_even_when_unknown() -> None:
 
 
 def test_a_swatch_source_must_be_a_user_swatch() -> None:
-    source = {**SOURCE, "kind": "model_inference"}
+    reading = {
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-5",
+        "model_version": "claude-sonnet-4-5-20250929",
+        "prompt_id": "extract-v1",
+        "prompt_sha256": "a" * 64,
+    }
+    source = {**SOURCE, "kind": "model_inference", "extracted_by": reading}
     with pytest.raises(ValidationError, match="user_swatch"):
         YarnSwatch.model_validate({**SWATCH, "source": source})
 
