@@ -1,19 +1,22 @@
 """Les tables de `library/data/` rendent les valeurs sourcées de leurs ADR (CLA-67)."""
 
+import unicodedata
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
 from knitproof.domain.age import Age, AgeUnit
 from knitproof.domain.construction import CrownRule, MagicLoopAdvice
 from knitproof.domain.ease import EaseSource, EdgeStitch, Fit
+from knitproof.domain.fiber import Fiber
 from knitproof.domain.head_size import Sex
 from knitproof.domain.measure import LengthUnit
 from knitproof.domain.needle import NeedleSize, NeedleSystem, NeedleTableRow
 from knitproof.domain.provenance import SourceKind
 from knitproof.domain.reference import ReferenceMeasurement
 from knitproof.library.loader import Library, load_library
-from knitproof.library.lookup import head_ranges_for, needle_rows, rows_for_age
+from knitproof.library.lookup import fiber_named, head_ranges_for, needle_rows, rows_for_age
 
 
 @pytest.fixture(scope="module")
@@ -299,3 +302,55 @@ def test_the_magic_loop_cable_is_an_advice_with_its_two_sources(library: Library
     assert advice.role == "advice"
     assert "KnitPro" in advice.source.reference
     assert "Knit Picks" in advice.source.reference
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("alpaga", "alpaca"),
+        ("Alpaca", "alpaca"),
+        (unicodedata.normalize("NFD", "mérinos"), "merino"),
+        ("nylon", "polyamide"),
+        ("Soie", "silk"),
+    ],
+)
+def test_a_fiber_is_found_by_any_of_its_names(library: Library, name: str, expected: str) -> None:
+    found = fiber_named(library, name)
+
+    assert found is not None
+    assert found.id == expected
+
+
+def test_an_unknown_fiber_name_gives_none(library: Library) -> None:
+    assert fiber_named(library, "angora") is None
+
+
+def test_the_accent_is_kept_when_looking_up_a_name(library: Library) -> None:
+    assert fiber_named(library, "merinos") is None
+
+
+def test_the_fibers_are_a_person_decision_of_adr_0030(library: Library) -> None:
+    fibers = library.entries_of(Fiber)
+
+    assert fibers
+    assert all(fiber.source.kind is SourceKind.PERSON_DECISION for fiber in fibers)
+    assert all("12/11/2026" in fiber.source.reference for fiber in fibers)
+
+
+def test_a_fiber_added_to_a_directory_loads_without_code_change(tmp_path: Path) -> None:
+    (tmp_path / "0030-fibres.yaml").write_text(
+        "schema_version: 1\n"
+        "decided_in: docs/adr/0030-laines-de-reference.md\n"
+        "entries:\n"
+        "  - id: angora\n"
+        "    names: [angora]\n"
+        "    source:\n"
+        "      kind: person_decision\n"
+        "      reference: test\n"
+        "      read_on: 2026-11-12\n",
+        encoding="utf-8",
+    )
+
+    added = load_library(tmp_path, registry={"0030-fibres.yaml": Fiber})
+
+    assert fiber_named(added, "Angora") is not None

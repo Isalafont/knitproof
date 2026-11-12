@@ -178,10 +178,10 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `Notice` | `status` (`warning`), `code` (`unknown_needle_size`), `text` | un avis d’information, pas un écart prouvé : `Finding` ne porte que des erreurs du moteur ; une taille d’aiguille absente de la table est acceptée avec ce `warning` (ADR 0021, point 5) |
 | `NeedleTableRow` | `system` (`us`, `uk`, `jp`), `size`, `mm` (un ou deux), `source` | une ligne des tables de l’ADR 0021, chargée par la bibliothèque ; `app/needles.py` en tire le texte d’information et l’avis |
 | `CrownRule`, `MagicLoopAdvice` | seuils de la calotte (ADR 0019) ; câble de 80 cm, un conseil (ADR 0023) | `person_decision` pour la calotte, sources de l’ADR pour le câble |
-| `FiberComposition` | parts (`fiber_id`, `percent`) | somme = 100 ; fibres connues |
+| `FiberComposition` | `parts` (`fiber`, `label_term`, `percent`) | somme = 100, une fibre au plus une fois, pourcentage en entier nu ou en chaîne ; fibres connues : contrôle du chargeur entre fichiers (la fibre de chaque part est un `id` de `0030-fibres.yaml`), non du modèle ; `label_term` reprend le mot de l’étiquette tel qu’écrit |
 | `YarnLabel` | composition, `needle: Range[NeedleSize]`, `gauge: LabelGauge` (voir « Échantillon et points »), `length_m`, `weight_g`, `care`, `superwash` | provenance au niveau de l’objet |
 | `Yarn` | `id`, `name`, `brand`, `composition`, `superwash`, `label` | — |
-| `FiberProfile` | `fiber_id`, `names`, `blocking_change` (largeur, hauteur), `sources`, `validated_by` | au moins une source ; non validé ⇒ `needs_review` |
+| `Fiber` | `id`, `names`, `source` | un vocabulaire sans chiffre ni avertissement (ADR 0030) ; au moins un nom, noms uniques par fibre et entre fibres (NFC puis `casefold()`, l’accent est gardé) ; le comportement vient d’un échantillon de la laine, non de la fibre |
 
 ### Échantillon et points
 
@@ -226,7 +226,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 
 Les modèles d’évaluation (`EvalManifest`, `EvalCase`, `ModelRun`, `FieldScore`, `BaselineRun`) sont décrits dans [`evaluation.md`](evaluation.md).
 
-**Repoussés** : profil de la personne au-delà de l’âge, autres vêtements, élasticité et mémoire des fibres (non consommées par le calcul), quantité de fil, persistance des échantillons (fichiers YAML en M1), lecture de patrons PDF.
+**Repoussés** : profil de la personne au-delà de l’âge, autres vêtements, comportement des fibres (il vient de l’échantillon de la laine, ADR 0030), quantité de fil, persistance des échantillons (fichiers YAML en M1), lecture de patrons PDF.
 
 ## 7. Provenance et résolution des sources
 
@@ -367,10 +367,11 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0027 — Tour de tête par âge d’après les patrons](adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md)
 - [ADR 0028 — Rangs du bonnet et bonnet à plat](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)
 - [ADR 0029 — Rapport unique du moteur](adr/0029-rapport-unique-du-moteur.md)
+- [ADR 0030 — Vocabulaire des fibres et laines de référence](adr/0030-laines-de-reference.md)
 
 ## 13. Projets proches
 
 - [StitchCheck](https://github.com/KingHaim/stitchcheck) vérifie les mailles rang par rang, avec un mode LLM optionnel.
 - [knitcheck](https://github.com/jarhodes314/knitcheck) traite le patron comme un programme typé, en Rust.
 
-knitproof part de l’échantillon réel et du comportement des fibres, trace la provenance de chaque valeur, mesure sa fiabilité par modèle et renvoie l’incertain à une personne.
+knitproof part de l’échantillon réel et de l’échantillon de la laine, trace la provenance de chaque valeur, mesure sa fiabilité par modèle et renvoie l’incertain à une personne.

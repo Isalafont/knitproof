@@ -1,0 +1,24 @@
+schema_version: 1
+decided_in: docs/adr/0030-laines-de-reference.md
+entries:
+  - id: wool
+    names: [Laine, uld, ull]
+    source: &decision
+      kind: person_decision
+      reference: "Isabelle Lafont, décision du 12/11/2026 (CLA-121) ; noms lus sur les pages des fabricants citées dans 0030-laines-de-reference.yaml"
+      read_on: 2026-11-12
+  - id: merino
+    names: [mérinos, merinoull, merinould]
+    source: *decision
+  - id: alpaca
+    names: [Alpaga, alpaca]
+    source: *decision
+  - id: polyamide
+    names: [Polyamide, nylon]
+    source: *decision
+  - id: mohair
+    names: [Mohair]
+    source: *decision
+  - id: silk
+    names: [Soie, silke]
+    source: *decision

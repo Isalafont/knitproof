@@ -28,3 +28,4 @@ entries:
 | `0023-longueur-des-aiguilles-circulaires-et-magic-loop.yaml` | `MagicLoopAdvice` | câble de 80 cm pour le magic loop, un conseil et non une règle, avec ses sources KnitPro et Knit Picks |
 | `0024-aisance-du-bonnet.yaml` | `EaseSource` | Oslo (7 tailles : plage de tête, montage, échantillon) et Rosebud (une taille : plage de tête, tour du bord publié) ; données brutes, le % est calculé par `engine/ease.py` |
 | `0027-tour-de-tete-par-age-d-apres-les-patrons.yaml` | `ReferenceMeasurement` | plages de tour de tête par tranche d’âge (bornes en mois incluses, cm), sans valeur proposée |
+| `0030-fibres.yaml` | `Fiber` | le vocabulaire des fibres : un `id` et les noms lus sur les étiquettes des fabricants ; `person_decision` (Isabelle, 12/11/2026), sans chiffre ni avertissement ; un nom désigne une seule fibre, tous fichiers confondus |

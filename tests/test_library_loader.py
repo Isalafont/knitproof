@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from knitproof.domain.fiber import Fiber
 from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import PlainDecimal
 from knitproof.domain.provenance import SourcedEntry, SourceKind
@@ -213,3 +214,44 @@ def test_every_real_data_file_is_in_the_registry_and_loads() -> None:
 
     assert names == set(REGISTRY)
     assert set(load_library().files) == names
+
+
+FIBERS = """\
+schema_version: 1
+decided_in: docs/adr/0030-laines-de-reference.md
+entries:
+  - id: {first}
+    names: [{first_names}]
+    source:
+      kind: person_decision
+      reference: Isabelle Lafont, décision du 12/11/2026
+      read_on: 2026-11-12
+  - id: {second}
+    names: [{second_names}]
+    source:
+      kind: person_decision
+      reference: Isabelle Lafont, décision du 12/11/2026
+      read_on: 2026-11-12
+"""
+
+
+def load_fibers(directory: Path, first_names: str, second_names: str) -> Library:
+    text = FIBERS.format(
+        first="wool", first_names=first_names, second="merino", second_names=second_names
+    )
+    write(directory, text, name="fibers.yaml")
+    return load_library(directory, registry={"fibers.yaml": Fiber})
+
+
+def test_a_name_shared_by_two_fibers_is_refused_with_file_and_id(tmp_path: Path) -> None:
+    with pytest.raises(LibraryError, match=r"fibers\.yaml:merino .*nom en double.*wool"):
+        load_fibers(tmp_path, "Laine, Uld", "uld")
+
+
+def test_a_name_shared_by_two_fibers_is_compared_by_key(tmp_path: Path) -> None:
+    with pytest.raises(LibraryError, match="nom en double"):
+        load_fibers(tmp_path, "Mérinos", "Me\u0301rinos")
+
+
+def test_distinct_names_load(tmp_path: Path) -> None:
+    assert len(load_fibers(tmp_path, "Laine", "mérinos").entries_of(Fiber)) == 2
