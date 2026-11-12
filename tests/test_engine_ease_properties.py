@@ -6,8 +6,8 @@ from decimal import Decimal
 from hypothesis import given
 from hypothesis import strategies as st
 
-from knitproof.domain.ease import EaseSource
-from knitproof.engine.ease import reference_ease
+from knitproof.domain.ease import EaseSource, EdgeStitch, Fit
+from knitproof.engine.ease import propose_ease, reference_ease
 
 HEADS = st.integers(min_value=30, max_value=70)
 SIZES = st.builds(
@@ -74,3 +74,22 @@ def test_no_value_is_a_float(source: EaseSource) -> None:
 @given(SOURCES)
 def test_the_same_source_gives_the_same_proposal(source: EaseSource) -> None:
     assert reference_ease(source) == reference_ease(source)
+
+
+@given(st.lists(SOURCES, min_size=1, max_size=5))
+def test_the_proposed_value_lies_in_its_range_and_ignores_the_order(
+    sources: list[EaseSource],
+) -> None:
+    outcome = propose_ease(
+        sources, (), (), Fit.FITTED, EdgeStitch.STOCKINETTE, EdgeStitch.STOCKINETTE, None
+    )
+    reversed_outcome = propose_ease(
+        sources[::-1], (), (), Fit.FITTED, EdgeStitch.STOCKINETTE, EdgeStitch.STOCKINETTE, None
+    )
+
+    assert outcome.value is not None
+    assert outcome.low is not None
+    assert outcome.high is not None
+    assert outcome.low <= outcome.value <= outcome.high
+    assert outcome.value == reversed_outcome.value
+    assert (outcome.low, outcome.high) == (reversed_outcome.low, reversed_outcome.high)

@@ -1,14 +1,22 @@
 """Les tables de `library/data/` rendent les valeurs sourcées de leurs ADR (CLA-67)."""
 
 import unicodedata
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 
 import pytest
 
 from knitproof.domain.age import Age, AgeUnit
 from knitproof.domain.construction import CrownRule, MagicLoopAdvice
-from knitproof.domain.ease import BaseEase, EaseRole, EaseSource, EdgeStitch, Fit
+from knitproof.domain.ease import (
+    BaseEase,
+    EaseOrigin,
+    EaseOutcome,
+    EaseRole,
+    EaseSource,
+    EdgeStitch,
+    Fit,
+)
 from knitproof.domain.fiber import Fiber, name_key
 from knitproof.domain.head_size import Sex
 from knitproof.domain.measure import LengthUnit
@@ -16,6 +24,7 @@ from knitproof.domain.needle import NeedleSize, NeedleSystem, NeedleTableRow
 from knitproof.domain.provenance import SourceKind
 from knitproof.domain.reference import ReferenceMeasurement
 from knitproof.domain.yarn import Yarn
+from knitproof.engine.ease import propose_ease
 from knitproof.library.loader import Library, load_library
 from knitproof.library.lookup import fiber_named, head_ranges_for, needle_rows, rows_for_age
 
@@ -708,3 +717,99 @@ def test_the_base_ease_is_minus_5_percent_for_fitted_ribs_with_a_stockinette_swa
     assert base.swatch_stitch is EdgeStitch.STOCKINETTE
     assert base.source.kind is SourceKind.PERSON_DECISION
     assert base.source.to_verify is True
+
+
+def propose_from(
+    library: Library,
+    yarn_id: str,
+    edge: EdgeStitch,
+    swatch_stitch: EdgeStitch,
+    fit: Fit = Fit.FITTED,
+) -> EaseOutcome:
+    return propose_ease(
+        library.entries_of(EaseSource),
+        library.entries_of(Yarn),
+        library.entries_of(BaseEase),
+        fit,
+        edge,
+        swatch_stitch,
+        yarn_id,
+    )
+
+
+def tenth(value: Decimal | None) -> Decimal:
+    assert value is not None
+    return value.quantize(Decimal("0.1"), rounding=ROUND_HALF_EVEN)
+
+
+def test_a_superwash_merino_in_rib_2x2_and_stockinette_swatch_gives_minus_4_8_percent(
+    library: Library,
+) -> None:
+    outcome = propose_from(
+        library, "drops-merino-extra-fine", EdgeStitch.RIB_2X2, EdgeStitch.STOCKINETTE
+    )
+
+    assert outcome.origin is EaseOrigin.SOURCES
+    assert tenth(outcome.value) == Decimal("-4.8")
+    assert (tenth(outcome.low), tenth(outcome.high)) == (Decimal("-7.4"), Decimal("-3.7"))
+    assert outcome.size_low is not None
+    assert outcome.size_high is not None
+    assert (
+        outcome.size_low.quantize(Decimal("0.01")),
+        outcome.size_high.quantize(Decimal("0.01")),
+    ) == (
+        Decimal("-8.95"),
+        Decimal("2.98"),
+    )
+    assert {item.source_id for item in outcome.sources} == PROPOSALS
+    assert outcome.to_verify is True
+
+
+def test_baby_merino_belongs_to_the_same_family_as_merino_extra_fine(library: Library) -> None:
+    outcome = propose_from(library, "drops-baby-merino", EdgeStitch.RIB_2X2, EdgeStitch.STOCKINETTE)
+
+    assert {item.source_id for item in outcome.sources} == PROPOSALS
+
+
+@pytest.mark.parametrize(
+    ("yarn_id", "edge"),
+    [
+        ("drops-air", EdgeStitch.RIB_2X2),
+        ("drops-fiesta", EdgeStitch.RIB_2X2),
+        ("drops-merino-extra-fine", EdgeStitch.RIB_1X1),
+    ],
+)
+def test_another_family_or_ribs_1x1_fall_back_on_the_base_with_the_landmarks(
+    library: Library, yarn_id: str, edge: EdgeStitch
+) -> None:
+    outcome = propose_from(library, yarn_id, edge, EdgeStitch.STOCKINETTE)
+
+    assert outcome.origin is EaseOrigin.BASE
+    assert outcome.value == Decimal(-5)
+    assert outcome.base is not None
+    assert outcome.landmarks
+    assert all(
+        item.source_id not in PROPOSALS or edge is EdgeStitch.RIB_2X2 for item in outcome.landmarks
+    )
+
+
+def test_a_swatch_in_ribs_gives_no_value_and_shows_the_landmarks(library: Library) -> None:
+    outcome = propose_from(
+        library, "drops-merino-extra-fine", EdgeStitch.RIB_1X1, EdgeStitch.RIB_1X1
+    )
+
+    assert outcome.origin is EaseOrigin.NONE
+    assert outcome.value is None
+    assert "purl-soho-cuffed-hat-cotes-1-1-repos" in {item.source_id for item in outcome.landmarks}
+
+
+def test_oslo_and_rosebud_keep_their_values(library: Library) -> None:
+    oslo = propose_from(
+        library, "sandnes-garn-sunday", EdgeStitch.STOCKINETTE, EdgeStitch.STOCKINETTE
+    )
+    rosebud = propose_from(
+        library, "drops-air", EdgeStitch.RIB_2X2, EdgeStitch.STOCKINETTE, Fit.LOOSE
+    )
+
+    assert (oslo.origin, tenth(oslo.value)) == (EaseOrigin.SOURCES, Decimal("-15.6"))
+    assert (rosebud.origin, tenth(rosebud.value)) == (EaseOrigin.SOURCES, Decimal("-17.7"))

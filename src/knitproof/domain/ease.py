@@ -143,3 +143,44 @@ class EaseProposal(BaseModel):
     high: _Percent
     by_size: tuple[_Percent, ...]
     provenance: Provenance
+
+
+class EaseOrigin(StrEnum):
+    """D’où vient la valeur proposée : des patrons, de la base, ou d’aucune source."""
+
+    SOURCES = "sources"
+    BASE = "base"
+    NONE = "none"
+
+
+class EaseOutcome(BaseModel):
+    """Ce que le moteur propose pour (ajustement, bord, point d’échantillon, laine), ADR 0031.
+
+    `low` et `high` sont la plage des médianes par patron (un seul patron : sa propre plage) ;
+    `size_low` et `size_high` couvrent toutes les tailles. Toute valeur proposée est « À VÉRIFIER ».
+    Les repères sont montrés, jamais comptés dans la valeur.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    origin: EaseOrigin
+    value: _Percent | None = None
+    low: _Percent | None = None
+    high: _Percent | None = None
+    size_low: _Percent | None = None
+    size_high: _Percent | None = None
+    sources: tuple[EaseProposal, ...] = ()
+    base: BaseEase | None = None
+    landmarks: tuple[EaseProposal, ...] = ()
+
+    @property
+    def to_verify(self) -> bool:
+        return self.value is not None
+
+    @model_validator(mode="after")
+    def _a_value_comes_with_its_origin(self) -> Self:
+        if (self.value is None) != (self.origin is EaseOrigin.NONE):
+            raise ValueError("une valeur va avec une origine, et aucune origine sans valeur")
+        if (self.base is None) == (self.origin is EaseOrigin.BASE):
+            raise ValueError("la base accompagne l’origine « base », et elle seule")
+        return self

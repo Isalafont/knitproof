@@ -1,9 +1,21 @@
 """Aisance de référence : le % se déduit des données brutes de la source (CLA-67, ADR 0024 §7)."""
 
+from collections.abc import Sequence
 from decimal import Decimal
 
-from knitproof.domain.ease import EaseProposal, EaseSize, EaseSource
+from knitproof.domain.ease import (
+    BaseEase,
+    EaseOrigin,
+    EaseOutcome,
+    EaseProposal,
+    EaseRole,
+    EaseSize,
+    EaseSource,
+    EdgeStitch,
+    Fit,
+)
 from knitproof.domain.measure import DIVISION, EXACT
+from knitproof.domain.yarn import Yarn, YarnFamily
 
 HUNDRED = Decimal(100)
 TEN = Decimal(10)
@@ -36,6 +48,88 @@ def reference_ease(source: EaseSource) -> EaseProposal:
         by_size=by_size,
         provenance=source.source,
     )
+
+
+def propose_ease(
+    sources: Sequence[EaseSource],
+    yarns: Sequence[Yarn],
+    bases: Sequence[BaseEase],
+    fit: Fit,
+    edge: EdgeStitch,
+    swatch_stitch: EdgeStitch,
+    yarn_id: str | None,
+) -> EaseOutcome:
+    """Valeur d’après les patrons qui correspondent, sinon la base, sinon aucune (ADR 0031).
+
+    Un patron `proposal` compte s’il a le même ajustement et le même bord, si son échantillon est
+    au même point (ou absent) et si sa laine est de la famille de celle demandée (ou absente).
+    Plusieurs patrons : médiane de leurs médianes. Les autres sources du couple sont des repères.
+    """
+    same_edge = [item for item in sources if (item.fit, item.edge) == (fit, edge)]
+    counted = [
+        item
+        for item in same_edge
+        if item.role is EaseRole.PROPOSAL
+        and _same_swatch_stitch(item, swatch_stitch)
+        and _fits_the_yarn(item, yarns, yarn_id)
+    ]
+    landmarks = tuple(reference_ease(item) for item in same_edge if item not in counted)
+    if counted:
+        return _from_patterns(tuple(reference_ease(item) for item in counted), landmarks)
+    for base in bases:
+        if (base.fit, base.swatch_stitch) == (fit, swatch_stitch) and edge in base.edges:
+            return EaseOutcome(
+                origin=EaseOrigin.BASE,
+                value=base.value,
+                low=base.value,
+                high=base.value,
+                base=base,
+                landmarks=landmarks,
+            )
+    return EaseOutcome(origin=EaseOrigin.NONE, landmarks=landmarks)
+
+
+def _from_patterns(
+    proposals: tuple[EaseProposal, ...], landmarks: tuple[EaseProposal, ...]
+) -> EaseOutcome:
+    medians = tuple(item.proposed for item in proposals)
+    every_size = tuple(value for item in proposals for value in item.by_size)
+    if len(proposals) == 1:
+        [only] = proposals
+        low, high = only.low, only.high
+    else:
+        low, high = min(medians), max(medians)
+    return EaseOutcome(
+        origin=EaseOrigin.SOURCES,
+        value=min(max(_median(medians), low), high),
+        low=low,
+        high=high,
+        size_low=min(every_size),
+        size_high=max(every_size),
+        sources=proposals,
+        landmarks=landmarks,
+    )
+
+
+def _same_swatch_stitch(source: EaseSource, swatch_stitch: EdgeStitch) -> bool:
+    return source.swatch is None or source.swatch.stitch is swatch_stitch
+
+
+def _fits_the_yarn(source: EaseSource, yarns: Sequence[Yarn], yarn_id: str | None) -> bool:
+    if not source.yarns:
+        return True
+    if yarn_id is None:
+        return False
+    if yarn_id in source.yarns:
+        return True
+    wanted = _family_of(yarns, yarn_id)
+    if wanted is None:
+        return False
+    return any(_family_of(yarns, cited) == wanted for cited in source.yarns)
+
+
+def _family_of(yarns: Sequence[Yarn], yarn_id: str) -> YarnFamily | None:
+    return next((item.family for item in yarns if item.id == yarn_id), None)
 
 
 def _ease_at(source: EaseSource, size: EaseSize, head_cm: Decimal) -> Decimal:
