@@ -9,6 +9,7 @@ entries:
       width:
         value: "10"
         unit: cm
+      stitch: stockinette
     sizes:
       - head: {low: "47", high: "48", unit: cm}
         cast_on: 92

@@ -66,6 +66,15 @@ class YarnSwatch(BaseModel):
         return self
 
 
+class YarnFamily(BaseModel):
+    """La famille d’une laine : sa fibre majoritaire et son traitement superwash (ADR 0031)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    fiber: Text
+    superwash: bool
+
+
 class Yarn(SourcedEntry):
     """Une laine : marque, nom, composition, superwash (`None` si non publié), étiquette.
 
@@ -78,3 +87,14 @@ class Yarn(SourcedEntry):
     superwash: bool | None
     label: YarnLabel
     swatches: tuple[YarnSwatch, ...] = ()
+
+    @property
+    def family(self) -> YarnFamily | None:
+        """Fibre majoritaire et superwash ; `None` si égalité de parts ou superwash absent."""
+        if self.superwash is None:
+            return None
+        top = max(part.percent for part in self.composition.parts)
+        leaders = [part for part in self.composition.parts if part.percent == top]
+        if len(leaders) != 1:
+            return None
+        return YarnFamily(fiber=leaders[0].fiber, superwash=self.superwash)

@@ -40,16 +40,26 @@ class EdgeStitch(StrEnum):
     """Le point du bord, là où se mesure l’aisance (ADR 0024 §1)."""
 
     STOCKINETTE = "stockinette"
+    RIB_1X1 = "rib_1x1"
     RIB_2X2 = "rib_2x2"
+    GARTER = "garter"
+
+
+class EaseRole(StrEnum):
+    """Une source propose une valeur, ou reste un repère que le moteur montre sans la compter."""
+
+    PROPOSAL = "proposal"
+    LANDMARK = "landmark"
 
 
 class SwatchSpec(BaseModel):
-    """L’échantillon publié d’une source : mailles pour une largeur, unité d’origine."""
+    """L’échantillon publié d’une source : mailles pour une largeur, unité d’origine, point."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     stitches: PlainDecimal
     width: ReferenceLength
+    stitch: EdgeStitch
 
     @property
     def measurement(self) -> SwatchMeasurement:
@@ -83,6 +93,9 @@ class EaseSource(SourcedEntry):
     fit: Fit
     edge: EdgeStitch
     swatch: SwatchSpec | None = None
+    yarns: tuple[str, ...] = ()
+    role: EaseRole = EaseRole.PROPOSAL
+    role_reason: str | None = None
     sizes: tuple[EaseSize, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -90,6 +103,24 @@ class EaseSource(SourcedEntry):
         if self.swatch is None and any(size.cast_on is not None for size in self.sizes):
             raise ValueError("un montage demande l’échantillon (swatch) de la source")
         return self
+
+    @model_validator(mode="after")
+    def _a_landmark_says_why(self) -> Self:
+        if self.role is EaseRole.LANDMARK and not self.role_reason:
+            raise ValueError("un repère (landmark) dit pourquoi : role_reason manque")
+        return self
+
+
+class BaseEase(SourcedEntry):
+    """L’aisance de base, en %, décidée pour des bords et un point d’échantillon donnés.
+
+    Elle vaut quand aucune source ne correspond (ADR 0031) ; elle n’est pas tirée d’un patron.
+    """
+
+    fit: Fit
+    edges: tuple[EdgeStitch, ...] = Field(min_length=1)
+    swatch_stitch: EdgeStitch
+    value: SignedDecimal
 
 
 _Percent = Annotated[Decimal, BeforeValidator(_refuse_float)]
@@ -112,3 +143,44 @@ class EaseProposal(BaseModel):
     high: _Percent
     by_size: tuple[_Percent, ...]
     provenance: Provenance
+
+
+class EaseOrigin(StrEnum):
+    """D’où vient la valeur proposée : des patrons, de la base, ou d’aucune source."""
+
+    SOURCES = "sources"
+    BASE = "base"
+    NONE = "none"
+
+
+class EaseOutcome(BaseModel):
+    """Ce que le moteur propose pour (ajustement, bord, point d’échantillon, laine), ADR 0031.
+
+    `low` et `high` sont la plage des médianes par patron (un seul patron : sa propre plage) ;
+    `size_low` et `size_high` couvrent toutes les tailles. Toute valeur proposée est « À VÉRIFIER ».
+    Les repères sont montrés, jamais comptés dans la valeur.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    origin: EaseOrigin
+    value: _Percent | None = None
+    low: _Percent | None = None
+    high: _Percent | None = None
+    size_low: _Percent | None = None
+    size_high: _Percent | None = None
+    sources: tuple[EaseProposal, ...] = ()
+    base: BaseEase | None = None
+    landmarks: tuple[EaseProposal, ...] = ()
+
+    @property
+    def to_verify(self) -> bool:
+        return self.value is not None
+
+    @model_validator(mode="after")
+    def _a_value_comes_with_its_origin(self) -> Self:
+        if (self.value is None) != (self.origin is EaseOrigin.NONE):
+            raise ValueError("une valeur va avec une origine, et aucune origine sans valeur")
+        if (self.base is None) == (self.origin is EaseOrigin.BASE):
+            raise ValueError("la base accompagne l’origine « base », et elle seule")
+        return self

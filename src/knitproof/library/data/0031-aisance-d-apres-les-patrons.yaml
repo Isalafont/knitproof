@@ -1,0 +1,388 @@
+schema_version: 1
+decided_in: docs/adr/0031-aisance-d-apres-les-patrons-et-la-laine.md
+entries:
+  - id: drops-49-25-ajuste-cotes-2-2
+    fit: fitted
+    edge: rib_2x2
+    swatch:
+      stitches: "22"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [drops-merino-extra-fine]
+    sizes:
+      - head: {low: "48", high: "50", unit: cm}
+        cast_on: 100
+      - head: {low: "50", high: "52", unit: cm}
+        cast_on: 104
+      - head: {low: "52", high: "53", unit: cm}
+        cast_on: 108
+      - head: {low: "53", high: "54", unit: cm}
+        cast_on: 112
+      - head: {low: "54", high: "55", unit: cm}
+        cast_on: 116
+      - head: {low: "55", high: "56", unit: cm}
+        cast_on: 120
+      - head: {low: "56", high: "57", unit: cm}
+        cast_on: 128
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Design, « Little Woodland Hat (DROPS Children 49-25) », https://www.garnstudio.com/pattern.php?id=12325&cid=8"
+      read_on: 2026-11-12
+      location: "7 tailles, 2 à 13/14 ans, tours de tête 48/50 à 56/57 cm ; échantillon 22 m × 30 rangs en jersey, aiguilles 3,5 ; bonnet tout en côtes 2/2, bord et corps aux mêmes aiguilles (3,5), bord replié ; laine DROPS Merino Extra Fine ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: drops-37-16-ajuste-cotes-2-2
+    fit: fitted
+    edge: rib_2x2
+    swatch:
+      stitches: "22"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [drops-merino-extra-fine]
+    sizes:
+      - head: {low: "44", high: "46", unit: cm}
+        cast_on: 96
+      - head: {low: "48", high: "50", unit: cm}
+        cast_on: 104
+      - head: {low: "50", high: "52", unit: cm}
+        cast_on: 108
+      - head: {low: "52", high: "54", unit: cm}
+        cast_on: 112
+      - head: {low: "54", high: "56", unit: cm}
+        cast_on: 116
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Design, « Rainbow Unicorn Set, bonnet (DROPS Children 37-16) », https://www.garnstudio.com/pattern.php?id=9865&cid=8"
+      read_on: 2026-11-12
+      location: "5 tailles, 12/18 mois à 9/12 ans, tours de tête 44/46 à 54/56 cm ; échantillon 22 m × 30 rangs en jersey, aiguilles 3,5 ; bonnet tout en côtes 2/2, bord et corps aux mêmes aiguilles (3,5), bord replié ; laine DROPS Merino Extra Fine ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: drops-41-27-ajuste-cotes-2-2
+    fit: fitted
+    edge: rib_2x2
+    swatch:
+      stitches: "26"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [drops-baby-merino]
+    sizes:
+      - head: {low: "48", high: "50", unit: cm}
+        cast_on: 116
+      - head: {low: "50", high: "52", unit: cm}
+        cast_on: 124
+      - head: {low: "52", high: "54", unit: cm}
+        cast_on: 128
+      - head: {low: "54", high: "56", unit: cm}
+        cast_on: 132
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Design, « Winter Fun (DROPS Children 41-27) », https://www.garnstudio.com/pattern.php?id=10598&cid=8"
+      read_on: 2026-11-12
+      location: "4 tailles, 2 à 10/12 ans, tours de tête 48/50 à 54/56 cm ; échantillon 26 m × 34 rangs en jersey, aiguilles 2,5 ; bonnet tout en côtes 2/2, bord et corps aux mêmes aiguilles (2,5), bord replié ; laine DROPS BabyMerino ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: drops-214-67-ajuste-cotes-1-1
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "20"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [drops-air]
+    role: landmark
+    role_reason: "bord en côtes 1/1 : la proposition d’après les patrons ne couvre que les côtes 2/2, ce patron reste un repère"
+    sizes:
+      - head: {low: "54", high: "56", unit: cm}
+        cast_on: 108
+      - head: {low: "56", high: "58", unit: cm}
+        cast_on: 120
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Design, « Winter Smiles Hat (DROPS 214-67) », https://www.garnstudio.com/pattern.php?id=10010&cid=8"
+      read_on: 2026-11-12
+      location: "S/M et L/XL, tours de tête 54/56 et 56/58 cm ; échantillon 20 m × 27 rangs en jersey, aiguilles 3,5 ; bord en côtes 1/1 ; laine DROPS Air (ou DROPS Daisy, non relevée) ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: drops-219-17-ajuste-cotes-1-1
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "20"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [drops-air]
+    role: landmark
+    role_reason: "bord en côtes 1/1 : la proposition d’après les patrons ne couvre que les côtes 2/2, ce patron reste un repère"
+    sizes:
+      - head: {low: "54", high: "56", unit: cm}
+        cast_on: 100
+      - head: {low: "56", high: "58", unit: cm}
+        cast_on: 110
+      - head: {low: "58", high: "60", unit: cm}
+        cast_on: 120
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Design, « Moorland Hat (DROPS 219-17) », https://www.garnstudio.com/pattern.php?id=10053&cid=8"
+      read_on: 2026-11-12
+      location: "S, M et L, tours de tête 54/56, 56/58 et 58/60 cm ; échantillon 20 m × 27 rangs en jersey, aiguilles 3,5 ; bord en côtes 1/1 ; laine DROPS Air ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: drops-242-22-ajuste-cotes-1-1
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "18"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [drops-lima, drops-kid-silk]
+    role: landmark
+    role_reason: "mailles du corps et non du bord, deux fils tenus ensemble, côtes 1/1 : repère"
+    sizes:
+      - head: {low: "54", high: "56", unit: cm}
+        cast_on: 90
+      - head: {low: "58", high: "60", unit: cm}
+        cast_on: 96
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Design, « Cardinal Song, bonnet (DROPS 242-22) », https://www.garnstudio.com/pattern.php?id=11639&cid=8"
+      read_on: 2026-11-12
+      location: "M/L et L/XL, tours de tête 54/56 et 58/60 cm ; échantillon 18 m × 23 rangs en jersey avec 1 fil de chaque qualité, aiguilles n° 4 et n° 3 ; bord en côtes 1/1 ; mailles du corps (premier tour de jersey) et non du bord ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: drops-260-24-ajuste-cotes-1-1
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "22"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [drops-fiesta]
+    role: landmark
+    role_reason: "mailles du corps et non du bord, côtes 1/1 : repère"
+    sizes:
+      - head: {low: "54", high: "56", unit: cm}
+        cast_on: 108
+      - head: {low: "58", high: "60", unit: cm}
+        cast_on: 120
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "DROPS Design, « Endgame Hat (DROPS 260-24) », https://www.garnstudio.com/pattern.php?id=12435&cid=8"
+      read_on: 2026-11-12
+      location: "S/M et L/XL, tours de tête environ 54/56 et 58/60 cm ; échantillon 22 m × 30 rangs en jersey, aiguilles 3,5 (aiguilles n° 3 et n° 3,5) ; bord en côtes 1/1 ; mailles du corps (premier tour de jersey) et non du bord ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: purl-soho-cuffed-hat-jersey
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "20"
+      width:
+        value: "4"
+        unit: in
+      stitch: stockinette
+    yarns: [purl-soho-daily-wool-worsted]
+    role: landmark
+    role_reason: "côtes 1/1, laine Daily Wool Worsted non relue : repère"
+    sizes:
+      - head: {low: "13", high: "15", unit: in}
+        cast_on: 72
+      - head: {low: "14", high: "17", unit: in}
+        cast_on: 80
+      - head: {low: "16", high: "19", unit: in}
+        cast_on: 88
+      - head: {low: "18", high: "20", unit: in}
+        cast_on: 96
+      - head: {low: "19", high: "22", unit: in}
+        cast_on: 104
+      - head: {low: "21", high: "24", unit: in}
+        cast_on: 112
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Purl Soho, « Classic Cuffed Hat in Daily Wool Worsted », https://www.purlsoho.com/create/2024/12/14/classic-cuffed-hat-in-daily-wool-worsted/"
+      read_on: 2026-11-12
+      location: "Baby à Adult Large, tours de tête 13–15 à 21–24 in ; échantillon jersey 20 m × 28 rangs = 4 in, aiguilles US 7 (4,5 mm) ; bord en côtes 1/1 ; laine non relue : pas de famille ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: purl-soho-cuffed-hat-cotes-1-1-repos
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "30"
+      width:
+        value: "4"
+        unit: in
+      stitch: rib_1x1
+    yarns: [purl-soho-daily-wool-worsted]
+    role: landmark
+    role_reason: "échantillon en côtes 1/1 au repos, laine non relue : repère"
+    sizes:
+      - head: {low: "13", high: "15", unit: in}
+        cast_on: 72
+      - head: {low: "14", high: "17", unit: in}
+        cast_on: 80
+      - head: {low: "16", high: "19", unit: in}
+        cast_on: 88
+      - head: {low: "18", high: "20", unit: in}
+        cast_on: 96
+      - head: {low: "19", high: "22", unit: in}
+        cast_on: 104
+      - head: {low: "21", high: "24", unit: in}
+        cast_on: 112
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Purl Soho, « Classic Cuffed Hat in Daily Wool Worsted », https://www.purlsoho.com/create/2024/12/14/classic-cuffed-hat-in-daily-wool-worsted/"
+      read_on: 2026-11-12
+      location: "mêmes tailles ; échantillon en côtes 1/1 : 30 m × 27 rangs = 4 in, au repos (« unstretched »), aiguilles US 6 (4 mm) ; laine non relue : pas de famille ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: barley-worsted-ajuste-cotes-1-1
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "18"
+      width:
+        value: "4"
+        unit: in
+      stitch: stockinette
+    role: landmark
+    role_reason: "côtes 1/1 puis point mousse, aucune laine imposée : repère"
+    sizes:
+      - head: {low: "14", high: "14", unit: in}
+        cast_on: 54
+      - head: {low: "16", high: "16", unit: in}
+        cast_on: 66
+      - head: {low: "17.5", high: "17.5", unit: in}
+        cast_on: 72
+      - head: {low: "19", high: "19", unit: in}
+        cast_on: 78
+      - head: {low: "21", high: "21", unit: in}
+        cast_on: 84
+      - head: {low: "22.5", high: "22.5", unit: in}
+        cast_on: 90
+      - head: {low: "23.5", high: "23.5", unit: in}
+        cast_on: 96
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Alexa Tetzlaff et Emily Wessel (Tin Can Knits), « Barley », patron en anglais ; PDF privé d’Isabelle"
+      read_on: 2026-11-12
+      location: "p. 2–3 ; Newborn à Adult L, « fits head approximately 14 (16, 17.5, 19, 21, 22.5, 23.5)” around » : une valeur par taille, d’où low = high ; échantillon Worsted/aran : 18 m × 24 rangs pour 4 in, en jersey sur les grosses aiguilles ; montage sur aiguilles plus fines, côtes 1/1 puis point mousse ; aucune laine imposée : pas de famille ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: barley-dk-ajuste-cotes-1-1
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "22"
+      width:
+        value: "4"
+        unit: in
+      stitch: stockinette
+    role: landmark
+    role_reason: "côtes 1/1 puis point mousse, aucune laine imposée : repère"
+    sizes:
+      - head: {low: "14", high: "14", unit: in}
+        cast_on: 66
+      - head: {low: "16", high: "16", unit: in}
+        cast_on: 78
+      - head: {low: "17.5", high: "17.5", unit: in}
+        cast_on: 84
+      - head: {low: "19", high: "19", unit: in}
+        cast_on: 90
+      - head: {low: "21", high: "21", unit: in}
+        cast_on: 96
+      - head: {low: "22.5", high: "22.5", unit: in}
+        cast_on: 102
+      - head: {low: "23.5", high: "23.5", unit: in}
+        cast_on: 108
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Alexa Tetzlaff et Emily Wessel (Tin Can Knits), « Barley », patron en anglais ; PDF privé d’Isabelle"
+      read_on: 2026-11-12
+      location: "p. 2–3 ; Newborn à Adult L, « fits head approximately 14 (16, 17.5, 19, 21, 22.5, 23.5)” around » : une valeur par taille, d’où low = high ; échantillon DK : 22 m × 30 rangs pour 4 in, en jersey sur les grosses aiguilles ; montage sur aiguilles plus fines, côtes 1/1 puis point mousse ; aucune laine imposée : pas de famille ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: barley-sock-ajuste-cotes-1-1
+    fit: fitted
+    edge: rib_1x1
+    swatch:
+      stitches: "26"
+      width:
+        value: "4"
+        unit: in
+      stitch: stockinette
+    role: landmark
+    role_reason: "côtes 1/1 puis point mousse, aucune laine imposée : repère"
+    sizes:
+      - head: {low: "14", high: "14", unit: in}
+        cast_on: 84
+      - head: {low: "16", high: "16", unit: in}
+        cast_on: 96
+      - head: {low: "17.5", high: "17.5", unit: in}
+        cast_on: 102
+      - head: {low: "19", high: "19", unit: in}
+        cast_on: 114
+      - head: {low: "21", high: "21", unit: in}
+        cast_on: 120
+      - head: {low: "22.5", high: "22.5", unit: in}
+        cast_on: 126
+      - head: {low: "23.5", high: "23.5", unit: in}
+        cast_on: 132
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Alexa Tetzlaff et Emily Wessel (Tin Can Knits), « Barley », patron en anglais ; PDF privé d’Isabelle"
+      read_on: 2026-11-12
+      location: "p. 2–3 ; Newborn à Adult L, « fits head approximately 14 (16, 17.5, 19, 21, 22.5, 23.5)” around » : une valeur par taille, d’où low = high ; échantillon Sock/sport : 26 m × 38 rangs pour 4 in, en jersey sur les grosses aiguilles ; montage sur aiguilles plus fines, côtes 1/1 puis point mousse ; aucune laine imposée : pas de famille ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: simple-baby-hat-ajuste-jersey
+    fit: fitted
+    edge: stockinette
+    swatch:
+      stitches: "24"
+      width:
+        value: "4"
+        unit: in
+      stitch: stockinette
+    yarns: [blue-sky-fibers-organic-cotton-skinny]
+    role: landmark
+    role_reason: "bord roulotté en jersey, coton non relu : repère"
+    sizes:
+      - head: {low: "12", high: "13", unit: in}
+        cast_on: 72
+      - head: {low: "14", high: "15", unit: in}
+        cast_on: 81
+      - head: {low: "16", high: "17", unit: in}
+        cast_on: 90
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Alison Williams, « Simple Baby Hat », Blue Sky Alpacas, réf. 061908 ; PDF privé d’Isabelle"
+      read_on: 2026-11-12
+      location: "p. 2 ; newborn, baby, toddler, « to fit 12-13, 14-15, 16-17 head circumference » en pouces ; échantillon 24 m = 4 in en jersey, aiguilles 3,75 mm ; jersey roulotté dès le montage ; laine Blue Sky Skinny Dyed Cotton non relue ; taille prématuré (Preemie, 11 in, 63 m) écartée, aucune aisance proposée pour un prématuré ; montages : transcription privée d’Isabelle, jamais versionnée"
+  - id: tegan-ajuste-mousse
+    fit: fitted
+    edge: garter
+    swatch:
+      stitches: "22"
+      width:
+        value: "10"
+        unit: cm
+      stitch: stockinette
+    yarns: [paintbox-yarns-cotton-dk]
+    role: landmark
+    role_reason: "bord au point mousse, tour fini publié, coton non relu : repère"
+    sizes:
+      - head: {low: "35", high: "40", unit: cm}
+        cast_on: 78
+      - head: {low: "40", high: "45", unit: cm}
+        cast_on: 84
+      - head: {low: "45", high: "48", unit: cm}
+        cast_on: 90
+    status: to_verify
+    source:
+      kind: reference_measurement
+      reference: "Julie Taylor, « Tegan Baby Hat With TopKnot », lovefibres.com, LF020, 2012 ; PDF privé d’Isabelle"
+      read_on: 2026-11-12
+      location: "p. 2–3 ; 3–6 mois, 6–12 mois, 1–2 ans, « 35 - 40 cm ; 40 - 45 cm ; 45 - 48 cm » ; échantillon 22 m × 30 rangs = 10 cm en jersey, aiguilles 4 mm ; bord au point mousse sur aiguilles 3,25 mm ; tour fini publié : 33, 35 et 40 cm ; tailles prématuré et 0–3 mois écartées (« up to 35 cm » sans borne basse, aucune aisance proposée pour un prématuré) ; laine Paintbox Yarns Cotton DK non relue ; montages : transcription privée d’Isabelle, jamais versionnée"

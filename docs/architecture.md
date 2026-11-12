@@ -183,6 +183,9 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `Yarn` | `id`, `brand`, `name`, `composition: FiberComposition`, `superwash` (`None` si non publié), `label: YarnLabel`, `swatches: tuple[YarnSwatch, ...]` | une entrée de `0030-laines-de-reference.yaml` (`reference_measurement` : étiquette, page du fabricant ou fiche Ravelry lue à la main, ADR 0030) ; chaque fibre de la composition est un `id` de `0030-fibres.yaml`, contrôlé au chargement ; `swatches` vide dans toutes les entrées livrées, aucun calcul ne le lit encore |
 | `YarnSwatch` | `before`, `after` (`SwatchMeasurement`, au moins l’une des deux), `needle: NeedleSize`, `stitch`, `knitted_on`, `source: Provenance` | l’échantillon tricoté d’une laine, sans `id` ; il s’accorde avec `Swatch` (voir « Échantillon et points ») : mêmes mesures `SwatchMeasurement` avant et après blocage, mais `Swatch` est un échantillon de projet saisi (`Needle` complet, point par `stitch_pattern_id`) alors que `YarnSwatch` est une référence rattachée à la laine (aiguilles `NeedleSize`, point nommé) ; `before` et `after` y sont facultatifs l’un sans l’autre, `Swatch` les porte tous deux |
 | `Fiber` | `id`, `names`, `source` | un vocabulaire sans chiffre ni avertissement (ADR 0030) ; au moins un nom, noms uniques par fibre et entre fibres (NFC puis `casefold()`, l’accent est gardé) ; le comportement vient d’un échantillon de la laine, non de la fibre |
+| `YarnFamily` | `fiber`, `superwash` | la famille d’une laine, `Yarn.family` : fibre majoritaire (`id` de `0030-fibres.yaml`) et traitement superwash ; `None` si deux fibres sont à égalité de parts ou si `superwash` n’est pas publié |
+| `EaseSource` | `fit`, `edge`, `swatch: SwatchSpec` (mailles, largeur, `stitch`), `yarns` (ids de laines, vide = toute laine), `role` (`proposal` ou `landmark`), `role_reason`, `sizes`, `source` | données brutes d’un patron, le % est calculé par `engine/ease.py` ; `swatch.stitch` est le point de l’échantillon (`stockinette`, `rib_1x1`, `rib_2x2`, `garter`) ; un repère (`landmark`) dit pourquoi et n’entre jamais dans la valeur proposée |
+| `BaseEase` | `fit`, `edges`, `swatch_stitch`, `value` (`Decimal`, en %), `source` | l’aisance de base, décidée par la personne (`person_decision`), pour des bords et un point d’échantillon donnés |
 
 ### Échantillon et points
 
@@ -243,8 +246,10 @@ L’ordre de confiance dépend de la grandeur :
 |---|---|---|
 | Échantillon | échantillon bloqué > échantillon non bloqué, « À VÉRIFIER », avec le conseil de le bloquer (laver puis sécher) > échantillon d’état de blocage inconnu : question « l’as-tu bloqué ? », sans plan > jauge de l’étiquette, « À VÉRIFIER : jauge du fabricant, état de blocage inconnu » (une fourchette sans échantillon fait demander la valeur à retenir, aucun milieu) | question en attente |
 | Tour de tête | mesure > mesure de référence par âge ou par taille nommée, proposée puis décidée par la personne (`needs_review`, [ADR 0018](adr/0018-tour-de-tete-par-age.md), [ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)) | question en attente |
-| Aisance | saisie > table de référence par couple (ajustement, point), proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md)) | question en attente |
+| Aisance | saisie > patrons sources par (ajustement, point du bord, point de l’échantillon, famille de la laine), puis base −5 % si aucun ne correspond, proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md), [ADR 0031](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)) | question en attente |
 | Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
+
+`engine.propose_ease(sources, yarns, bases, fit, edge, swatch_stitch, yarn_id)` rend un `EaseOutcome` (ADR 0031) : les patrons `proposal` de même ajustement et même bord, dont l’échantillon est au même point (ou absent) et dont la laine est citée par la source ou de la même famille (`Yarn.family`, fibre majoritaire et superwash), ou absente, donnent la médiane de leurs médianes par patron, la plage de ces médianes et la plage par taille ; avec un seul patron, `low` et `high` sont sa propre plage, d’après les bornes du tour de tête, et peuvent être plus larges que `size_low` et `size_high` (Rosebud : −24,2 à −10,0 % pour une plage par taille réduite à son milieu) ; sinon la base `BaseEase` ; sinon aucune valeur. Les autres sources du couple sont rendues en repères, jamais comptées. Le calcul est en `Decimal`, sans âge ni taille : la règle des prématurés relève du branchement dans `calc`.
 
 La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
 
@@ -292,7 +297,7 @@ Format de la demande de bonnet (figé par CLA-69), lu par `knitproof calc` dans 
 | `total_height`, `brim_height`, `folded_brim`, `worked` | hauteurs finies, revers replié, méthode (`round` par défaut) |
 | `proposed_cast_on` | `stitches` et `origin: llm_only` : un montage proposé à contrôler, rejeté s’il diffère du calcul |
 
-L’âge, le fil et les fibres ne sont pas lus par le moteur : la bibliothèque charge le vocabulaire des fibres et les laines de référence (CLA-121, ADR 0030), leur résolution revient à un ticket de suite.
+L’âge, le fil et les fibres ne sont pas lus par `knitproof calc` (la famille de la laine ne sert qu’à `propose_ease`, ADR 0031) : la bibliothèque charge le vocabulaire des fibres et les laines de référence (CLA-121, ADR 0030), leur résolution revient à un ticket de suite.
 
 Les comptes (`cast_on`, `work`, `times`, `start`, `end`, `stated_count`) sont des entiers nus ; une chaîne, un nombre à virgule ou un booléen rend le patron invalide (code 3).
 
@@ -335,6 +340,8 @@ En V0, le bonnet se tricote en rond : `Round` suffit. Le texte en français dit 
 
 Aucun calcul ne remplace un tricot-test : le tombé, le confort, la tenue et l’esthétique restent à juger par une personne. knitproof garantit la cohérence des nombres, pas la réussite du vêtement.
 
+`EdgeStitch` sert aussi à `RequestSwatch.stitch` : `knitproof calc` accepte donc `rib_1x1` et `garter` sans les traiter, le branchement relève du ticket de suite.
+
 ## 12. Décisions d’architecture
 
 Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
@@ -369,6 +376,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0028 — Rangs du bonnet et bonnet à plat](adr/0028-rangs-du-bonnet-et-bonnet-a-plat.md)
 - [ADR 0029 — Rapport unique du moteur](adr/0029-rapport-unique-du-moteur.md)
 - [ADR 0030 — Vocabulaire des fibres et laines de référence](adr/0030-laines-de-reference.md)
+- [ADR 0031 — Aisance d’après les patrons et la laine](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)
 
 ## 13. Projets proches
 
