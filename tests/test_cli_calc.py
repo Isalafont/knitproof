@@ -336,3 +336,43 @@ def test_a_brim_in_inches_is_shown_in_cm_on_the_brim_line(
     assert f"le revers se tricote deux fois : 2 {TIMES} 5,08 cm)" in out
     assert "2 in = 5,08 cm (bord)" in out
     assert "20,32 cm finis + 5,08 cm de revers = 25,4 cm tricotés" in out
+
+
+def _flat(height: str, brim: str = "5") -> dict[str, object]:
+    data = _data()
+    data["worked"] = "flat"
+    data["stitch_multiple"] = {"repeat_multiple": 4, "repeat_offset": 2, "provenance": "entered"}
+    data["total_height"] = {"value": height, "unit": "cm", "provenance": "entered"}
+    data["brim_height"] = {"value": brim, "unit": "cm", "provenance": "entered"}
+    del data["proposed_cast_on"]
+    return data
+
+
+def test_a_flat_body_adjusted_down_for_parity_shows_the_difference_then_the_adjustment(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("19"), capsys)
+
+    assert (
+        f"Corps       24 rangs (72 {MINUS} 30 {MINUS} 17 = 25, {MINUS} 1 : "
+        "bord et corps en nombre pair à plat)\n"
+    ) in out
+
+
+def test_a_flat_body_adjusted_up_for_parity_shows_the_difference_then_the_adjustment(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("16", "3.5"), capsys)
+
+    assert (
+        f"Corps       21 rangs (58 {MINUS} 21 {MINUS} 17 = 20, + 1 : "
+        "bord et corps en nombre pair à plat)\n"
+    ) in out
+
+
+def test_a_flat_body_without_adjustment_shows_the_plain_difference(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _, out, _ = _run(tmp_path, _flat("20"), capsys)
+
+    assert f"Corps       28 rangs (75 {MINUS} 30 {MINUS} 17)\n" in out

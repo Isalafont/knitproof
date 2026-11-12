@@ -5,7 +5,7 @@ from typing import assert_never
 
 from knitproof.app.beanie import BeanieCalc
 from knitproof.app.beanie_request import BeanieRequest
-from knitproof.domain.beanie import BeaniePlan
+from knitproof.domain.beanie import BeaniePlan, RowRounding
 from knitproof.domain.cast_on import CastOnResult
 from knitproof.domain.ease import EaseUnit
 from knitproof.domain.gauge import GaugeSource
@@ -106,16 +106,22 @@ def _summary(
             f"{crown.remaining} m restantes, environ {_number(plan.depth_cm, 1)} cm",
         )
     )
-    lines.append(
-        (
-            "Corps",
-            f"{plan.body.rows} rangs ({plan.rows.total.rows} {_MINUS} {plan.rows.brim.rows} "
-            f"{_MINUS} {crown.round_count})",
-        )
-    )
+    lines.append(("Corps", _body(plan)))
     needle_lines = [line for info in calc.needles for line in info.text.splitlines()]
     lines.extend(("Aiguilles" if i == 0 else "", line) for i, line in enumerate(needle_lines))
     return "\n".join(f"{label:<{_COLUMN}}{text}" for label, text in lines)
+
+
+def _body(plan: BeaniePlan) -> str:
+    """Les rangs du corps, avec la différence puis l’ajustement de parité à plat."""
+    total, brim, crown = plan.rows.total.rows, plan.rows.brim.rows, plan.crown.round_count
+    difference = total - brim - crown
+    text = f"{plan.body.rows} rangs ({total} {_MINUS} {brim} {_MINUS} {crown}"
+    if plan.body.rule is RowRounding.DIFFERENCE_FLAT_PARITY:
+        gap = plan.body.rows - difference
+        sign = "+" if gap > 0 else _MINUS
+        text += f" = {difference}, {sign} {abs(gap)} : bord et corps en nombre pair à plat"
+    return text + ")"
 
 
 def _gauge_source(calc: BeanieCalc) -> str:
