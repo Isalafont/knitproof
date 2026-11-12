@@ -31,7 +31,7 @@ entries:
       kind: reference_measurement
       reference: "DROPS Design, « Little Woodland Hat (DROPS Children 49-25) », https://www.garnstudio.com/pattern.php?id=12325&cid=8"
       read_on: 2026-11-12
-      location: "7 tailles, 2 à 13/14 ans, tours de tête 48/50 à 56/57 cm ; échantillon 22 m × 30 rangs en jersey, aiguilles 3,5 ; bord en côtes 2/2 ; laine DROPS Merino Extra Fine ; montages : transcription privée d’Isabelle, jamais versionnée"
+      location: "7 tailles, 2 à 13/14 ans, tours de tête 48/50 à 56/57 cm ; échantillon 22 m × 30 rangs en jersey, aiguilles 3,5 ; bonnet tout en côtes 2/2, bord et corps aux mêmes aiguilles (3,5), bord replié ; laine DROPS Merino Extra Fine ; montages : transcription privée d’Isabelle, jamais versionnée"
   - id: drops-37-16-ajuste-cotes-2-2
     fit: fitted
     edge: rib_2x2
@@ -58,7 +58,7 @@ entries:
       kind: reference_measurement
       reference: "DROPS Design, « Rainbow Unicorn Set, bonnet (DROPS Children 37-16) », https://www.garnstudio.com/pattern.php?id=9865&cid=8"
       read_on: 2026-11-12
-      location: "5 tailles, 12/18 mois à 9/12 ans, tours de tête 44/46 à 54/56 cm ; échantillon 22 m × 30 rangs en jersey, aiguilles 3,5 ; bord en côtes 2/2 ; laine DROPS Merino Extra Fine ; montages : transcription privée d’Isabelle, jamais versionnée"
+      location: "5 tailles, 12/18 mois à 9/12 ans, tours de tête 44/46 à 54/56 cm ; échantillon 22 m × 30 rangs en jersey, aiguilles 3,5 ; bonnet tout en côtes 2/2, bord et corps aux mêmes aiguilles (3,5), bord replié ; laine DROPS Merino Extra Fine ; montages : transcription privée d’Isabelle, jamais versionnée"
   - id: drops-41-27-ajuste-cotes-2-2
     fit: fitted
     edge: rib_2x2
@@ -83,7 +83,7 @@ entries:
       kind: reference_measurement
       reference: "DROPS Design, « Winter Fun (DROPS Children 41-27) », https://www.garnstudio.com/pattern.php?id=10598&cid=8"
       read_on: 2026-11-12
-      location: "4 tailles, 2 à 10/12 ans, tours de tête 48/50 à 54/56 cm ; échantillon 26 m × 34 rangs en jersey, aiguilles 2,5 ; bord en côtes 2/2 ; laine DROPS BabyMerino ; montages : transcription privée d’Isabelle, jamais versionnée"
+      location: "4 tailles, 2 à 10/12 ans, tours de tête 48/50 à 54/56 cm ; échantillon 26 m × 34 rangs en jersey, aiguilles 2,5 ; bonnet tout en côtes 2/2, bord et corps aux mêmes aiguilles (2,5), bord replié ; laine DROPS BabyMerino ; montages : transcription privée d’Isabelle, jamais versionnée"
   - id: drops-214-67-ajuste-cotes-1-1
     fit: fitted
     edge: rib_1x1

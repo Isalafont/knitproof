@@ -5,6 +5,7 @@ from collections.abc import Mapping, Sequence
 from decimal import ROUND_HALF_EVEN, Decimal
 
 import pytest
+from pydantic import ValidationError
 
 from knitproof.domain.ease import (
     BaseEase,
@@ -343,3 +344,35 @@ def test_no_yarn_cannot_match_a_pattern_that_names_yarns() -> None:
     outcome = propose([pattern("a", [72], yarns=["merino-sw"])], yarn_id=None)
 
     assert outcome.origin is EaseOrigin.BASE
+
+
+def test_the_same_majority_fiber_with_another_superwash_does_not_match() -> None:
+    untreated = yarn("merino-plain", "merino", superwash=False)
+    sources = [pattern("a", [72], yarns=["merino-sw-bis"])]
+
+    outcome = propose_ease(
+        sources,
+        (*YARNS, untreated),
+        (BASE,),
+        Fit.FITTED,
+        EdgeStitch.RIB_2X2,
+        EdgeStitch.STOCKINETTE,
+        "merino-plain",
+    )
+
+    assert outcome.origin is EaseOrigin.BASE
+    assert [item.source_id for item in outcome.landmarks] == ["a"]
+
+
+def test_a_value_without_an_origin_is_refused() -> None:
+    with pytest.raises(ValidationError, match="origine"):
+        EaseOutcome(origin=EaseOrigin.NONE, value=Decimal(-5))
+    with pytest.raises(ValidationError, match="origine"):
+        EaseOutcome(origin=EaseOrigin.SOURCES)
+
+
+def test_a_base_without_the_base_origin_is_refused() -> None:
+    with pytest.raises(ValidationError, match="base"):
+        EaseOutcome(origin=EaseOrigin.SOURCES, value=Decimal(-5), base=BASE)
+    with pytest.raises(ValidationError, match="base"):
+        EaseOutcome(origin=EaseOrigin.BASE, value=Decimal(-5))

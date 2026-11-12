@@ -249,7 +249,7 @@ L’ordre de confiance dépend de la grandeur :
 | Aisance | saisie > patrons sources par (ajustement, point du bord, point de l’échantillon, famille de la laine), puis base −5 % si aucun ne correspond, proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md), [ADR 0031](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)) | question en attente |
 | Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
 
-`engine.propose_ease(sources, yarns, bases, fit, edge, swatch_stitch, yarn_id)` rend un `EaseOutcome` (ADR 0031) : les patrons `proposal` de même ajustement et même bord, dont l’échantillon est au même point (ou absent) et dont la laine est de la même famille (`Yarn.family`, ou absente), donnent la médiane de leurs médianes par patron, la plage de ces médianes et la plage par taille ; sinon la base `BaseEase` ; sinon aucune valeur. Les autres sources du couple sont rendues en repères, jamais comptées. Le calcul est en `Decimal`, sans âge ni taille : la règle des prématurés relève du branchement dans `calc`.
+`engine.propose_ease(sources, yarns, bases, fit, edge, swatch_stitch, yarn_id)` rend un `EaseOutcome` (ADR 0031) : les patrons `proposal` de même ajustement et même bord, dont l’échantillon est au même point (ou absent) et dont la laine est citée par la source ou de la même famille (`Yarn.family`, fibre majoritaire et superwash), ou absente, donnent la médiane de leurs médianes par patron, la plage de ces médianes et la plage par taille ; avec un seul patron, `low` et `high` sont sa propre plage, d’après les bornes du tour de tête, et peuvent être plus larges que `size_low` et `size_high` (Rosebud : −24,2 à −10,0 % pour une plage par taille réduite à son milieu) ; sinon la base `BaseEase` ; sinon aucune valeur. Les autres sources du couple sont rendues en repères, jamais comptées. Le calcul est en `Decimal`, sans âge ni taille : la règle des prématurés relève du branchement dans `calc`.
 
 La hauteur est la hauteur finie : du bord porté au sommet, calotte incluse, revers replié. Si `folded_brim` est vrai, tricoté = finie + revers ([ADR 0020](adr/0020-hauteur-finie-et-bord-replie.md)).
 
@@ -339,6 +339,8 @@ En V0, le bonnet se tricote en rond : `Round` suffit. Le texte en français dit 
 ## 11. Limites assumées
 
 Aucun calcul ne remplace un tricot-test : le tombé, le confort, la tenue et l’esthétique restent à juger par une personne. knitproof garantit la cohérence des nombres, pas la réussite du vêtement.
+
+`EdgeStitch` sert aussi à `RequestSwatch.stitch` : `knitproof calc` accepte donc `rib_1x1` et `garter` sans les traiter, le branchement relève du ticket de suite.
 
 ## 12. Décisions d’architecture
 

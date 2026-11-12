@@ -813,3 +813,23 @@ def test_oslo_and_rosebud_keep_their_values(library: Library) -> None:
 
     assert (oslo.origin, tenth(oslo.value)) == (EaseOrigin.SOURCES, Decimal("-15.6"))
     assert (rosebud.origin, tenth(rosebud.value)) == (EaseOrigin.SOURCES, Decimal("-17.7"))
+
+
+def test_a_non_superwash_merino_does_not_get_the_superwash_merino_value(library: Library) -> None:
+    outcome = propose_from(
+        library, "sandnes-garn-sunday", EdgeStitch.RIB_2X2, EdgeStitch.STOCKINETTE
+    )
+
+    assert outcome.origin is EaseOrigin.BASE
+    assert outcome.value == Decimal(-5)
+
+
+def test_each_proposal_names_the_stitch_and_needles_of_its_edge_and_body(library: Library) -> None:
+    by_id = {item.id: item for item in library.entries_of(EaseSource)}
+
+    for id_ in PROPOSALS:
+        location = by_id[id_].source.location
+        assert location is not None
+        assert "bord et corps" in location
+        assert "aiguilles" in location
+        assert "côtes 2/2" in location
