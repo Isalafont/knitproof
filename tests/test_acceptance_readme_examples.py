@@ -5,9 +5,27 @@ import subprocess
 import sysconfig
 from pathlib import Path
 
+import pytest
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = PROJECT_ROOT / "examples"
 KNITPROOF = Path(sysconfig.get_path("scripts")) / "knitproof"
+LLM_VARIABLES = (
+    "ANTHROPIC_API_KEY",
+    "MISTRAL_API_KEY",
+    "KNITPROOF_ANTHROPIC_MODEL",
+    "KNITPROOF_MISTRAL_MODEL",
+    "KNITPROOF_ANTHROPIC_BASE_URL",
+    "KNITPROOF_MISTRAL_BASE_URL",
+    "KNITPROOF_LLM_TEMPERATURE",
+    "KNITPROOF_LLM_RETRIES",
+)
+
+
+@pytest.fixture(autouse=True)
+def _without_model_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    for variable in LLM_VARIABLES:
+        monkeypatch.delenv(variable, raising=False)
 
 
 def example(name: str) -> Path:
