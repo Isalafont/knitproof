@@ -568,15 +568,21 @@ def test_every_label_term_is_a_name_of_its_fiber(library: Library) -> None:
             assert name_key(part.label_term) in names[part.fiber], f"{yarn.id} : {part.label_term}"
 
 
-def test_the_drops_yarn_weight_is_kept_as_written_and_absent_elsewhere(library: Library) -> None:
+def test_the_yarn_weight_is_kept_as_written_by_the_maker_or_ravelry(library: Library) -> None:
     assert (
         yarn_of(library, "drops-kid-silk").label.yarn_weight == "A (23 - 26 mailles) / 2 ply / lace"
     )
     assert yarn_of(library, "drops-air").label.yarn_weight == (
         "C (16 - 19 mailles) / 10 ply / aran / worsted"
     )
-    assert yarn_of(library, "filcolana-arwetta").label.yarn_weight is None
-    assert yarn_of(library, "sandnes-garn-sunday").label.yarn_weight is None
+    assert yarn_of(library, "filcolana-arwetta").label.yarn_weight == "Light Fingering"
+    assert yarn_of(library, "sandnes-garn-sunday").label.yarn_weight == "Fingering (14 wpi)"
+    assert yarn_of(library, "sandnes-garn-double-sunday").label.yarn_weight == "DK (11 wpi)"
+    assert yarn_of(library, "sandnes-garn-tynn-silk-mohair").label.yarn_weight == "Lace"
+
+
+def test_the_ten_yarns_have_a_yarn_weight(library: Library) -> None:
+    assert all(yarn.label.yarn_weight for yarn in library.entries_of(Yarn))
 
 
 def test_nylon_and_polyamide_are_two_different_fibers(library: Library) -> None:

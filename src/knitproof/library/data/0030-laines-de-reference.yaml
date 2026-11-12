@@ -169,12 +169,13 @@ entries:
         - {system: mm, original: 3 mm}
       length_m: 210
       weight_g: 50
+      yarn_weight: Light Fingering
       care: Kan maskinvaskes
     source:
       kind: reference_measurement
       reference: https://filcolana.dk/yarns/arwetta.html
       read_on: 2026-11-12
-      location: "ligne « Fiber : 80% superwashbehandlet uld og 20% nylon » ; composition rédigée « spundet af 80% merinould og 20% nylon », d’où merino ; 210 m / 50 g ; 2,5-3 mm ; 28-32 m x 36-42 p / 10 x 10 cm"
+      location: "ligne « Fiber : 80% superwashbehandlet uld og 20% nylon » ; composition rédigée « spundet af 80% merinould og 20% nylon », d’où merino ; 210 m / 50 g ; 2,5-3 mm ; 28-32 m x 36-42 p / 10 x 10 cm ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/filcolana-arwetta-classic, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"
   - id: sandnes-garn-sunday
     brand: Sandnes Garn
     name: Sunday
@@ -190,12 +191,13 @@ entries:
         - {system: mm, original: 3 mm}
       length_m: 235
       weight_g: 50
+      yarn_weight: Fingering (14 wpi)
       care: "Vasker du i maskin anbefaler vi at alle ullplagg vaskes separat på ullprogram for en mest skånsom behandling. På grunn av merinoullens unike absorberingsevne er det viktig å sentrifugere håndstrikkede plagg godt, før det tørkes flatt, gjerne oppå et håndkle. Bruk aldri vaskepose når du vasker håndstrikkede plagg i ull. Dette skaper friksjon som kan føre til at plagget tover."
     source:
       kind: reference_measurement
       reference: https://www.sandnesgarn.no/sunday
       read_on: 2026-11-12
-      location: "« ikke-superwash behandlet » ; Ca. 235 meter pr. 50 gram ; Pinne nr 3 ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API"
+      location: "« ikke-superwash behandlet » ; Ca. 235 meter pr. 50 gram ; Pinne nr 3 ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"
   - id: sandnes-garn-double-sunday
     brand: Sandnes Garn
     name: Double Sunday
@@ -212,12 +214,13 @@ entries:
         - {system: mm, original: 4 mm}
       length_m: 108
       weight_g: 50
+      yarn_weight: DK (11 wpi)
       care: "Vasker du i maskin anbefaler vi at alle ullplagg vaskes separat på ullprogram for en mest skånsom behandling. På grunn av merinoullens unike absorberingsevne er det viktig å sentrifugere håndstrikkede plagg godt, før det tørkes flatt, gjerne oppå et håndkle. Bruk aldri vaskepose når du vasker håndstrikkede plagg i ull. Dette skaper friksjon som kan føre til at plagget tover."
     source:
       kind: reference_measurement
       reference: https://www.sandnesgarn.no/double-sunday
       read_on: 2026-11-12
-      location: "« ikke-superwash behandlet » ; Ca. 108 meter pr. 50 gram ; Pinne nr 3½-4, écrit 3.5 en mm ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-double-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API"
+      location: "« ikke-superwash behandlet » ; Ca. 108 meter pr. 50 gram ; Pinne nr 3½-4, écrit 3.5 en mm ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-double-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-double-sunday, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"
   - id: sandnes-garn-tynn-silk-mohair
     brand: Sandnes Garn
     name: Tynn Silk Mohair
@@ -236,8 +239,9 @@ entries:
         - {system: mm, original: 5 mm}
       length_m: 212
       weight_g: 25
+      yarn_weight: Lace
     source:
       kind: reference_measurement
       reference: https://www.sandnesgarn.no/tynn-silk-mohair
       read_on: 2026-11-12
-      location: "Ca. 212 meter pr. 25 gram ; Pinne nr 3-5 ; « Silke fra Kina, Mohair fra Sør-Afrika » ; superwash non précisé ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-tynn-silk-mohair, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; entretien non repris (texte lu en partie seulement)"
+      location: "Ca. 212 meter pr. 25 gram ; Pinne nr 3-5 ; « Silke fra Kina, Mohair fra Sør-Afrika » ; superwash non précisé ; échantillon non trouvé sur la page Sandnes Garn ; échantillon : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-tynn-silk-mohair, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; entretien non repris (texte lu en partie seulement) ; grosseur : fiche Ravelry https://www.ravelry.com/yarns/library/sandnes-garn-tynn-silk-mohair, lue le 12/11/2026 dans le navigateur d’Isabelle, pas par l’API ; mot de Ravelry, pas du fabricant"
