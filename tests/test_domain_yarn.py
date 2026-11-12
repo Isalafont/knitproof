@@ -6,7 +6,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from knitproof.domain.yarn import Yarn, YarnLabel, YarnSwatch
+from knitproof.domain.yarn import Yarn, YarnFamily, YarnLabel, YarnSwatch
 
 SOURCE = {
     "kind": "reference_measurement",
@@ -163,3 +163,35 @@ def test_the_yarn_weight_is_optional() -> None:
 def test_a_blank_yarn_weight_is_refused() -> None:
     with pytest.raises(ValidationError, match="yarn_weight"):
         YarnLabel.model_validate({"yarn_weight": ""})
+
+
+def composition(*parts: tuple[str, int]) -> dict[str, object]:
+    return {
+        "parts": [
+            {"fiber": fiber, "label_term": fiber, "percent": percent} for fiber, percent in parts
+        ]
+    }
+
+
+def family_of(parts: dict[str, object], superwash: bool | None) -> YarnFamily | None:
+    return Yarn.model_validate({**YARN, "composition": parts, "superwash": superwash}).family
+
+
+def test_a_superwash_merino_is_a_merino_family_with_superwash() -> None:
+    assert family_of(composition(("merino", 100)), True) == YarnFamily(
+        fiber="merino", superwash=True
+    )
+
+
+def test_the_family_is_the_majority_fiber() -> None:
+    parts = composition(("alpaca", 65), ("polyamide", 28), ("merino", 7))
+
+    assert family_of(parts, False) == YarnFamily(fiber="alpaca", superwash=False)
+
+
+def test_a_yarn_with_no_published_superwash_has_no_family() -> None:
+    assert family_of(composition(("merino", 100)), None) is None
+
+
+def test_two_fibers_at_50_percent_have_no_family() -> None:
+    assert family_of(composition(("merino", 50), ("nylon", 50)), True) is None

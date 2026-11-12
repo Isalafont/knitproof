@@ -96,14 +96,18 @@ def test_the_published_circumference_is_compared_in_the_same_unit_as_the_head() 
 def test_the_cast_on_gives_the_circumference_by_the_swatch() -> None:
     found = build(
         [{"head": {"low": "40", "high": "40", "unit": "cm"}, "cast_on": 92}],
-        {"stitches": "23", "width": {"value": "10", "unit": "cm"}},
+        {"stitches": "23", "width": {"value": "10", "unit": "cm"}, "stitch": "stockinette"},
     )
 
     assert reference_ease(found).proposed == Decimal(0)
 
 
 def test_an_even_number_of_sizes_proposes_the_mean_of_the_two_in_the_middle() -> None:
-    swatch = {"stitches": "20", "width": {"value": "10", "unit": "cm"}}
+    swatch = {
+        "stitches": "20",
+        "width": {"value": "10", "unit": "cm"},
+        "stitch": "stockinette",
+    }
     sizes = [
         {"head": {"low": "40", "high": "40", "unit": "cm"}, "cast_on": cast_on}
         for cast_on in (60, 70, 80, 100)
@@ -130,7 +134,7 @@ def test_the_proposal_lies_within_its_range(source_id: str) -> None:
 
 
 def test_two_equal_sizes_keep_the_proposal_inside_the_range() -> None:
-    swatch = {"stitches": "10", "width": {"value": "5", "unit": "cm"}}
+    swatch = {"stitches": "10", "width": {"value": "5", "unit": "cm"}, "stitch": "stockinette"}
     size = {"head": {"low": "30", "high": "30", "unit": "cm"}, "cast_on": 20}
 
     proposal = reference_ease(build([size, size], swatch))

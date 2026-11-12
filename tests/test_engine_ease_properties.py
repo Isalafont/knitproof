@@ -23,6 +23,7 @@ SWATCHES = st.builds(
     lambda stitches, width: {
         "stitches": str(stitches),
         "width": {"value": str(width), "unit": "cm"},
+        "stitch": "stockinette",
     },
     st.integers(min_value=10, max_value=40),
     st.integers(min_value=5, max_value=15),
