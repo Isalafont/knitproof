@@ -8,7 +8,10 @@ NonEmpty = Annotated[str, StringConstraints(min_length=1)]
 
 
 class ModelReading(BaseModel):
-    """Quel modèle a lu une source, avec quel prompt ; posée par le code, jamais par le modèle."""
+    """Quel modèle a lu une source, avec quel prompt ; posée par le code, jamais par le modèle.
+
+    `host` : hébergeur effectif derrière un agrégateur.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -17,3 +20,4 @@ class ModelReading(BaseModel):
     model_version: NonEmpty
     prompt_id: NonEmpty
     prompt_sha256: Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+    host: NonEmpty | None = None

@@ -46,3 +46,18 @@ def test_a_reading_is_frozen() -> None:
     reading = ModelReading.model_validate(FIELDS)
     with pytest.raises(ValidationError, match="frozen"):
         reading.model = "autre"  # type: ignore[misc]
+
+
+def test_a_reading_has_no_host_by_default() -> None:
+    assert ModelReading.model_validate(FIELDS).host is None
+
+
+def test_a_reading_keeps_the_host_behind_an_aggregator() -> None:
+    reading = ModelReading.model_validate({**FIELDS, "host": "Mistral"})
+
+    assert reading.host == "Mistral"
+
+
+def test_an_empty_host_is_refused() -> None:
+    with pytest.raises(ValidationError, match="host"):
+        ModelReading.model_validate({**FIELDS, "host": ""})
