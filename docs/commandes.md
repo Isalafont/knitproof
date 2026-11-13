@@ -12,7 +12,7 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 
 ## Modèles
 
-La couche `llm` appelle Anthropic, Mistral, OpenAI, OpenRouter, Kimi (Moonshot AI) et un modèle local (Ollama) par pydanticAI ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md)). Les variables se lisent dans l’environnement ; `.env.example` les liste, sans valeur.
+La couche `llm` appelle Anthropic, Mistral, OpenAI, OpenRouter, Kimi (Moonshot AI) et un modèle local (Ollama) par pydanticAI ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md), [ADR 0034](adr/0034-openai-openrouter-kimi-et-modele-local.md)). Les variables se lisent dans l’environnement ; `.env.example` les liste, sans valeur.
 
 | Variable | Rôle |
 |---|---|

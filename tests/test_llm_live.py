@@ -1,6 +1,7 @@
 """Appel de contrôle réel, un par fournisseur, lancé à la main (CLA-127, CA5).
 
-Lancement : `uv run --env-file .env pytest -m live -k anthropic`, puis `-k mistral`.
+Lancement : `uv run --env-file .env pytest -m live -k anthropic`, puis `-k mistral`, `-k openai`,
+`-k openrouter`, `-k moonshotai` et `-k ollama`.
 """
 
 import os

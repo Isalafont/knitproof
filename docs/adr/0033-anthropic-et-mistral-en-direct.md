@@ -1,5 +1,7 @@
 # ADR 0033 — Anthropic et Mistral en direct
 
+Amendé par l’[ADR 0034](0034-openai-openrouter-kimi-et-modele-local.md) (OpenAI, OpenRouter, Kimi, modèle local).
+
 ## Contexte
 
 L’[ADR 0005](0005-acces-aux-modeles-via-pydanticai.md) ouvre la couche `llm` à pydanticAI sans fournisseur retenu. CLA-127 la branche pour de bon et doit tracer le modèle qui a lu une source.
