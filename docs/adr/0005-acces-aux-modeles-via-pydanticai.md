@@ -1,6 +1,6 @@
 # ADR 0005 — Accès aux modèles via pydanticAI
 
-Amendé par l’[ADR 0033](0033-anthropic-et-mistral-en-direct.md) (Anthropic, Mistral en direct).
+Amendé par l’[ADR 0033](0033-anthropic-et-mistral-en-direct.md) (Anthropic, Mistral en direct) et l’[ADR 0034](0034-openai-openrouter-kimi-et-modele-local.md) (OpenAI, OpenRouter, Kimi, modèle local).
 
 ## Contexte
 

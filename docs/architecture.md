@@ -167,7 +167,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `SourceKind` | `user_swatch`, `user_measurement`, `user_input`, `yarn_label`, `ravelry`, `fiber_library`, `reference_measurement`, `model_inference`, `person_decision`, `engine` | pas d’ordre global (voir section 7) |
 | `SourceLocation` | `page`, `line` (tranche 1) ; à venir : `document`, `round` | au moins un champ renseigné |
 | `Provenance` | `kind`, `reference`, `read_on` (date de lecture), `location` (texte libre, « tableau 2, p. 3 »), `to_verify`, `extracted_by` (`ModelReading`, facultatif) | `reference` non vide ; `location` est un texte, distinct de `SourceLocation` (page et ligne d’un patron) ; la clé YAML `location`, figée par CLA-124, est gardée ; les données de `library/` n’admettent que `reference_measurement`, `fiber_library` et `person_decision`, jamais `model_inference` ni `extracted_by` ; `model_inference` exige `extracted_by` |
-| `ModelReading` | `provider`, `model`, `model_version` (nom rendu par la réponse), `prompt_id`, `prompt_sha256` | tous non vides, empreinte en 64 hexadécimaux minuscules ; posé par `llm/extract.py`, jamais par le modèle ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md)) |
+| `ModelReading` | `provider`, `model`, `model_version` (nom rendu par la réponse), `prompt_id`, `prompt_sha256`, `host` (facultatif : l’hébergeur rendu par un agrégateur) | tous non vides, empreinte en 64 hexadécimaux minuscules ; posé par `llm/extract.py`, jamais par le modèle ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md), [ADR 0034](adr/0034-openai-openrouter-kimi-et-modele-local.md)) |
 | `Sourced[T]` | `value`, `provenance` | réservé aux paramètres résolus et aux constats |
 
 ### Mesures, fil, fibres
@@ -380,6 +380,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0031 — Aisance d’après les patrons et la laine](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)
 - [ADR 0032 — Protocole d’évaluation figé](adr/0032-protocole-d-evaluation-fige.md)
 - [ADR 0033 — Anthropic et Mistral en direct](adr/0033-anthropic-et-mistral-en-direct.md)
+- [ADR 0034 — OpenAI, OpenRouter, Kimi et modèle local](adr/0034-openai-openrouter-kimi-et-modele-local.md)
 
 ## 13. Projets proches
 

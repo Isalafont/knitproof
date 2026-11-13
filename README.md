@@ -293,7 +293,7 @@ uv run knitproof verify local-patterns/mon-bonnet.yaml
 
 Codes de sortie, formats et limites : [docs/commandes.md](docs/commandes.md).
 
-Les modèles (Anthropic, Mistral) se configurent par l’environnement : voir « Modèles » dans [docs/commandes.md](docs/commandes.md).
+Les modèles (Anthropic, Mistral, OpenAI, OpenRouter, Kimi, modèle local) se configurent par l’environnement : voir « Modèles » dans [docs/commandes.md](docs/commandes.md).
 
 ### Contribuer
 

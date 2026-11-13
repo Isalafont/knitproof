@@ -22,6 +22,27 @@ ENVIRONMENTS: dict[Provider, dict[str, str]] = {
         "KNITPROOF_MISTRAL_MODEL": "mistral-small-2506",
         "KNITPROOF_LLM_RETRIES": "1",
     },
+    "openai": {
+        "OPENAI_API_KEY": KEY,
+        "KNITPROOF_OPENAI_MODEL": "gpt-5-2025-08-07",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
+    "openrouter": {
+        "OPENROUTER_API_KEY": KEY,
+        "KNITPROOF_OPENROUTER_MODEL": "mistralai/mistral-small-2506",
+        "KNITPROOF_OPENROUTER_HOST": "mistral",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
+    "moonshotai": {
+        "MOONSHOTAI_API_KEY": KEY,
+        "KNITPROOF_MOONSHOTAI_MODEL": "kimi-k3",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
+    "ollama": {
+        "KNITPROOF_OLLAMA_MODEL": "qwen3:8b-q4_K_M",
+        "KNITPROOF_OLLAMA_BASE_URL": "http://localhost:11434/v1",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
 }
 
 
@@ -35,12 +56,13 @@ def environ(provider: Provider, **changes: str | None) -> dict[str, str]:
     return values
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral"])
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter", "moonshotai"])
 def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
     config = load_config(provider, ENVIRONMENTS[provider])
 
     assert config.provider == provider
     assert config.model == ENVIRONMENTS[provider][f"KNITPROOF_{provider.upper()}_MODEL"]
+    assert config.api_key is not None
     assert config.api_key.get_secret_value() == KEY
     assert config.base_url is None
     assert config.temperature is None
@@ -56,6 +78,16 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
         ("mistral", "MISTRAL_API_KEY"),
         ("mistral", "KNITPROOF_MISTRAL_MODEL"),
         ("mistral", "KNITPROOF_LLM_RETRIES"),
+        ("openai", "OPENAI_API_KEY"),
+        ("openai", "KNITPROOF_OPENAI_MODEL"),
+        ("openrouter", "OPENROUTER_API_KEY"),
+        ("openrouter", "KNITPROOF_OPENROUTER_MODEL"),
+        ("openrouter", "KNITPROOF_OPENROUTER_HOST"),
+        ("moonshotai", "MOONSHOTAI_API_KEY"),
+        ("moonshotai", "KNITPROOF_MOONSHOTAI_MODEL"),
+        ("ollama", "KNITPROOF_OLLAMA_MODEL"),
+        ("ollama", "KNITPROOF_OLLAMA_BASE_URL"),
+        ("ollama", "KNITPROOF_LLM_RETRIES"),
     ],
 )
 def test_a_missing_variable_is_named(provider: Provider, variable: str) -> None:
@@ -70,6 +102,41 @@ def test_an_empty_variable_counts_as_missing() -> None:
         load_config("anthropic", environ("anthropic", ANTHROPIC_API_KEY=""))
 
 
+def test_a_local_model_needs_no_key() -> None:
+    config = load_config("ollama", ENVIRONMENTS["ollama"])
+
+    assert config.api_key is None
+    assert config.base_url == "http://localhost:11434/v1"
+    assert config.model == "qwen3:8b-q4_K_M"
+
+
+@pytest.mark.parametrize("model", ["qwen3:latest", "qwen3:LATEST", "qwen3"])
+def test_a_local_model_without_an_explicit_tag_is_refused(model: str) -> None:
+    with pytest.raises(InvalidSettingError, match="KNITPROOF_OLLAMA_MODEL"):
+        load_config("ollama", environ("ollama", KNITPROOF_OLLAMA_MODEL=model))
+
+
+def test_an_empty_openrouter_host_is_named() -> None:
+    with pytest.raises(MissingSettingError, match="KNITPROOF_OPENROUTER_HOST"):
+        load_config("openrouter", environ("openrouter", KNITPROOF_OPENROUTER_HOST="  "))
+
+
+def test_the_openrouter_host_is_kept() -> None:
+    assert load_config("openrouter", ENVIRONMENTS["openrouter"]).host == "mistral"
+
+
+def test_only_openrouter_has_a_host() -> None:
+    assert load_config("mistral", ENVIRONMENTS["mistral"]).host is None
+
+
+def test_an_openrouter_base_url_is_refused() -> None:
+    with pytest.raises(InvalidSettingError, match="KNITPROOF_OPENROUTER_BASE_URL"):
+        load_config(
+            "openrouter",
+            environ("openrouter", KNITPROOF_OPENROUTER_BASE_URL="https://exemple.test/v1"),
+        )
+
+
 def test_the_other_provider_variables_are_not_required() -> None:
     config = load_config("mistral", ENVIRONMENTS["mistral"])
 
@@ -81,9 +148,14 @@ def test_the_other_provider_variables_are_not_required() -> None:
     [
         ("anthropic", "KNITPROOF_ANTHROPIC_MODEL"),
         ("mistral", "KNITPROOF_MISTRAL_MODEL"),
+        ("openai", "KNITPROOF_OPENAI_MODEL"),
+        ("openrouter", "KNITPROOF_OPENROUTER_MODEL"),
+        ("moonshotai", "KNITPROOF_MOONSHOTAI_MODEL"),
     ],
 )
-@pytest.mark.parametrize("model", ["claude-sonnet-latest", "mistral-small-LATEST", "x-Latest"])
+@pytest.mark.parametrize(
+    "model", ["claude-sonnet-latest", "mistral-small-LATEST", "x-Latest", "kimi-latest"]
+)
 def test_a_latest_alias_is_refused(provider: Provider, variable: str, model: str) -> None:
     with pytest.raises(InvalidSettingError, match=variable):
         load_config(provider, environ(provider, **{variable: model}))
@@ -116,7 +188,7 @@ def test_zero_retries_are_accepted() -> None:
 
 def test_an_unknown_provider_is_refused() -> None:
     with pytest.raises(InvalidSettingError, match="provider"):
-        load_config("openai", {})  # type: ignore[arg-type]
+        load_config("cohere", {})  # type: ignore[arg-type]
 
 
 def test_a_base_url_is_read_when_present() -> None:
