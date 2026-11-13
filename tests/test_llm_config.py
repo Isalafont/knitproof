@@ -22,6 +22,11 @@ ENVIRONMENTS: dict[Provider, dict[str, str]] = {
         "KNITPROOF_MISTRAL_MODEL": "mistral-small-2506",
         "KNITPROOF_LLM_RETRIES": "1",
     },
+    "openai": {
+        "OPENAI_API_KEY": KEY,
+        "KNITPROOF_OPENAI_MODEL": "gpt-5-2025-08-07",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
 }
 
 
@@ -35,7 +40,7 @@ def environ(provider: Provider, **changes: str | None) -> dict[str, str]:
     return values
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral"])
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai"])
 def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
     config = load_config(provider, ENVIRONMENTS[provider])
 
@@ -56,6 +61,8 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
         ("mistral", "MISTRAL_API_KEY"),
         ("mistral", "KNITPROOF_MISTRAL_MODEL"),
         ("mistral", "KNITPROOF_LLM_RETRIES"),
+        ("openai", "OPENAI_API_KEY"),
+        ("openai", "KNITPROOF_OPENAI_MODEL"),
     ],
 )
 def test_a_missing_variable_is_named(provider: Provider, variable: str) -> None:
@@ -81,6 +88,7 @@ def test_the_other_provider_variables_are_not_required() -> None:
     [
         ("anthropic", "KNITPROOF_ANTHROPIC_MODEL"),
         ("mistral", "KNITPROOF_MISTRAL_MODEL"),
+        ("openai", "KNITPROOF_OPENAI_MODEL"),
     ],
 )
 @pytest.mark.parametrize("model", ["claude-sonnet-latest", "mistral-small-LATEST", "x-Latest"])
@@ -116,7 +124,7 @@ def test_zero_retries_are_accepted() -> None:
 
 def test_an_unknown_provider_is_refused() -> None:
     with pytest.raises(InvalidSettingError, match="provider"):
-        load_config("openai", {})  # type: ignore[arg-type]
+        load_config("cohere", {})  # type: ignore[arg-type]
 
 
 def test_a_base_url_is_read_when_present() -> None:

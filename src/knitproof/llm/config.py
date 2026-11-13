@@ -1,4 +1,6 @@
-"""La configuration d’un fournisseur, lue dans l’environnement (CLA-127, ADR 0033).
+"""La configuration d’un fournisseur, lue dans l’environnement (CLA-127, CLA-62, ADR 0033).
+
+Fournisseurs : Anthropic, Mistral et OpenAI.
 
 Aucune valeur par défaut cachée : un identifiant de modèle, une clé et un nombre de relances
 absents sont une erreur nommée. La température est facultative (ADR 0033).
@@ -12,9 +14,13 @@ from pydantic import BaseModel, ConfigDict, SecretStr
 
 from knitproof.llm.errors import InvalidSettingError, MissingSettingError
 
-Provider = Literal["anthropic", "mistral"]
+Provider = Literal["anthropic", "mistral", "openai"]
 
-_KEYS: Mapping[Provider, str] = {"anthropic": "ANTHROPIC_API_KEY", "mistral": "MISTRAL_API_KEY"}
+_KEYS: Mapping[Provider, str] = {
+    "anthropic": "ANTHROPIC_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "openai": "OPENAI_API_KEY",
+}
 _TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
 _RETRIES = "KNITPROOF_LLM_RETRIES"
 

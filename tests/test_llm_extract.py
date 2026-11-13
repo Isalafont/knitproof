@@ -9,6 +9,7 @@ from pydantic_ai import Agent
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.models.openai import OpenAIResponsesModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.anthropic import AnthropicProvider
 
@@ -208,7 +209,13 @@ def test_agent_for_applies_the_configured_retries(retries: int) -> None:
     assert len(calls) == retries + 1
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral"])
+def test_agent_for_openai_uses_the_responses_model() -> None:
+    agent = agent_for(config(provider="openai"), Sample)
+
+    assert isinstance(agent.model, OpenAIResponsesModel)
+
+
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai"])
 def test_an_agent_for_a_provider_never_reaches_the_network(provider: Provider) -> None:
     agent = agent_for(config(provider=provider), Sample)
 
