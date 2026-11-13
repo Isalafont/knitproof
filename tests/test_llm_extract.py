@@ -10,7 +10,7 @@ from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.ollama import OllamaModel
-from pydantic_ai.models.openai import OpenAIResponsesModel
+from pydantic_ai.models.openai import OpenAIChatModel, OpenAIResponsesModel
 from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.anthropic import AnthropicProvider
@@ -224,6 +224,26 @@ def test_agent_for_openai_uses_the_responses_model() -> None:
     assert isinstance(agent.model, OpenAIResponsesModel)
 
 
+def test_agent_for_moonshotai_reads_the_international_address_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MOONSHOTAI_BASE_URL", "http://piege.test/v1")
+
+    agent = agent_for(config(provider="moonshotai"), Sample)
+
+    assert isinstance(agent.model, OpenAIChatModel)
+    assert agent.model.system == "moonshotai"
+    assert agent.model.base_url == "https://api.moonshot.ai/v1/"
+
+
+def test_agent_for_moonshotai_uses_the_configured_address() -> None:
+    agent = agent_for(config(provider="moonshotai", base_url="https://api.moonshot.cn/v1"), Sample)
+
+    assert agent.model is not None
+    assert not isinstance(agent.model, str)
+    assert agent.model.base_url == "https://api.moonshot.cn/v1/"
+
+
 def test_agent_for_ollama_uses_the_local_address_without_a_key(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -299,7 +319,9 @@ def test_extract_rejects_an_openrouter_response_without_host() -> None:
         extract(agent, settings, PROMPT, "Drops, 50 g")
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter", "ollama"])
+@pytest.mark.parametrize(
+    "provider", ["anthropic", "mistral", "openai", "openrouter", "moonshotai", "ollama"]
+)
 def test_an_agent_for_a_provider_never_reaches_the_network(provider: Provider) -> None:
     settings = config(provider=provider, host="mistral")
     agent = agent_for(settings, Sample)

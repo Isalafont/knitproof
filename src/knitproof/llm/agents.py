@@ -1,6 +1,7 @@
 """La fabrique d’agents pydanticAI, un par fournisseur (CLA-127, ADR 0033).
 
-Fournisseurs : Anthropic, Mistral, OpenAI, OpenRouter et Ollama, le modèle local (CLA-62).
+Fournisseurs (CLA-62) : Anthropic, Mistral, OpenAI, OpenRouter, Kimi (Moonshot AI) et Ollama,
+le modèle local.
 """
 
 from typing import assert_never
@@ -11,10 +12,11 @@ from pydantic_ai.models import Model
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.mistral import MistralModel
 from pydantic_ai.models.ollama import OllamaModel
-from pydantic_ai.models.openai import OpenAIResponsesModel
+from pydantic_ai.models.openai import OpenAIChatModel, OpenAIResponsesModel
 from pydantic_ai.models.openrouter import OpenRouterModel, OpenRouterModelSettings
 from pydantic_ai.providers.anthropic import AnthropicProvider
 from pydantic_ai.providers.mistral import MistralProvider
+from pydantic_ai.providers.moonshotai import MoonshotAIProvider
 from pydantic_ai.providers.ollama import OllamaProvider
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
@@ -22,6 +24,7 @@ from pydantic_ai.providers.openrouter import OpenRouterProvider
 from knitproof.llm.config import ModelConfig
 from knitproof.llm.errors import InvalidSettingError
 
+MOONSHOT_BASE_URL = "https://api.moonshot.ai/v1"
 _LOCAL_KEY = "ollama"  # Ollama local ignore la clé ; elle évite de lire OLLAMA_API_KEY.
 
 
@@ -61,6 +64,13 @@ def agent_for[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[
                 config.model, provider=OpenRouterProvider(api_key=_key(config)), settings=routing
             )
             return agent_on(openrouter, output_type, config.retries)
+        case "moonshotai":
+            provider = MoonshotAIProvider(
+                api_key=_key(config), base_url=config.base_url or MOONSHOT_BASE_URL
+            )
+            return agent_on(
+                OpenAIChatModel(config.model, provider=provider), output_type, config.retries
+            )
         case "ollama":
             local = OllamaModel(
                 config.model,

@@ -1,7 +1,7 @@
 """La configuration d’un fournisseur, lue dans l’environnement (CLA-127, CLA-62, ADR 0033).
 
-Fournisseurs : Anthropic, Mistral, OpenAI, OpenRouter (dont l’hébergeur est fixé) et Ollama
-(modèle local, sans clé).
+Fournisseurs : Anthropic, Mistral, OpenAI, OpenRouter (dont l’hébergeur est fixé), Kimi en direct
+(Moonshot AI) et Ollama (modèle local, sans clé).
 
 Aucune valeur par défaut cachée : un identifiant de modèle, une clé et un nombre de relances
 absents sont une erreur nommée. La température est facultative (ADR 0033).
@@ -15,13 +15,14 @@ from pydantic import BaseModel, ConfigDict, SecretStr
 
 from knitproof.llm.errors import InvalidSettingError, MissingSettingError
 
-Provider = Literal["anthropic", "mistral", "openai", "openrouter", "ollama"]
+Provider = Literal["anthropic", "mistral", "openai", "openrouter", "moonshotai", "ollama"]
 
 _KEYS: Mapping[str, str] = {
     "anthropic": "ANTHROPIC_API_KEY",
     "mistral": "MISTRAL_API_KEY",
     "openai": "OPENAI_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
+    "moonshotai": "MOONSHOTAI_API_KEY",
 }
 _TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
 _RETRIES = "KNITPROOF_LLM_RETRIES"

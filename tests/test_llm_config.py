@@ -33,6 +33,11 @@ ENVIRONMENTS: dict[Provider, dict[str, str]] = {
         "KNITPROOF_OPENROUTER_HOST": "mistral",
         "KNITPROOF_LLM_RETRIES": "1",
     },
+    "moonshotai": {
+        "MOONSHOTAI_API_KEY": KEY,
+        "KNITPROOF_MOONSHOTAI_MODEL": "kimi-k3",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
     "ollama": {
         "KNITPROOF_OLLAMA_MODEL": "qwen3:8b-q4_K_M",
         "KNITPROOF_OLLAMA_BASE_URL": "http://localhost:11434/v1",
@@ -51,7 +56,7 @@ def environ(provider: Provider, **changes: str | None) -> dict[str, str]:
     return values
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter"])
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter", "moonshotai"])
 def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
     config = load_config(provider, ENVIRONMENTS[provider])
 
@@ -78,6 +83,8 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
         ("openrouter", "OPENROUTER_API_KEY"),
         ("openrouter", "KNITPROOF_OPENROUTER_MODEL"),
         ("openrouter", "KNITPROOF_OPENROUTER_HOST"),
+        ("moonshotai", "MOONSHOTAI_API_KEY"),
+        ("moonshotai", "KNITPROOF_MOONSHOTAI_MODEL"),
         ("ollama", "KNITPROOF_OLLAMA_MODEL"),
         ("ollama", "KNITPROOF_OLLAMA_BASE_URL"),
         ("ollama", "KNITPROOF_LLM_RETRIES"),
@@ -143,9 +150,12 @@ def test_the_other_provider_variables_are_not_required() -> None:
         ("mistral", "KNITPROOF_MISTRAL_MODEL"),
         ("openai", "KNITPROOF_OPENAI_MODEL"),
         ("openrouter", "KNITPROOF_OPENROUTER_MODEL"),
+        ("moonshotai", "KNITPROOF_MOONSHOTAI_MODEL"),
     ],
 )
-@pytest.mark.parametrize("model", ["claude-sonnet-latest", "mistral-small-LATEST", "x-Latest"])
+@pytest.mark.parametrize(
+    "model", ["claude-sonnet-latest", "mistral-small-LATEST", "x-Latest", "kimi-latest"]
+)
 def test_a_latest_alias_is_refused(provider: Provider, variable: str, model: str) -> None:
     with pytest.raises(InvalidSettingError, match=variable):
         load_config(provider, environ(provider, **{variable: model}))
