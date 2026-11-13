@@ -23,7 +23,7 @@ class ControlAnswer(BaseModel):
 
 
 @pytest.mark.live
-@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter"])
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter", "ollama"])
 def test_a_real_call_returns_a_validated_object(
     provider: Provider, monkeypatch: pytest.MonkeyPatch
 ) -> None:

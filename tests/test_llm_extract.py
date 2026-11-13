@@ -9,6 +9,7 @@ from pydantic_ai import Agent
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.models.ollama import OllamaModel
 from pydantic_ai.models.openai import OpenAIResponsesModel
 from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.models.test import TestModel
@@ -20,6 +21,10 @@ from knitproof.llm.errors import ExtractionRejectedError
 from knitproof.llm.extract import Prompt, extract, reading_from
 
 PROMPT = Prompt(id="sample-v1", text="Rends la marque et le poids du texte.")
+
+
+LOCAL_URL = "http://localhost:11434/v1"
+MODELS: dict[Provider, str] = {"openrouter": "vendeur/modele-fige-1", "ollama": "modele:8b"}
 
 
 class Sample(BaseModel):
@@ -35,11 +40,12 @@ def config(
     base_url: str | None = None,
     host: str | None = None,
 ) -> ModelConfig:
+    local = provider == "ollama"
     return ModelConfig(
         provider=provider,
-        model="vendeur/modele-fige-1" if provider == "openrouter" else "modele-fige-1",
-        api_key=SecretStr("fausse"),
-        base_url=base_url,
+        model=MODELS.get(provider, "modele-fige-1"),
+        api_key=None if local else SecretStr("fausse"),
+        base_url=base_url or (LOCAL_URL if local else None),
         host=host,
         temperature=temperature,
         retries=retries,
@@ -218,6 +224,19 @@ def test_agent_for_openai_uses_the_responses_model() -> None:
     assert isinstance(agent.model, OpenAIResponsesModel)
 
 
+def test_agent_for_ollama_uses_the_local_address_without_a_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OLLAMA_BASE_URL", "http://piege.test/v1")
+    monkeypatch.setenv("OLLAMA_API_KEY", "cle-de-l-environnement")
+
+    agent = agent_for(config(provider="ollama"), Sample)
+
+    assert isinstance(agent.model, OllamaModel)
+    assert agent.model.base_url == f"{LOCAL_URL}/"
+    assert agent.model.client.api_key == "ollama"
+
+
 def test_agent_for_openrouter_fixes_the_host_without_fallback() -> None:
     agent = agent_for(config(provider="openrouter", host="mistral"), Sample)
 
@@ -280,7 +299,7 @@ def test_extract_rejects_an_openrouter_response_without_host() -> None:
         extract(agent, settings, PROMPT, "Drops, 50 g")
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter"])
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter", "ollama"])
 def test_an_agent_for_a_provider_never_reaches_the_network(provider: Provider) -> None:
     settings = config(provider=provider, host="mistral")
     agent = agent_for(settings, Sample)

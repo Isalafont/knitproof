@@ -12,7 +12,7 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 
 ## Modèles
 
-La couche `llm` appelle Anthropic, Mistral, OpenAI et OpenRouter par pydanticAI ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md)). Les variables se lisent dans l’environnement ; `.env.example` les liste, sans valeur.
+La couche `llm` appelle Anthropic, Mistral, OpenAI, OpenRouter et un modèle local (Ollama) par pydanticAI ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md)). Les variables se lisent dans l’environnement ; `.env.example` les liste, sans valeur.
 
 | Variable | Rôle |
 |---|---|
@@ -20,6 +20,7 @@ La couche `llm` appelle Anthropic, Mistral, OpenAI et OpenRouter par pydanticAI 
 | `KNITPROOF_ANTHROPIC_MODEL`, `KNITPROOF_MISTRAL_MODEL`, `KNITPROOF_OPENAI_MODEL`, `KNITPROOF_OPENROUTER_MODEL` | identifiant figé du modèle, obligatoire ; `-latest` refusé |
 | `KNITPROOF_ANTHROPIC_BASE_URL`, `KNITPROOF_MISTRAL_BASE_URL`, `KNITPROOF_OPENAI_BASE_URL` | adresse de l’API, facultative |
 | `KNITPROOF_OPENROUTER_HOST` | slug OpenRouter de l’hébergeur unique, obligatoire pour OpenRouter (`provider[/variant][/region][/tier]`, par exemple `deepinfra`), copié sur la page du modèle ; aucun repli ; la trace garde le nom que rend la réponse, qui peut différer du slug ; `KNITPROOF_OPENROUTER_BASE_URL` est refusée |
+| `KNITPROOF_OLLAMA_MODEL`, `KNITPROOF_OLLAMA_BASE_URL` | modèle local : nom avec étiquette explicite (`qwen3:8b`, ni `:latest` ni nom sans étiquette) et adresse, obligatoires ; aucune clé |
 | `KNITPROOF_LLM_TEMPERATURE` | entre 0 et 1, facultative |
 | `KNITPROOF_LLM_RETRIES` | relances de sortie, obligatoire (0 ou plus) |
 
@@ -32,7 +33,10 @@ uv run --env-file .env pytest -m live -k anthropic
 uv run --env-file .env pytest -m live -k mistral
 uv run --env-file .env pytest -m live -k openai
 uv run --env-file .env pytest -m live -k openrouter
+uv run --env-file .env pytest -m live -k ollama
 ```
+
+Modèle local : installer Ollama, puis `ollama pull` avec un nom à étiquette explicite (par exemple `ollama pull qwen3:8b`), et renseigner `KNITPROOF_OLLAMA_BASE_URL=http://localhost:11434/v1`.
 
 ## Calculer un bonnet
 

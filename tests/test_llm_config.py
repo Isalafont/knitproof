@@ -33,6 +33,11 @@ ENVIRONMENTS: dict[Provider, dict[str, str]] = {
         "KNITPROOF_OPENROUTER_HOST": "mistral",
         "KNITPROOF_LLM_RETRIES": "1",
     },
+    "ollama": {
+        "KNITPROOF_OLLAMA_MODEL": "qwen3:8b-q4_K_M",
+        "KNITPROOF_OLLAMA_BASE_URL": "http://localhost:11434/v1",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
 }
 
 
@@ -52,6 +57,7 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
 
     assert config.provider == provider
     assert config.model == ENVIRONMENTS[provider][f"KNITPROOF_{provider.upper()}_MODEL"]
+    assert config.api_key is not None
     assert config.api_key.get_secret_value() == KEY
     assert config.base_url is None
     assert config.temperature is None
@@ -72,6 +78,9 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
         ("openrouter", "OPENROUTER_API_KEY"),
         ("openrouter", "KNITPROOF_OPENROUTER_MODEL"),
         ("openrouter", "KNITPROOF_OPENROUTER_HOST"),
+        ("ollama", "KNITPROOF_OLLAMA_MODEL"),
+        ("ollama", "KNITPROOF_OLLAMA_BASE_URL"),
+        ("ollama", "KNITPROOF_LLM_RETRIES"),
     ],
 )
 def test_a_missing_variable_is_named(provider: Provider, variable: str) -> None:
@@ -84,6 +93,20 @@ def test_a_missing_variable_is_named(provider: Provider, variable: str) -> None:
 def test_an_empty_variable_counts_as_missing() -> None:
     with pytest.raises(MissingSettingError, match="ANTHROPIC_API_KEY"):
         load_config("anthropic", environ("anthropic", ANTHROPIC_API_KEY=""))
+
+
+def test_a_local_model_needs_no_key() -> None:
+    config = load_config("ollama", ENVIRONMENTS["ollama"])
+
+    assert config.api_key is None
+    assert config.base_url == "http://localhost:11434/v1"
+    assert config.model == "qwen3:8b-q4_K_M"
+
+
+@pytest.mark.parametrize("model", ["qwen3:latest", "qwen3:LATEST", "qwen3"])
+def test_a_local_model_without_an_explicit_tag_is_refused(model: str) -> None:
+    with pytest.raises(InvalidSettingError, match="KNITPROOF_OLLAMA_MODEL"):
+        load_config("ollama", environ("ollama", KNITPROOF_OLLAMA_MODEL=model))
 
 
 def test_an_empty_openrouter_host_is_named() -> None:
