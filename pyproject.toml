@@ -10,7 +10,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.14.1",
-    "pydantic-ai-slim[anthropic,mistral,openai]>=2.68.0",
+    "pydantic-ai-slim[anthropic,mistral,openai,openrouter]>=2.68.0",
     "pyyaml>=6.0.3",
 ]
 

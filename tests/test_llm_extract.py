@@ -10,6 +10,7 @@ from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.openai import OpenAIResponsesModel
+from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.anthropic import AnthropicProvider
 
@@ -32,12 +33,14 @@ def config(
     retries: int = 0,
     provider: Provider = "anthropic",
     base_url: str | None = None,
+    host: str | None = None,
 ) -> ModelConfig:
     return ModelConfig(
         provider=provider,
-        model="modele-fige-1",
+        model="vendeur/modele-fige-1" if provider == "openrouter" else "modele-fige-1",
         api_key=SecretStr("fausse"),
         base_url=base_url,
+        host=host,
         temperature=temperature,
         retries=retries,
     )
@@ -215,9 +218,72 @@ def test_agent_for_openai_uses_the_responses_model() -> None:
     assert isinstance(agent.model, OpenAIResponsesModel)
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai"])
+def test_agent_for_openrouter_fixes_the_host_without_fallback() -> None:
+    agent = agent_for(config(provider="openrouter", host="mistral"), Sample)
+
+    assert isinstance(agent.model, OpenRouterModel)
+    settings = dict(agent.model.settings or {})
+    assert settings["openrouter_provider"] == {
+        "only": ["mistral"],
+        "allow_fallbacks": False,
+    }
+
+
+def test_the_reading_keeps_the_host_returned_by_openrouter() -> None:
+    reading = reading_from(
+        config(provider="openrouter", host="mistral"), PROMPT, "nom-rendu", downstream="Mistral"
+    )
+
+    assert reading.host == "Mistral"
+
+
+@pytest.mark.parametrize("downstream", [None, "", "  "])
+def test_a_response_of_openrouter_without_host_is_rejected(downstream: str | None) -> None:
+    with pytest.raises(ExtractionRejectedError):
+        reading_from(
+            config(provider="openrouter", host="mistral"),
+            PROMPT,
+            "nom-rendu",
+            downstream=downstream,
+        )
+
+
+def test_the_other_providers_keep_no_host() -> None:
+    reading = reading_from(config(), PROMPT, "nom-rendu", downstream="Ignore")
+
+    assert reading.host is None
+
+
+def test_extract_notes_the_host_returned_by_openrouter() -> None:
+    def hosted(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return ModelResponse(
+            parts=[ToolCallPart("final_result", {"brand": "Drops", "grams": 50})],
+            provider_details={"downstream_provider": "Mistral"},
+        )
+
+    agent = agent_on(FunctionModel(hosted), Sample, retries=0)
+    settings = config(provider="openrouter", host="mistral")
+
+    extraction = extract(agent, settings, PROMPT, "Drops, 50 g")
+
+    assert extraction.reading.host == "Mistral"
+
+
+def test_extract_rejects_an_openrouter_response_without_host() -> None:
+    def unhosted(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return answer({"brand": "Drops", "grams": 50})
+
+    agent = agent_on(FunctionModel(unhosted), Sample, retries=0)
+    settings = config(provider="openrouter", host="mistral")
+
+    with pytest.raises(ExtractionRejectedError):
+        extract(agent, settings, PROMPT, "Drops, 50 g")
+
+
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter"])
 def test_an_agent_for_a_provider_never_reaches_the_network(provider: Provider) -> None:
-    agent = agent_for(config(provider=provider), Sample)
+    settings = config(provider=provider, host="mistral")
+    agent = agent_for(settings, Sample)
 
     with pytest.raises(RuntimeError, match="Model requests are not allowed"):
-        extract(agent, config(provider=provider), PROMPT, "Drops, 50 g")
+        extract(agent, settings, PROMPT, "Drops, 50 g")

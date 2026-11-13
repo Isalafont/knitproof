@@ -1,6 +1,6 @@
 """La configuration d’un fournisseur, lue dans l’environnement (CLA-127, CLA-62, ADR 0033).
 
-Fournisseurs : Anthropic, Mistral et OpenAI.
+Fournisseurs : Anthropic, Mistral, OpenAI et OpenRouter (dont l’hébergeur est fixé).
 
 Aucune valeur par défaut cachée : un identifiant de modèle, une clé et un nombre de relances
 absents sont une erreur nommée. La température est facultative (ADR 0033).
@@ -14,12 +14,13 @@ from pydantic import BaseModel, ConfigDict, SecretStr
 
 from knitproof.llm.errors import InvalidSettingError, MissingSettingError
 
-Provider = Literal["anthropic", "mistral", "openai"]
+Provider = Literal["anthropic", "mistral", "openai", "openrouter"]
 
 _KEYS: Mapping[Provider, str] = {
     "anthropic": "ANTHROPIC_API_KEY",
     "mistral": "MISTRAL_API_KEY",
     "openai": "OPENAI_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
 }
 _TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
 _RETRIES = "KNITPROOF_LLM_RETRIES"
@@ -34,6 +35,7 @@ class ModelConfig(BaseModel):
     model: str
     api_key: SecretStr
     base_url: str | None
+    host: str | None
     temperature: float | None
     retries: int
 
@@ -43,11 +45,15 @@ def load_config(provider: Provider, environ: Mapping[str, str]) -> ModelConfig:
     if provider not in get_args(Provider):
         raise InvalidSettingError("provider", f"{provider!r} inconnu")
     prefix = f"KNITPROOF_{provider.upper()}"
+    base_url = environ.get(f"{prefix}_BASE_URL") or None
+    if provider == "openrouter" and base_url:
+        raise InvalidSettingError(f"{prefix}_BASE_URL", "OpenRouter n’admet pas d’adresse propre")
     return ModelConfig(
         provider=provider,
         model=_model(environ, f"{prefix}_MODEL"),
         api_key=SecretStr(_required(environ, _KEYS[provider])),
-        base_url=environ.get(f"{prefix}_BASE_URL") or None,
+        base_url=base_url,
+        host=_required(environ, f"{prefix}_HOST").strip() if provider == "openrouter" else None,
         temperature=_temperature(environ),
         retries=_retries(environ),
     )

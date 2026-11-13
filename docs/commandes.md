@@ -12,13 +12,14 @@ Pour les données Ravelry, copier `.env.example` en `.env` et y renseigner ses i
 
 ## Modèles
 
-La couche `llm` appelle Anthropic, Mistral et OpenAI par pydanticAI ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md)). Les variables se lisent dans l’environnement ; `.env.example` les liste, sans valeur.
+La couche `llm` appelle Anthropic, Mistral, OpenAI et OpenRouter par pydanticAI ([ADR 0033](adr/0033-anthropic-et-mistral-en-direct.md)). Les variables se lisent dans l’environnement ; `.env.example` les liste, sans valeur.
 
 | Variable | Rôle |
 |---|---|
-| `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`, `OPENAI_API_KEY` | clé du fournisseur, obligatoire pour lui |
-| `KNITPROOF_ANTHROPIC_MODEL`, `KNITPROOF_MISTRAL_MODEL`, `KNITPROOF_OPENAI_MODEL` | identifiant figé du modèle, obligatoire ; `-latest` refusé |
+| `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY` | clé du fournisseur, obligatoire pour lui |
+| `KNITPROOF_ANTHROPIC_MODEL`, `KNITPROOF_MISTRAL_MODEL`, `KNITPROOF_OPENAI_MODEL`, `KNITPROOF_OPENROUTER_MODEL` | identifiant figé du modèle, obligatoire ; `-latest` refusé |
 | `KNITPROOF_ANTHROPIC_BASE_URL`, `KNITPROOF_MISTRAL_BASE_URL`, `KNITPROOF_OPENAI_BASE_URL` | adresse de l’API, facultative |
+| `KNITPROOF_OPENROUTER_HOST` | slug OpenRouter de l’hébergeur unique, obligatoire pour OpenRouter (`provider[/variant][/region][/tier]`, par exemple `deepinfra`), copié sur la page du modèle ; aucun repli ; la trace garde le nom que rend la réponse, qui peut différer du slug ; `KNITPROOF_OPENROUTER_BASE_URL` est refusée |
 | `KNITPROOF_LLM_TEMPERATURE` | entre 0 et 1, facultative |
 | `KNITPROOF_LLM_RETRIES` | relances de sortie, obligatoire (0 ou plus) |
 
@@ -30,6 +31,7 @@ La température est facultative parce que certains modèles la refusent : Sonnet
 uv run --env-file .env pytest -m live -k anthropic
 uv run --env-file .env pytest -m live -k mistral
 uv run --env-file .env pytest -m live -k openai
+uv run --env-file .env pytest -m live -k openrouter
 ```
 
 ## Calculer un bonnet

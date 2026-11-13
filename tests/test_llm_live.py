@@ -23,7 +23,7 @@ class ControlAnswer(BaseModel):
 
 
 @pytest.mark.live
-@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai"])
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter"])
 def test_a_real_call_returns_a_validated_object(
     provider: Provider, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -37,3 +37,5 @@ def test_a_real_call_returns_a_validated_object(
 
     assert isinstance(extraction.value, ControlAnswer)
     assert extraction.reading.model_version
+    if provider == "openrouter":
+        assert extraction.reading.host

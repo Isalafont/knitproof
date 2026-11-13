@@ -27,6 +27,12 @@ ENVIRONMENTS: dict[Provider, dict[str, str]] = {
         "KNITPROOF_OPENAI_MODEL": "gpt-5-2025-08-07",
         "KNITPROOF_LLM_RETRIES": "1",
     },
+    "openrouter": {
+        "OPENROUTER_API_KEY": KEY,
+        "KNITPROOF_OPENROUTER_MODEL": "mistralai/mistral-small-2506",
+        "KNITPROOF_OPENROUTER_HOST": "mistral",
+        "KNITPROOF_LLM_RETRIES": "1",
+    },
 }
 
 
@@ -40,7 +46,7 @@ def environ(provider: Provider, **changes: str | None) -> dict[str, str]:
     return values
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai"])
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "openai", "openrouter"])
 def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
     config = load_config(provider, ENVIRONMENTS[provider])
 
@@ -63,6 +69,9 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
         ("mistral", "KNITPROOF_LLM_RETRIES"),
         ("openai", "OPENAI_API_KEY"),
         ("openai", "KNITPROOF_OPENAI_MODEL"),
+        ("openrouter", "OPENROUTER_API_KEY"),
+        ("openrouter", "KNITPROOF_OPENROUTER_MODEL"),
+        ("openrouter", "KNITPROOF_OPENROUTER_HOST"),
     ],
 )
 def test_a_missing_variable_is_named(provider: Provider, variable: str) -> None:
@@ -77,6 +86,27 @@ def test_an_empty_variable_counts_as_missing() -> None:
         load_config("anthropic", environ("anthropic", ANTHROPIC_API_KEY=""))
 
 
+def test_an_empty_openrouter_host_is_named() -> None:
+    with pytest.raises(MissingSettingError, match="KNITPROOF_OPENROUTER_HOST"):
+        load_config("openrouter", environ("openrouter", KNITPROOF_OPENROUTER_HOST="  "))
+
+
+def test_the_openrouter_host_is_kept() -> None:
+    assert load_config("openrouter", ENVIRONMENTS["openrouter"]).host == "mistral"
+
+
+def test_only_openrouter_has_a_host() -> None:
+    assert load_config("mistral", ENVIRONMENTS["mistral"]).host is None
+
+
+def test_an_openrouter_base_url_is_refused() -> None:
+    with pytest.raises(InvalidSettingError, match="KNITPROOF_OPENROUTER_BASE_URL"):
+        load_config(
+            "openrouter",
+            environ("openrouter", KNITPROOF_OPENROUTER_BASE_URL="https://exemple.test/v1"),
+        )
+
+
 def test_the_other_provider_variables_are_not_required() -> None:
     config = load_config("mistral", ENVIRONMENTS["mistral"])
 
@@ -89,6 +119,7 @@ def test_the_other_provider_variables_are_not_required() -> None:
         ("anthropic", "KNITPROOF_ANTHROPIC_MODEL"),
         ("mistral", "KNITPROOF_MISTRAL_MODEL"),
         ("openai", "KNITPROOF_OPENAI_MODEL"),
+        ("openrouter", "KNITPROOF_OPENROUTER_MODEL"),
     ],
 )
 @pytest.mark.parametrize("model", ["claude-sonnet-latest", "mistral-small-LATEST", "x-Latest"])
