@@ -11,7 +11,7 @@
 
 Knitting patterns computed and checked by a deterministic engine, not guessed by an AI.
 
-**knitproof** calcule et vérifie les mailles de patrons de tricot, en commençant par le bonnet. Aujourd’hui, `knitproof calc` calcule un bonnet depuis une demande YAML et `knitproof verify` contrôle les comptes de mailles d’un patron écrit en YAML.
+**knitproof** calcule et vérifie les mailles de patrons de tricot, en commençant par le bonnet. Aujourd’hui, `knitproof calc` calcule un bonnet depuis une demande YAML et `knitproof verify` contrôle les comptes de mailles d’un patron écrit en YAML ; `knitproof eval` mesure la ligne de base « LLM seul » ([commandes](docs/commandes.md)).
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Isalafont/knitproof/ci.yml?branch=develop&style=flat-square&label=CI)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FIsalafont%2Fknitproof%2Fdevelop%2Fpyproject.toml&style=flat-square)](pyproject.toml)

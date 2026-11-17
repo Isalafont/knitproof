@@ -28,10 +28,11 @@ Détail et schéma dans `docs/architecture.md`, section 5. Les contrats vivent d
 | `sources` | Données externes (Ravelry), optionnelles |
 | `app` | Cas d’usage, seul point d’entrée des portes |
 | `cli`, `api`, `web` | Portes d’entrée, sans logique métier |
-| `evals` | Jeux d’évaluation et mesures |
+| `evals` | Données d’évaluation (cas, manifestes) ; les modèles de cas et la mesure vivent dans `app` (ADR 0035) |
 
 - Une couche dépend de celles du dessous, jamais de celles du dessus ni de ses voisines de même niveau.
 - `cli`, `api`, `web` et `evals` peuvent importer `domain`. Ils n’atteignent `engine`, `library`, `llm` et `sources` que par `app` (et `llm` pour `evals`).
+- `cli` résout le chemin des données d’`evals` et le passe à `app` : `app` ne nomme jamais `evals`.
 - Supprimer le paquet d’une couche casse volontairement le contrat : mettre à jour le contrat et l’architecture dans la même PR.
 
 ## Typage

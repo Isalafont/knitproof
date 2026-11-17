@@ -150,9 +150,9 @@ Une flèche signifie « dépend de ».
 | `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source ; fichiers dans `library/data/`, format dans son `README.md` ; le chargeur type chaque fichier par un registre explicite (nom de fichier → modèle d’entrée), un fichier absent du registre est refusé |
 | `llm` | Objets d’extraction, appels aux modèles, conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
-| `app` | Cas d’usage : `verify_pattern`, `plan_beanie` | Seul point d’entrée pour `cli`, `api` et `web` |
+| `app` | Cas d’usage : `verify_pattern`, `plan_beanie`, `run_baseline` (ligne de base « LLM seul ») ; modèles de cas et de manifeste d’évaluation (`eval_cases.py`) | Seul point d’entrée pour `cli`, `api` et `web` |
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
-| `evals` | Jeux d’évaluation et mesures | Voir [`evaluation.md`](evaluation.md) ; cas et manifestes hachés dans `evals/data/<split>/` ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)) |
+| `evals` | Données d’évaluation | Voir [`evaluation.md`](evaluation.md) ; cas et manifestes hachés dans `evals/data/<split>/` ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)) ; les modèles de cas et la mesure vivent dans `app`, car `BeanieRequest` y vit ; `cli` résout le chemin des données et le passe à `app` ([ADR 0035](adr/0035-ligne-de-base-llm-seul.md)) |
 
 Les dépendances entre couches sont vérifiées par import-linter (CLA-57) ; les contrats sont dans `[tool.importlinter]` de `pyproject.toml`. `cli`, `api`, `web` et `evals` peuvent importer `domain` pour typer ce qu’ils affichent ; ils n’atteignent `engine`, `library`, `llm` et `sources` qu’en passant par `app` (et `llm` pour `evals`). L’API JSON et l’interface web sont deux portes vers le même cœur : l’interface React s’ajoute sans toucher au moteur ([ADR 0006](adr/0006-portes-http-fastapi-et-react-aria.md)).
 
@@ -381,6 +381,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0032 — Protocole d’évaluation figé](adr/0032-protocole-d-evaluation-fige.md)
 - [ADR 0033 — Anthropic et Mistral en direct](adr/0033-anthropic-et-mistral-en-direct.md)
 - [ADR 0034 — OpenAI, OpenRouter, Kimi et modèle local](adr/0034-openai-openrouter-kimi-et-modele-local.md)
+- [ADR 0035 — Ligne de base « LLM seul »](adr/0035-ligne-de-base-llm-seul.md)
 
 ## 13. Projets proches
 
