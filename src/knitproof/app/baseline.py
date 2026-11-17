@@ -163,11 +163,16 @@ class BaselineRun(BaseModel):
 
 
 class ProviderResult(BaseModel):
-    """k/N d’un fournisseur sur cas et passages, avec l’intervalle de Wilson à 95 %."""
+    """k/N d’une entrée sur cas et passages, avec l’intervalle de Wilson à 95 %.
+
+    `model` et `host` (hébergeur demandé) sont absents des résultats d’avant CLA-199.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     provider: str
+    model: str | None = None
+    host: str | None = None
     correct: int
     wrong: int
     abstentions: int
@@ -305,6 +310,8 @@ def _measure(
     precision = Decimal("0.0001")
     return ProviderResult(
         provider=config.provider,
+        model=config.model,
+        host=config.host,
         correct=correct,
         wrong=verdicts.count(Verdict.WRONG),
         abstentions=verdicts.count(Verdict.ABSTENTION),

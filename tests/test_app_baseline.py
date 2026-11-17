@@ -461,3 +461,35 @@ def test_a_split_without_a_case_is_refused() -> None:
             now=lambda: NOW,
             agent_factory=_answering({"stitches": 88}),
         )
+
+
+def test_each_line_records_its_model_and_host() -> None:
+    environ = {
+        **ENVIRONMENT,
+        "OPENROUTER_API_KEY": "fausse",
+        "KNITPROOF_OPENROUTER_TEMPERATURE": "0",
+    }
+
+    result = _run(
+        _answering({"stitches": 88}),
+        entries=("ollama:qwen3:8b", "openrouter:x@a", "openrouter:y:free@b"),
+        environ=environ,
+    )
+
+    assert [(item.provider, item.model, item.host) for item in result.providers] == [
+        ("ollama", "qwen3:8b", None),
+        ("openrouter", "x", "a"),
+        ("openrouter", "y:free", "b"),
+    ]
+
+
+_RESULTS = Path(__file__).parent.parent / "evals" / "results"
+
+
+@pytest.mark.parametrize("name", ["2026-11-17T1443-dev.yaml", "2026-11-17T1458-dev.yaml"])
+def test_results_written_before_cla_199_still_validate(name: str) -> None:
+    text = (_RESULTS / name).read_text(encoding="utf-8")
+
+    result = BaselineResult.model_validate(yaml.safe_load(text))
+
+    assert all(item.model is None and item.host is None for item in result.providers)

@@ -4,7 +4,7 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 from typing import assert_never
 
-from knitproof.app.baseline import BaselineResult
+from knitproof.app.baseline import BaselineResult, ProviderResult
 from knitproof.app.beanie import BeanieCalc
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.domain.beanie import BeaniePlan, RowRounding
@@ -214,14 +214,22 @@ def _number(value: Decimal, places: int = 2) -> str:
 
 
 def render_baseline(result: BaselineResult, written: Path) -> str:
-    """Une ligne par fournisseur (k/N, Wilson à 95 %, abstentions), puis le chemin écrit."""
+    """Une ligne par entrée (k/N, Wilson à 95 %, abstentions), puis le chemin écrit."""
+    labels = [_entry_label(item) for item in result.providers]
+    width = max(map(len, labels), default=0) + 2
     lines = [
-        f"{item.provider:<{_COLUMN}}{item.correct}/{item.total}  "
+        f"{label:<{width}}{item.correct}/{item.total}  "
         f"[{_comma(item.low)} ; {_comma(item.high)}]  abstentions : {item.abstentions}"
-        for item in result.providers
+        for label, item in zip(labels, result.providers, strict=True)
     ]
     lines.append(f"Résultat : {written}")
     return "\n".join(lines)
+
+
+def _entry_label(item: ProviderResult) -> str:
+    model = f":{item.model}" if item.model else ""
+    host = f"@{item.host}" if item.host else ""
+    return f"{item.provider}{model}{host}"
 
 
 def _comma(value: Decimal) -> str:
