@@ -167,6 +167,73 @@ def test_a_provider_http_error_exits_3_without_a_partial_result(
     assert list(tmp_path.iterdir()) == []
 
 
+def _install_failing(
+    monkeypatch: pytest.MonkeyPatch,
+    calls: list[int],
+    error: ModelHTTPError,
+    *,
+    times: int | None,
+) -> None:
+    """Un modèle qui lève `error` aux `times` premiers appels (`None` : toujours), puis répond."""
+
+    def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        calls.append(1)
+        if times is None or len(calls) <= times:
+            raise error
+        return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+    environ = {**ENVIRONMENT, "KNITPROOF_LLM_HTTP_RETRIES": "2", "KNITPROOF_LLM_HTTP_WAIT": "0"}
+    monkeypatch.setattr("knitproof.app.baseline.build_agent", factory)
+    monkeypatch.setattr(os, "environ", environ)
+
+
+def test_a_passing_429_is_retried_and_the_measure_is_written(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[int] = []
+    _install_failing(monkeypatch, calls, ModelHTTPError(429, "claude", body="limite"), times=1)
+
+    code = main(["eval", "--split", "dev", "--models", "ollama", "--results", str(tmp_path)])
+
+    written = list(tmp_path.glob("*-dev.yaml"))
+    saved = yaml.safe_load(written[0].read_text(encoding="utf-8"))
+    attempts = [run["run"]["attempts"] for run in saved["providers"][0]["runs"]]
+    assert code == 0
+    assert attempts[0] == 2
+    assert set(attempts[1:]) == {1}
+    assert len(calls) == 19
+
+
+def test_an_endless_429_exits_3_naming_the_attempts_without_a_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    calls: list[int] = []
+    _install_failing(monkeypatch, calls, ModelHTTPError(429, "claude", body="limite"), times=None)
+
+    code = main(["eval", "--split", "dev", "--models", "ollama", "--results", str(tmp_path)])
+
+    assert code == 3
+    err = capsys.readouterr().err
+    assert "ollama" in err
+    assert "3 essai" in err
+    assert list(tmp_path.iterdir()) == []
+    assert len(calls) == 3
+
+
+def test_a_400_exits_3_after_a_single_call(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[int] = []
+    _install_failing(monkeypatch, calls, ModelHTTPError(400, "claude", body="refusé"), times=None)
+
+    code = main(["eval", "--split", "dev", "--models", "ollama", "--results", str(tmp_path)])
+
+    assert code == 3
+    assert list(tmp_path.iterdir()) == []
+    assert len(calls) == 1
+
+
 def test_an_unknown_provider_exits_3_and_lists_the_known_ones(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

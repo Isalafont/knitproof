@@ -23,7 +23,7 @@ from knitproof.engine.cast_on import check_cast_on
 from knitproof.engine.gauge import resolve_gauge as resolve_swatch
 from knitproof.llm.agents import agent_for
 from knitproof.llm.config import ModelConfig, load_config
-from knitproof.llm.errors import ExtractionRejectedError, LlmError
+from knitproof.llm.errors import ExtractionRejectedError, LlmError, TransientCallError
 from knitproof.llm.extract import Prompt, extract
 
 TOLERANCE_CM = Decimal(1)
@@ -130,7 +130,11 @@ class BaselineError(Exception):
 
 
 class ModelRun(BaseModel):
-    """Un passage : qui a répondu, avec quel prompt et quels réglages (`None` : non envoyée)."""
+    """Un passage : qui a répondu, avec quel prompt et quels réglages (`None` : non envoyée).
+
+    `attempts` compte les essais HTTP du passage ; `None` pour une mesure d’avant CLA-197, dont les
+    réessais des SDK étaient invisibles. `latency_ms` est celle du seul essai qui a répondu.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -144,6 +148,7 @@ class ModelRun(BaseModel):
     input_tokens: int | None
     output_tokens: int | None
     latency_ms: int
+    attempts: int | None = None
     at: datetime.datetime
 
 
@@ -339,11 +344,15 @@ def _pass(
     reading: ModelReading | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
+    attempts: int
     try:
         extraction = extract(agent, config, BASELINE_PROMPT, case.input, clock=clock, sleep=sleep)
     except ExtractionRejectedError as error:
         rejection = str(error)
         latency_ms = error.latency_ms
+        attempts = error.attempts
+    except TransientCallError as error:
+        raise BaselineError(f"{config.provider} : {error}") from error
     except ModelAPIError as error:
         raise BaselineError(f"{config.provider} : {error}") from error
     else:
@@ -352,6 +361,7 @@ def _pass(
         input_tokens = extraction.usage.input_tokens
         output_tokens = extraction.usage.output_tokens
         latency_ms = extraction.latency_ms
+        attempts = extraction.attempts
     judged = (
         score(case, answer)
         if answer is not None
@@ -368,6 +378,7 @@ def _pass(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         latency_ms=latency_ms,
+        attempts=attempts,
         at=now(),
     )
     return BaselineRun(

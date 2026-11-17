@@ -97,7 +97,7 @@ def extract[T: BaseModel](
                 raise
             if attempts > config.http_retries:
                 raise TransientCallError(
-                    f"{config.provider} : erreur {error.status_code} après {attempts} essai(s)",
+                    f"erreur {error.status_code} après {attempts} essai(s)",
                     attempts=attempts,
                 ) from error
             sleep(_wait(config, attempts, error))
