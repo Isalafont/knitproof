@@ -16,32 +16,44 @@ ENVIRONMENTS: dict[Provider, dict[str, str]] = {
         "ANTHROPIC_API_KEY": KEY,
         "KNITPROOF_ANTHROPIC_MODEL": "claude-sonnet-4-5-20250929",
         "KNITPROOF_LLM_RETRIES": "1",
+        "KNITPROOF_LLM_HTTP_RETRIES": "3",
+        "KNITPROOF_LLM_HTTP_WAIT": "2",
     },
     "mistral": {
         "MISTRAL_API_KEY": KEY,
         "KNITPROOF_MISTRAL_MODEL": "mistral-small-2506",
         "KNITPROOF_LLM_RETRIES": "1",
+        "KNITPROOF_LLM_HTTP_RETRIES": "3",
+        "KNITPROOF_LLM_HTTP_WAIT": "2",
     },
     "openai": {
         "OPENAI_API_KEY": KEY,
         "KNITPROOF_OPENAI_MODEL": "gpt-5-2025-08-07",
         "KNITPROOF_LLM_RETRIES": "1",
+        "KNITPROOF_LLM_HTTP_RETRIES": "3",
+        "KNITPROOF_LLM_HTTP_WAIT": "2",
     },
     "openrouter": {
         "OPENROUTER_API_KEY": KEY,
         "KNITPROOF_OPENROUTER_MODEL": "mistralai/mistral-small-2506",
         "KNITPROOF_OPENROUTER_HOST": "mistral",
         "KNITPROOF_LLM_RETRIES": "1",
+        "KNITPROOF_LLM_HTTP_RETRIES": "3",
+        "KNITPROOF_LLM_HTTP_WAIT": "2",
     },
     "moonshotai": {
         "MOONSHOTAI_API_KEY": KEY,
         "KNITPROOF_MOONSHOTAI_MODEL": "kimi-k3",
         "KNITPROOF_LLM_RETRIES": "1",
+        "KNITPROOF_LLM_HTTP_RETRIES": "3",
+        "KNITPROOF_LLM_HTTP_WAIT": "2",
     },
     "ollama": {
         "KNITPROOF_OLLAMA_MODEL": "qwen3:8b-q4_K_M",
         "KNITPROOF_OLLAMA_BASE_URL": "http://localhost:11434/v1",
         "KNITPROOF_LLM_RETRIES": "1",
+        "KNITPROOF_LLM_HTTP_RETRIES": "3",
+        "KNITPROOF_LLM_HTTP_WAIT": "2",
     },
 }
 
@@ -67,6 +79,8 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
     assert config.base_url is None
     assert config.temperature is None
     assert config.retries == 1
+    assert config.http_retries == 3
+    assert config.http_wait_s == 2.0
 
 
 @pytest.mark.parametrize(
@@ -75,6 +89,8 @@ def test_a_complete_environment_gives_a_config(provider: Provider) -> None:
         ("anthropic", "ANTHROPIC_API_KEY"),
         ("anthropic", "KNITPROOF_ANTHROPIC_MODEL"),
         ("anthropic", "KNITPROOF_LLM_RETRIES"),
+        ("anthropic", "KNITPROOF_LLM_HTTP_RETRIES"),
+        ("anthropic", "KNITPROOF_LLM_HTTP_WAIT"),
         ("mistral", "MISTRAL_API_KEY"),
         ("mistral", "KNITPROOF_MISTRAL_MODEL"),
         ("mistral", "KNITPROOF_LLM_RETRIES"),
@@ -184,6 +200,28 @@ def test_zero_retries_are_accepted() -> None:
     config = load_config("anthropic", environ("anthropic", KNITPROOF_LLM_RETRIES="0"))
 
     assert config.retries == 0
+
+
+@pytest.mark.parametrize("retries", ["-1", "deux", "1.5"])
+def test_invalid_http_retries_are_refused(retries: str) -> None:
+    with pytest.raises(InvalidSettingError, match="KNITPROOF_LLM_HTTP_RETRIES"):
+        load_config("anthropic", environ("anthropic", KNITPROOF_LLM_HTTP_RETRIES=retries))
+
+
+@pytest.mark.parametrize("wait", ["-1", "nan", "inf", "61", "long"])
+def test_invalid_http_waits_are_refused(wait: str) -> None:
+    with pytest.raises(InvalidSettingError, match="KNITPROOF_LLM_HTTP_WAIT"):
+        load_config("anthropic", environ("anthropic", KNITPROOF_LLM_HTTP_WAIT=wait))
+
+
+def test_zero_http_retries_and_wait_are_accepted() -> None:
+    config = load_config(
+        "anthropic",
+        environ("anthropic", KNITPROOF_LLM_HTTP_RETRIES="0", KNITPROOF_LLM_HTTP_WAIT="0"),
+    )
+
+    assert config.http_retries == 0
+    assert config.http_wait_s == 0.0
 
 
 def test_an_unknown_provider_is_refused() -> None:

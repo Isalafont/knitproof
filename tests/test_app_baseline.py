@@ -222,6 +222,8 @@ ENVIRONMENT = {
     "KNITPROOF_OLLAMA_BASE_URL": "http://localhost:11434/v1",
     "KNITPROOF_OLLAMA_TEMPERATURE": "0",
     "KNITPROOF_LLM_RETRIES": "0",
+    "KNITPROOF_LLM_HTTP_RETRIES": "0",
+    "KNITPROOF_LLM_HTTP_WAIT": "0",
 }
 
 
@@ -253,6 +255,7 @@ def _run(
         entries,
         environ,
         clock=lambda: next(ticks) * 0.5,
+        sleep=lambda seconds: None,
         now=lambda: NOW,
         agent_factory=factory,
     )
@@ -328,6 +331,72 @@ def test_a_provider_http_error_stops_the_measure_without_a_result() -> None:
 
     with pytest.raises(BaselineError, match="anthropic"):
         _run(_answering(failing), entries=("anthropic",))
+
+
+RETRYING = {**ENVIRONMENT, "KNITPROOF_LLM_HTTP_RETRIES": "2"}
+
+
+def test_a_passing_429_is_retried_and_the_run_records_its_attempts() -> None:
+    passing = ModelHTTPError(429, "claude", body="limite")
+
+    result = _run(_answering(passing, {"stitches": 88}), entries=("anthropic",), environ=RETRYING)
+
+    runs = result.providers[0].runs
+    assert [run.run.attempts for run in runs] == [2] + [1] * (len(runs) - 1)
+    assert runs[0].verdict == Verdict.CORRECT
+    assert runs[0].run.latency_ms == 500  # le seul essai qui répond
+
+
+def test_an_endless_429_stops_the_measure_naming_the_provider_and_the_attempts() -> None:
+    endless = ModelHTTPError(429, "claude", body="limite")
+
+    with pytest.raises(BaselineError, match=r"anthropic.*3 essai"):
+        _run(_answering(endless), entries=("anthropic",), environ=RETRYING)
+
+
+def test_a_400_is_called_once_even_with_retries_allowed() -> None:
+    calls: list[int] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            calls.append(1)
+            raise ModelHTTPError(400, "claude", body="refusé")
+
+        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+    with pytest.raises(BaselineError, match="anthropic"):
+        _run(factory, entries=("anthropic",), environ=RETRYING)
+
+    assert len(calls) == 1
+
+
+def test_the_sleep_is_the_one_given_to_the_measure() -> None:
+    waits: list[float] = []
+    ticks = itertools.count()
+    environ = {**RETRYING, "KNITPROOF_LLM_HTTP_WAIT": "1.5"}
+
+    run_baseline(
+        Split.DEV,
+        DATA,
+        ["anthropic"],
+        environ,
+        clock=lambda: next(ticks) * 0.5,
+        sleep=waits.append,
+        now=lambda: NOW,
+        agent_factory=_answering(ModelHTTPError(503, "claude", body="x"), {"stitches": 88}),
+    )
+
+    assert waits == [1.5]
+
+
+def test_the_runs_of_a_measure_before_cla_197_still_validate() -> None:
+    folder = Path(__file__).resolve().parents[1] / "evals" / "results"
+    paths = sorted(folder.glob("*.yaml"))
+
+    assert len(paths) == 6
+    for path in paths:
+        result = BaselineResult.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+        assert {run.run.attempts for item in result.providers for run in item.runs} == {None}
 
 
 def test_an_unknown_provider_is_refused_with_the_known_names() -> None:
@@ -458,6 +527,7 @@ def test_a_split_without_a_case_is_refused() -> None:
             ["ollama"],
             ENVIRONMENT,
             clock=lambda: next(ticks) * 0.5,
+            sleep=lambda seconds: None,
             now=lambda: NOW,
             agent_factory=_answering({"stitches": 88}),
         )

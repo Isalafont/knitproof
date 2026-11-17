@@ -23,7 +23,7 @@ from knitproof.engine.cast_on import check_cast_on
 from knitproof.engine.gauge import resolve_gauge as resolve_swatch
 from knitproof.llm.agents import agent_for
 from knitproof.llm.config import ModelConfig, load_config
-from knitproof.llm.errors import ExtractionRejectedError, LlmError
+from knitproof.llm.errors import ExtractionRejectedError, LlmError, TransientCallError
 from knitproof.llm.extract import Prompt, extract
 
 TOLERANCE_CM = Decimal(1)
@@ -39,7 +39,6 @@ BASELINE_PROMPT = Prompt(
     ),
 )
 _GLOBAL_TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
-_MS = 1000
 
 type AgentFactory = Callable[[ModelConfig], Agent[None, CastOnAnswer]]
 
@@ -131,7 +130,11 @@ class BaselineError(Exception):
 
 
 class ModelRun(BaseModel):
-    """Un passage : qui a répondu, avec quel prompt et quels réglages (`None` : non envoyée)."""
+    """Un passage : qui a répondu, avec quel prompt et quels réglages (`None` : non envoyée).
+
+    `attempts` compte les essais HTTP du passage ; `None` pour une mesure d’avant CLA-197, dont les
+    réessais des SDK étaient invisibles. `latency_ms` est celle du seul essai qui a répondu.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -145,6 +148,7 @@ class ModelRun(BaseModel):
     input_tokens: int | None
     output_tokens: int | None
     latency_ms: int
+    attempts: int | None = None
     at: datetime.datetime
 
 
@@ -207,6 +211,7 @@ def run_baseline(
     environ: Mapping[str, str],
     *,
     clock: Callable[[], float],
+    sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
     agent_factory: AgentFactory | None = None,
 ) -> BaselineResult:
@@ -224,7 +229,9 @@ def run_baseline(
         raise BaselineError(f"le split « {split.value} » ne contient aucun cas")
     factory = agent_factory or build_agent
     started = now()
-    results = tuple(_measure(config, factory(config), cases, clock, now) for config in configs)
+    results = tuple(
+        _measure(config, factory(config), cases, clock, sleep, now) for config in configs
+    )
     return BaselineResult(
         split=split,
         prompt_id=BASELINE_PROMPT.id,
@@ -297,10 +304,11 @@ def _measure(
     agent: Agent[None, CastOnAnswer],
     cases: Sequence[EvalCase],
     clock: Callable[[], float],
+    sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
 ) -> ProviderResult:
     runs = tuple(
-        _pass(config, agent, case, attempt, clock, now)
+        _pass(config, agent, case, attempt, clock, sleep, now)
         for case in cases
         for attempt in range(1, PASSES + 1)
     )
@@ -328,18 +336,23 @@ def _pass(
     case: EvalCase,
     attempt: int,
     clock: Callable[[], float],
+    sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
 ) -> BaselineRun:
-    began = clock()
     answer: CastOnAnswer | None = None
     rejection: str | None = None
     reading: ModelReading | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
+    attempts: int
     try:
-        extraction = extract(agent, config, BASELINE_PROMPT, case.input)
+        extraction = extract(agent, config, BASELINE_PROMPT, case.input, clock=clock, sleep=sleep)
     except ExtractionRejectedError as error:
         rejection = str(error)
+        latency_ms = error.latency_ms
+        attempts = error.attempts
+    except TransientCallError as error:
+        raise BaselineError(f"{config.provider} : {error}") from error
     except ModelAPIError as error:
         raise BaselineError(f"{config.provider} : {error}") from error
     else:
@@ -347,7 +360,8 @@ def _pass(
         reading = extraction.reading
         input_tokens = extraction.usage.input_tokens
         output_tokens = extraction.usage.output_tokens
-    latency_ms = round((clock() - began) * _MS)
+        latency_ms = extraction.latency_ms
+        attempts = extraction.attempts
     judged = (
         score(case, answer)
         if answer is not None
@@ -364,6 +378,7 @@ def _pass(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         latency_ms=latency_ms,
+        attempts=attempts,
         at=now(),
     )
     return BaselineRun(

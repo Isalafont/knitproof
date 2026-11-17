@@ -80,7 +80,7 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 |---|---|
 | `EvalManifest` | `version`, `split` (`dev` / `test`), et par entrée : `id` du cas, hachage SHA-256, annotatrice, date |
 | `EvalCase` | `id`, `input`, `request` (demande au format de `knitproof calc`), `expected` (tour visé, et montage du moteur ou `abstain`), `injected_error`, `absent_fields` |
-| `ModelRun` | modèle, version, prompt, température, mode de sortie structurée, jetons, latence, date (le coût viendra avec le rejeu en CI) |
+| `ModelRun` | modèle, version, prompt, température, mode de sortie structurée, jetons, latence, essais, date (le coût viendra avec le rejeu en CI) |
 | `FieldScore`, `EvalResult` | exact, inventé, abstention ; erreur détectée et localisée |
 | `BaselineRun` | réponse du LLM seul, comparée au moteur |
 
@@ -100,3 +100,4 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 - 17/11/2026 — Pièges et abstention attendue : 7 cas `test` et 2 cas `dev` de la ligne de base sont des pièges ; un cas sans jauge attend l’abstention, seul passage juste (CLA-188, ADR 0035) ; motif : des cas faciles ne prouvent rien, aucune mesure faite.
 - 17/11/2026 — La ligne de base mesure aussi l’exemple sur `dev` (N = 18), décidé par Isabelle (CLA-188) ; motif : un cas de plus ne coûte rien, aucune mesure faite.
 - 17/11/2026 — Kimi K3.1 Pro accepte la température 0 par OpenRouter (CLA-199, mesure 2026-11-17T1528) ; motif : la mesure réelle le prouve ; « par fournisseur » (ADR 0035) se lit « par entrée » ; correction factuelle, règle inchangée.
+- 17/11/2026 — Le `ModelRun` porte `attempts`, le nombre d’essais HTTP du passage ; la latence est celle du seul essai qui répond ; `None` pour les mesures d’avant (CLA-197, ADR 0036) ; motif : une mesure doit dire qu’elle a traversé des erreurs passagères.

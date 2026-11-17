@@ -5,16 +5,22 @@ Le modèle ne produit que la valeur ; `reading` (fournisseur, modèle, version, 
 """
 
 import hashlib
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from pydantic import BaseModel, ConfigDict
 from pydantic_ai import Agent
-from pydantic_ai.exceptions import UnexpectedModelBehavior
+from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from pydantic_ai.settings import ModelSettings
 
 from knitproof.domain.reading import ModelReading
-from knitproof.llm.config import ModelConfig
-from knitproof.llm.errors import ExtractionRejectedError
+from knitproof.llm.config import MAX_WAIT_S, ModelConfig
+from knitproof.llm.errors import ExtractionRejectedError, TransientCallError
+
+_TOO_MANY_REQUESTS = 429
+_FIRST_5XX = 500
+_LAST_5XX = 599
+_MS = 1000
 
 
 @dataclass(frozen=True)
@@ -46,28 +52,83 @@ class Extraction[T: BaseModel](BaseModel):
     value: T
     reading: ModelReading
     usage: TokenUsage
+    attempts: int
+    latency_ms: int
+
+
+def is_transient(error: ModelHTTPError) -> bool:
+    """429 et 5xx : une erreur passagère, qui vaut un réessai. Le tri se fait sur le statut."""
+    return error.status_code == _TOO_MANY_REQUESTS or _FIRST_5XX <= error.status_code <= _LAST_5XX
 
 
 def extract[T: BaseModel](
-    agent: Agent[None, T], config: ModelConfig, prompt: Prompt, source: str
+    agent: Agent[None, T],
+    config: ModelConfig,
+    prompt: Prompt,
+    source: str,
+    *,
+    clock: Callable[[], float],
+    sleep: Callable[[float], None],
 ) -> Extraction[T]:
-    """Lance l’appel ; une sortie hors schéma après les relances lève `ExtractionRejectedError`."""
-    settings = (
-        ModelSettings(temperature=config.temperature) if config.temperature is not None else None
-    )
-    try:
-        result = agent.run_sync(source, instructions=prompt.text, model_settings=settings)
-    except UnexpectedModelBehavior as error:
-        raise ExtractionRejectedError(f"sortie du modèle refusée : {error}") from error
+    """Lance l’appel, réessayé sur 429 ou 5xx ; une sortie hors schéma est refusée.
+
+    Les réessais des SDK sont coupés (`max_retries=0`) : seule cette boucle réessaie, au plus
+    `config.http_retries` fois, avec une attente doublée à chaque fois (`Retry-After` si plus
+    long), plafonnée à `MAX_WAIT_S`. Les essais épuisés lèvent `TransientCallError`, une sortie
+    refusée `ExtractionRejectedError`.
+    """
+    settings = ModelSettings(max_retries=0)
+    if config.temperature is not None:
+        settings["temperature"] = config.temperature
+    attempts = 0
+    while True:
+        attempts += 1
+        began = clock()
+        try:
+            result = agent.run_sync(source, instructions=prompt.text, model_settings=settings)
+        except UnexpectedModelBehavior as error:
+            raise ExtractionRejectedError(
+                f"sortie du modèle refusée : {error}",
+                attempts=attempts,
+                latency_ms=_since(clock, began),
+            ) from error
+        except ModelHTTPError as error:
+            if not is_transient(error):
+                raise
+            if attempts > config.http_retries:
+                raise TransientCallError(
+                    f"erreur {error.status_code} après {attempts} essai(s)",
+                    attempts=attempts,
+                ) from error
+            sleep(_wait(config, attempts, error))
+            continue
+        break
+    latency_ms = _since(clock, began)
     downstream = (result.response.provider_details or {}).get("downstream_provider")
-    reading = reading_from(config, prompt, result.response.model_name, downstream)
+    try:
+        reading = reading_from(config, prompt, result.response.model_name, downstream)
+    except ExtractionRejectedError as error:
+        raise ExtractionRejectedError(
+            str(error), attempts=attempts, latency_ms=latency_ms
+        ) from error
     usage = result.usage  # propriété : `usage()` est dépréciée
     measured = usage.unmeasured_requests == 0
     tokens = TokenUsage(
         input_tokens=usage.input_tokens if measured else None,
         output_tokens=usage.output_tokens if measured else None,
     )
-    return Extraction(value=result.output, reading=reading, usage=tokens)
+    return Extraction(
+        value=result.output, reading=reading, usage=tokens, attempts=attempts, latency_ms=latency_ms
+    )
+
+
+def _since(clock: Callable[[], float], began: float) -> int:
+    return round((clock() - began) * _MS)
+
+
+def _wait(config: ModelConfig, retry: int, error: ModelHTTPError) -> float:
+    """L’attente avant le réessai `retry` : doublée à chaque fois, portée au `Retry-After`."""
+    return min(max(config.http_wait_s * 2.0 ** (retry - 1), error.retry_after or 0.0), MAX_WAIT_S)
 
 
 def reading_from(
