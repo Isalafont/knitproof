@@ -29,6 +29,15 @@ class Prompt:
         return hashlib.sha256(self.text.encode("utf-8")).hexdigest()
 
 
+class TokenUsage(BaseModel):
+    """Les jetons d’un appel ; `None` quand le fournisseur ne les a pas mesurés (jamais 0)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    input_tokens: int | None
+    output_tokens: int | None
+
+
 class Extraction[T: BaseModel](BaseModel):
     """Une valeur validée par son schéma, avec la trace de la lecture."""
 
@@ -36,6 +45,7 @@ class Extraction[T: BaseModel](BaseModel):
 
     value: T
     reading: ModelReading
+    usage: TokenUsage
 
 
 def extract[T: BaseModel](
@@ -51,7 +61,13 @@ def extract[T: BaseModel](
         raise ExtractionRejectedError(f"sortie du modèle refusée : {error}") from error
     downstream = (result.response.provider_details or {}).get("downstream_provider")
     reading = reading_from(config, prompt, result.response.model_name, downstream)
-    return Extraction(value=result.output, reading=reading)
+    usage = result.usage  # propriété : `usage()` est dépréciée
+    measured = usage.unmeasured_requests == 0
+    tokens = TokenUsage(
+        input_tokens=usage.input_tokens if measured else None,
+        output_tokens=usage.output_tokens if measured else None,
+    )
+    return Extraction(value=result.output, reading=reading, usage=tokens)
 
 
 def reading_from(

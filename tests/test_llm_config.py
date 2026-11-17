@@ -233,3 +233,37 @@ def test_a_failing_live_test_never_prints_the_key() -> None:
     assert "KNITPROOF_LLM_RETRIES" in output
     assert secret not in output
     assert secret[:8] not in output
+
+
+def test_an_empty_provider_temperature_overrides_the_global_one() -> None:
+    config = load_config(
+        "anthropic",
+        environ("anthropic", KNITPROOF_LLM_TEMPERATURE="0", KNITPROOF_ANTHROPIC_TEMPERATURE=""),
+    )
+
+    assert config.temperature is None
+
+
+def test_a_provider_temperature_overrides_the_global_one() -> None:
+    config = load_config(
+        "ollama",
+        environ("ollama", KNITPROOF_LLM_TEMPERATURE="0.5", KNITPROOF_OLLAMA_TEMPERATURE="0"),
+    )
+
+    assert config.temperature == 0.0
+
+
+def test_omit_sends_no_temperature() -> None:
+    config = load_config(
+        "moonshotai",
+        environ(
+            "moonshotai", KNITPROOF_LLM_TEMPERATURE="0", KNITPROOF_MOONSHOTAI_TEMPERATURE="omit"
+        ),
+    )
+
+    assert config.temperature is None
+
+
+def test_a_bad_provider_temperature_is_named() -> None:
+    with pytest.raises(InvalidSettingError, match="KNITPROOF_OLLAMA_TEMPERATURE"):
+        load_config("ollama", environ("ollama", KNITPROOF_OLLAMA_TEMPERATURE="chaud"))
