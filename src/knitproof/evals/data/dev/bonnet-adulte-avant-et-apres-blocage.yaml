@@ -1,0 +1,39 @@
+id: bonnet-adulte-avant-et-apres-blocage
+input: 'Bonnet fin pour moi, tour de tête de 58 cm ; je l’aime bien ajusté, 6 cm plus petit que ma tête.
+  J’ai mesuré mon échantillon deux fois, avec des aiguilles de 3,25 mm : avant lavage, 22 mailles pour
+  10 cm ; après lavage et blocage, 20 mailles pour 10 cm. Je tricote en rond, bord en côtes 1/1. Combien
+  de mailles dois-je monter ?'
+request:
+  head_circumference:
+    value: '58'
+    unit: cm
+    provenance: measured
+  needles:
+  - size: 3.25 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 2
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-6'
+    unit: cm
+    provenance: entered
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 3.25 mm
+      kind: straight
+    after_blocking:
+      stitches: '20'
+      width:
+        value: '10'
+        unit: cm
+    before_blocking:
+      stitches: '22'
+      width:
+        value: '10'
+        unit: cm
+expected:
+  target_circumference_cm: '52'
+  cast_on_stitches: 104

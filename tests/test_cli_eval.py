@@ -56,7 +56,7 @@ def test_one_line_per_model_and_a_dated_result(
     assert len(written) == 1
     assert "anthropic" in out
     assert "ollama" in out
-    assert out.count("3/3") == 2
+    assert out.count("/18") == 2  # 6 cas dev, 3 passages
     assert str(written[0]) in out
     saved = yaml.safe_load(written[0].read_text(encoding="utf-8"))
     assert [item["provider"] for item in saved["providers"]] == ["anthropic", "ollama"]
@@ -72,8 +72,8 @@ def test_an_abstaining_model_is_shown_with_its_abstentions(
 
     out = capsys.readouterr().out
     assert code == 0
-    assert "0/3" in out
-    assert "abstentions : 3" in out
+    assert out.count("0/18") == 1
+    assert "abstentions : 18" in out
 
 
 def test_an_invalid_configuration_exits_3_without_a_result(

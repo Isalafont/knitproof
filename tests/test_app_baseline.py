@@ -3,10 +3,12 @@
 import datetime
 import hashlib
 import itertools
+import tempfile
 from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from fractions import Fraction
 from importlib.resources import files
+from pathlib import Path
 
 import pytest
 import yaml
@@ -33,7 +35,7 @@ from knitproof.app.baseline import (
     wilson,
 )
 from knitproof.app.beanie_request import BeanieRequest
-from knitproof.app.eval_cases import EvalCase, EvalDataError, Split
+from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash
 from knitproof.llm.agents import agent_on
 from knitproof.llm.config import ModelConfig
 
@@ -156,7 +158,37 @@ def test_wilson_grows_with_the_successes(data: st.DataObject) -> None:
     assert high <= next_high
 
 
-DATA = files("knitproof") / "evals" / "data"
+_SHIPPED = files("knitproof") / "evals" / "data" / "dev"
+_FOLDER = tempfile.TemporaryDirectory()
+
+
+def _one_case_data() -> Path:
+    """Un jeu d’un seul cas, l’exemple : la mesure ne dépend pas du nombre de cas livrés."""
+    root = Path(_FOLDER.name)
+    (root / "dev").mkdir()
+    (root / "test").mkdir()
+    example = _SHIPPED.joinpath(_EXAMPLE.name).read_text(encoding="utf-8")
+    (root / "dev" / _EXAMPLE.name).write_text(example, encoding="utf-8")
+    digest = case_hash(EvalCase.model_validate(yaml.safe_load(example)))
+    manifest = {
+        "version": 1,
+        "split": "dev",
+        "entries": [
+            {
+                "case_id": "exemple-bonnet-3-ans",
+                "sha256": digest,
+                "annotated_by": "Isabelle Lafont",
+                "annotated_on": datetime.date(2026, 11, 17),
+            }
+        ],
+    }
+    (root / "dev" / "manifest.yaml").write_text(yaml.safe_dump(manifest), encoding="utf-8")
+    empty = {"version": 1, "split": "test", "entries": []}
+    (root / "test" / "manifest.yaml").write_text(yaml.safe_dump(empty), encoding="utf-8")
+    return root
+
+
+DATA = _one_case_data()
 NOW = datetime.datetime(2026, 11, 17, 9, 30, tzinfo=datetime.UTC)
 ENVIRONMENT = {
     "ANTHROPIC_API_KEY": "fausse",
