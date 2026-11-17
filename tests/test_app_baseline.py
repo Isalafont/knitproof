@@ -95,9 +95,10 @@ def test_a_non_positive_number_is_wrong_without_a_finished_circumference(stitche
 
 @given(stitches=st.integers(min_value=1, max_value=400))
 def test_the_verdict_is_correct_exactly_within_one_cm(stitches: int) -> None:
-    # Jauge 20 m pour 10 cm : le tour fini vaut stitches / 2 ; tour visé 43,2 cm.
+    # Jauge 20 m pour 10 cm : le tour fini vaut stitches / 2 ;
+    # tour visé 43 cm (48 cm, 5 cm en moins).
     finished = Fraction(stitches, 2)
-    within = abs(finished - Fraction(432, 10)) <= 1
+    within = abs(finished - 43) <= 1
 
     verdict = score(_case(), CastOnAnswer(stitches=stitches)).verdict
 
