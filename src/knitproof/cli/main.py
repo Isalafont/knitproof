@@ -55,6 +55,7 @@ def _eval(split: str, models: str, results: Path) -> int:
             names,
             os.environ,
             clock=time.monotonic,
+            sleep=time.sleep,
             now=_now,
         )
         written = write_result(result, results)

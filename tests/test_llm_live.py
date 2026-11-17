@@ -5,6 +5,7 @@ Lancement : `uv run --env-file .env pytest -m live -k anthropic`, puis `-k mistr
 """
 
 import os
+import time
 
 import pytest
 from pydantic import BaseModel
@@ -36,7 +37,14 @@ def test_a_real_call_returns_a_validated_object(
     except LlmError as error:
         pytest.fail(str(error), pytrace=False)
 
-    extraction = extract(agent_for(config, ControlAnswer), config, CONTROL, "Drops Alpaca, 50 g")
+    extraction = extract(
+        agent_for(config, ControlAnswer),
+        config,
+        CONTROL,
+        "Drops Alpaca, 50 g",
+        clock=time.monotonic,
+        sleep=time.sleep,
+    )
 
     assert isinstance(extraction.value, ControlAnswer)
     assert extraction.reading.model_version

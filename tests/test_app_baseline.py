@@ -255,6 +255,7 @@ def _run(
         entries,
         environ,
         clock=lambda: next(ticks) * 0.5,
+        sleep=lambda seconds: None,
         now=lambda: NOW,
         agent_factory=factory,
     )
@@ -460,6 +461,7 @@ def test_a_split_without_a_case_is_refused() -> None:
             ["ollama"],
             ENVIRONMENT,
             clock=lambda: next(ticks) * 0.5,
+            sleep=lambda seconds: None,
             now=lambda: NOW,
             agent_factory=_answering({"stitches": 88}),
         )

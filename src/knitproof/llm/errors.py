@@ -23,4 +23,20 @@ class InvalidSettingError(LlmError):
 
 
 class ExtractionRejectedError(LlmError):
-    """La sortie d’un modèle est refusée : hors schéma, ou sans nom de modèle rendu."""
+    """La sortie d’un modèle est refusée : hors schéma, ou sans nom de modèle rendu.
+
+    `attempts` compte les essais HTTP, `latency_ms` la durée du seul essai qui a répondu.
+    """
+
+    def __init__(self, message: str, *, attempts: int = 1, latency_ms: int = 0) -> None:
+        super().__init__(message)
+        self.attempts = attempts
+        self.latency_ms = latency_ms
+
+
+class TransientCallError(LlmError):
+    """Les essais sont épuisés sur une erreur passagère (429, 5xx) ; la cause est `__cause__`."""
+
+    def __init__(self, message: str, *, attempts: int) -> None:
+        super().__init__(message)
+        self.attempts = attempts

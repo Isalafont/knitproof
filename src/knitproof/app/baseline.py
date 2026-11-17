@@ -39,7 +39,6 @@ BASELINE_PROMPT = Prompt(
     ),
 )
 _GLOBAL_TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
-_MS = 1000
 
 type AgentFactory = Callable[[ModelConfig], Agent[None, CastOnAnswer]]
 
@@ -207,6 +206,7 @@ def run_baseline(
     environ: Mapping[str, str],
     *,
     clock: Callable[[], float],
+    sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
     agent_factory: AgentFactory | None = None,
 ) -> BaselineResult:
@@ -224,7 +224,9 @@ def run_baseline(
         raise BaselineError(f"le split « {split.value} » ne contient aucun cas")
     factory = agent_factory or build_agent
     started = now()
-    results = tuple(_measure(config, factory(config), cases, clock, now) for config in configs)
+    results = tuple(
+        _measure(config, factory(config), cases, clock, sleep, now) for config in configs
+    )
     return BaselineResult(
         split=split,
         prompt_id=BASELINE_PROMPT.id,
@@ -297,10 +299,11 @@ def _measure(
     agent: Agent[None, CastOnAnswer],
     cases: Sequence[EvalCase],
     clock: Callable[[], float],
+    sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
 ) -> ProviderResult:
     runs = tuple(
-        _pass(config, agent, case, attempt, clock, now)
+        _pass(config, agent, case, attempt, clock, sleep, now)
         for case in cases
         for attempt in range(1, PASSES + 1)
     )
@@ -328,18 +331,19 @@ def _pass(
     case: EvalCase,
     attempt: int,
     clock: Callable[[], float],
+    sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
 ) -> BaselineRun:
-    began = clock()
     answer: CastOnAnswer | None = None
     rejection: str | None = None
     reading: ModelReading | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
     try:
-        extraction = extract(agent, config, BASELINE_PROMPT, case.input)
+        extraction = extract(agent, config, BASELINE_PROMPT, case.input, clock=clock, sleep=sleep)
     except ExtractionRejectedError as error:
         rejection = str(error)
+        latency_ms = error.latency_ms
     except ModelAPIError as error:
         raise BaselineError(f"{config.provider} : {error}") from error
     else:
@@ -347,7 +351,7 @@ def _pass(
         reading = extraction.reading
         input_tokens = extraction.usage.input_tokens
         output_tokens = extraction.usage.output_tokens
-    latency_ms = round((clock() - began) * _MS)
+        latency_ms = extraction.latency_ms
     judged = (
         score(case, answer)
         if answer is not None
