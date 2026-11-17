@@ -3,11 +3,12 @@
 Fournisseurs : Anthropic, Mistral, OpenAI, OpenRouter (dont l’hébergeur est fixé), Kimi en direct
 (Moonshot AI) et Ollama (modèle local, sans clé).
 
-Aucune valeur par défaut cachée : un identifiant de modèle, une clé et un nombre de relances
-absents sont une erreur nommée. Un modèle et un hébergeur donnés à `load_config` (CLA-199)
-remplacent `KNITPROOF_<P>_MODEL` et `KNITPROOF_OPENROUTER_HOST`, avec les mêmes contrôles ;
-l’hébergeur n’existe que pour OpenRouter. La température est facultative (ADR 0033) :
-`KNITPROOF_<P>_TEMPERATURE` prime sur `KNITPROOF_LLM_TEMPERATURE`, et `omit` n’en envoie aucune.
+Aucune valeur par défaut cachée : un identifiant de modèle, une clé, un nombre de relances, un
+nombre de réessais et une attente sur erreur passagère absents sont une erreur nommée. Un modèle
+et un hébergeur donnés à `load_config` (CLA-199) remplacent `KNITPROOF_<P>_MODEL` et
+`KNITPROOF_OPENROUTER_HOST`, avec les mêmes contrôles ; l’hébergeur n’existe que pour OpenRouter.
+La température est facultative (ADR 0033) : `KNITPROOF_<P>_TEMPERATURE` prime sur
+`KNITPROOF_LLM_TEMPERATURE`, et `omit` n’en envoie aucune.
 """
 
 import math
@@ -29,6 +30,9 @@ _KEYS: Mapping[str, str] = {
 }
 _TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
 _RETRIES = "KNITPROOF_LLM_RETRIES"
+_HTTP_RETRIES = "KNITPROOF_LLM_HTTP_RETRIES"
+_HTTP_WAIT = "KNITPROOF_LLM_HTTP_WAIT"
+MAX_WAIT_S = 60.0
 _OMIT = "omit"
 
 
@@ -44,6 +48,8 @@ class ModelConfig(BaseModel):
     host: str | None
     temperature: float | None
     retries: int
+    http_retries: int
+    http_wait_s: float
 
 
 def load_config(
@@ -75,6 +81,8 @@ def load_config(
         host=_host(environ, f"{prefix}_HOST", host) if provider == "openrouter" else None,
         temperature=_temperature(environ, prefix),
         retries=_retries(environ),
+        http_retries=_count(environ, _HTTP_RETRIES),
+        http_wait_s=_wait(environ),
     )
 
 
@@ -128,7 +136,23 @@ def _temperature(environ: Mapping[str, str], prefix: str) -> float | None:
 
 
 def _retries(environ: Mapping[str, str]) -> int:
-    text = _required(environ, _RETRIES).strip()
+    return _count(environ, _RETRIES)
+
+
+def _count(environ: Mapping[str, str], variable: str) -> int:
+    text = _required(environ, variable).strip()
     if not (text.isascii() and text.isdigit()):
-        raise InvalidSettingError(_RETRIES, "un entier positif ou nul est attendu")
+        raise InvalidSettingError(variable, "un entier positif ou nul est attendu")
     return int(text)
+
+
+def _wait(environ: Mapping[str, str]) -> float:
+    text = _required(environ, _HTTP_WAIT).strip()
+    message = f"un nombre de secondes entre 0 et {MAX_WAIT_S:.0f} est attendu"
+    try:
+        value = float(text)
+    except ValueError:
+        raise InvalidSettingError(_HTTP_WAIT, message) from None
+    if math.isnan(value) or not 0 <= value <= MAX_WAIT_S:
+        raise InvalidSettingError(_HTTP_WAIT, message)
+    return value

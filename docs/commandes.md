@@ -25,6 +25,8 @@ La couche `llm` appelle Anthropic, Mistral, OpenAI, OpenRouter, Kimi (Moonshot A
 | `KNITPROOF_LLM_TEMPERATURE` | entre 0 et 1, facultative |
 | `KNITPROOF_ANTHROPIC_TEMPERATURE`, `KNITPROOF_MISTRAL_TEMPERATURE`, `KNITPROOF_OPENAI_TEMPERATURE`, `KNITPROOF_OPENROUTER_TEMPERATURE`, `KNITPROOF_MOONSHOTAI_TEMPERATURE`, `KNITPROOF_OLLAMA_TEMPERATURE` | température du fournisseur, facultative ; prime sur la globale, même vide ; `omit` n’envoie aucune température |
 | `KNITPROOF_LLM_RETRIES` | relances de sortie, obligatoire (0 ou plus) |
+| `KNITPROOF_LLM_HTTP_RETRIES` | réessais après une erreur passagère (429, 5xx), obligatoire (0 ou plus) |
+| `KNITPROOF_LLM_HTTP_WAIT` | attente avant le premier réessai, en secondes, obligatoire (de 0 à 60) ; elle double à chaque réessai |
 
 La température est facultative parce que certains modèles la refusent : Sonnet 5.5 répond 400 si `temperature` est posé ([doc Anthropic](https://platform.claude.com/docs/en/models/sonnet-5-5/overview)) et pydanticAI la retire pour Opus 4.7, 4.8, 5 et 5.5 ([doc pydanticAI](https://pydantic.dev/docs/ai/models/anthropic/)). Absente, rien n’est envoyé. Les modèles de raisonnement d’OpenAI peuvent aussi refuser `temperature`, Kimi en direct aussi (non prouvé, à prouver par l’appel `live`) ; Kimi K3.1 Pro par OpenRouter a accepté 0 le 17/11/2026.
 

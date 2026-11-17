@@ -37,6 +37,8 @@ def config(
     *,
     temperature: float | None = None,
     retries: int = 0,
+    http_retries: int = 0,
+    http_wait_s: float = 0.0,
     provider: Provider = "anthropic",
     base_url: str | None = None,
     host: str | None = None,
@@ -50,6 +52,8 @@ def config(
         host=host,
         temperature=temperature,
         retries=retries,
+        http_retries=http_retries,
+        http_wait_s=http_wait_s,
     )
 
 
