@@ -57,6 +57,23 @@ uv run --env-file .env knitproof eval --split dev --models anthropic,openrouter,
 - Chaque entrée demande une température explicite, `KNITPROOF_<P>_TEMPERATURE` ou, à défaut, `KNITPROOF_LLM_TEMPERATURE`, à `0` ou `omit` (modèle qui la refuse : Sonnet 5.5 ; Kimi en direct, non prouvé ; Kimi K3.1 Pro par OpenRouter a accepté 0 le 17/11/2026) ; toute autre valeur est refusée.
 - Sortie : une ligne par entrée, nommée `fournisseur:modèle[@hébergeur]`, `k/N [bas ; haut]` (intervalle de Wilson à 95 %) et les abstentions. Code 0 si la mesure est faite, 3 si la configuration est invalide ou si le fournisseur répond par une erreur : aucun résultat partiel n’est écrit.
 
+### Réglages mesurés
+
+Chaque valeur est relue dans le YAML du résultat, sauf l’hébergeur demandé, noté par la session : les mesures d’avant CLA-199 ne le consignent pas.
+
+| Date | Fournisseur : modèle | Hébergeur demandé | Hôte rendu | T | k/N | Résultat |
+|---|---|---|---|---|---|---|
+| 17/11/2026 | ollama : qwen3:8b | — | — | 0 | 18/18 | `evals/results/2026-11-17T1409-dev.yaml` |
+| 17/11/2026 | openrouter : mistralai/mistral-small-3.2-24b-instruct | mistral/eu (`.env`, lu par la session) | Mistral | 0 | 10/18 | `evals/results/2026-11-17T1428-dev.yaml` |
+| 17/11/2026 | anthropic : claude-opus-5-5 | — | — | non envoyée | 18/18 | `evals/results/2026-11-17T1428-dev.yaml` |
+| 17/11/2026 | openrouter : mistralai/mistral-large-2512 | mistral/eu | Mistral | 0 | 15/18 | `evals/results/2026-11-17T1435-dev.yaml` |
+| 17/11/2026 | openrouter : moonshotai/kimi-k3.1-pro | moonshotai | Moonshot AI | 0 | 18/18 | `evals/results/2026-11-17T1528-dev.yaml` |
+| 17/11/2026 | openrouter : mistralai/mistral-small-3.2-24b-instruct | mistral/eu (`.env`, lu par la session) | Mistral | 0 | 9/18 | `evals/results/2026-11-17T1443-dev.yaml` |
+| 17/11/2026 | ollama : qwen3:8b | — | — | 0 | 18/18 | `evals/results/2026-11-17T1443-dev.yaml` |
+| 17/11/2026 | anthropic : claude-opus-5-5 | — | — | non envoyée | 18/18 | `evals/results/2026-11-17T1443-dev.yaml` |
+| 17/11/2026 | openrouter : mistralai/mistral-small-3.2-24b-instruct | mistral/eu (`.env`, lu par la session) | Mistral | 0 | 10/18 | `evals/results/2026-11-17T1458-dev.yaml` |
+| 17/11/2026 | ollama : qwen3:8b | — | — | 0 | 18/18 | `evals/results/2026-11-17T1458-dev.yaml` |
+
 ## Calculer un bonnet
 
 La commande `knitproof calc` lit une demande YAML (format décrit dans [`docs/architecture.md`](architecture.md), section 9), applique l’aisance, calcule le plan du bonnet, contrôle le montage proposé et les aiguilles, puis rend un rapport unique sur stdout.

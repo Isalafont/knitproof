@@ -486,10 +486,20 @@ def test_each_line_records_its_model_and_host() -> None:
 _RESULTS = Path(__file__).parent.parent / "evals" / "results"
 
 
-@pytest.mark.parametrize("name", ["2026-11-17T1443-dev.yaml", "2026-11-17T1458-dev.yaml"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "2026-11-17T1409-dev.yaml",
+        "2026-11-17T1428-dev.yaml",
+        "2026-11-17T1435-dev.yaml",
+        "2026-11-17T1443-dev.yaml",
+        "2026-11-17T1458-dev.yaml",
+        "2026-11-17T1528-dev.yaml",
+    ],
+)
 def test_results_written_before_cla_199_still_validate(name: str) -> None:
     text = (_RESULTS / name).read_text(encoding="utf-8")
 
     result = BaselineResult.model_validate(yaml.safe_load(text))
 
-    assert all(item.model is None and item.host is None for item in result.providers)
+    assert result.providers

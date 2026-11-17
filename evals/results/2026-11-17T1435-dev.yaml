@@ -1,0 +1,464 @@
+split: dev
+prompt_id: baseline-cast-on-v1
+prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+passes: 3
+measured_on: '2026-11-17T14:35:05.039436+01:00'
+providers:
+- provider: openrouter
+  correct: 15
+  wrong: 3
+  abstentions: 0
+  total: 18
+  low: '0.6078'
+  high: '0.9416'
+  runs:
+  - case_id: bonnet-1-an-tour-fini-donne
+    attempt: 1
+    answer:
+      stitches: 92
+    rejection: null
+    finished_cm: '41.81818181818181818181818182'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 271
+      output_tokens: 14
+      latency_ms: 1612
+      at: '2026-11-17T14:35:06.692970+01:00'
+  - case_id: bonnet-1-an-tour-fini-donne
+    attempt: 2
+    answer:
+      stitches: 92
+    rejection: null
+    finished_cm: '41.81818181818181818181818182'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 271
+      output_tokens: 14
+      latency_ms: 771
+      at: '2026-11-17T14:35:07.463760+01:00'
+  - case_id: bonnet-1-an-tour-fini-donne
+    attempt: 3
+    answer:
+      stitches: 92
+    rejection: null
+    finished_cm: '41.81818181818181818181818182'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 271
+      output_tokens: 14
+      latency_ms: 908
+      at: '2026-11-17T14:35:08.371564+01:00'
+  - case_id: bonnet-5-ans-jersey-roule
+    attempt: 1
+    answer:
+      stitches: 83
+    rejection: null
+    finished_cm: '46.11111111111111111111111111'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 265
+      output_tokens: 14
+      latency_ms: 879
+      at: '2026-11-17T14:35:09.250865+01:00'
+  - case_id: bonnet-5-ans-jersey-roule
+    attempt: 2
+    answer:
+      stitches: 83
+    rejection: null
+    finished_cm: '46.11111111111111111111111111'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 265
+      output_tokens: 14
+      latency_ms: 828
+      at: '2026-11-17T14:35:10.079290+01:00'
+  - case_id: bonnet-5-ans-jersey-roule
+    attempt: 3
+    answer:
+      stitches: 83
+    rejection: null
+    finished_cm: '46.11111111111111111111111111'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 265
+      output_tokens: 14
+      latency_ms: 883
+      at: '2026-11-17T14:35:10.962175+01:00'
+  - case_id: bonnet-ado-cotes-2-2
+    attempt: 1
+    answer:
+      stitches: 75
+    rejection: null
+    finished_cm: '46.875'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 258
+      output_tokens: 14
+      latency_ms: 1018
+      at: '2026-11-17T14:35:11.980799+01:00'
+  - case_id: bonnet-ado-cotes-2-2
+    attempt: 2
+    answer:
+      stitches: 75
+    rejection: null
+    finished_cm: '46.875'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 258
+      output_tokens: 14
+      latency_ms: 968
+      at: '2026-11-17T14:35:12.949500+01:00'
+  - case_id: bonnet-ado-cotes-2-2
+    attempt: 3
+    answer:
+      stitches: 75
+    rejection: null
+    finished_cm: '46.875'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 258
+      output_tokens: 14
+      latency_ms: 977
+      at: '2026-11-17T14:35:13.926451+01:00'
+  - case_id: bonnet-adulte-avant-et-apres-blocage
+    attempt: 1
+    answer:
+      stitches: 100
+    rejection: null
+    finished_cm: '50'
+    verdict: wrong
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 276
+      output_tokens: 15
+      latency_ms: 1649
+      at: '2026-11-17T14:35:15.575542+01:00'
+  - case_id: bonnet-adulte-avant-et-apres-blocage
+    attempt: 2
+    answer:
+      stitches: 100
+    rejection: null
+    finished_cm: '50'
+    verdict: wrong
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 276
+      output_tokens: 15
+      latency_ms: 1019
+      at: '2026-11-17T14:35:16.594930+01:00'
+  - case_id: bonnet-adulte-avant-et-apres-blocage
+    attempt: 3
+    answer:
+      stitches: 100
+    rejection: null
+    finished_cm: '50'
+    verdict: wrong
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 276
+      output_tokens: 15
+      latency_ms: 765
+      at: '2026-11-17T14:35:17.359742+01:00'
+  - case_id: bonnet-naissance-cotes-1-1
+    attempt: 1
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '33.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 283
+      output_tokens: 14
+      latency_ms: 913
+      at: '2026-11-17T14:35:18.273162+01:00'
+  - case_id: bonnet-naissance-cotes-1-1
+    attempt: 2
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '33.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 283
+      output_tokens: 14
+      latency_ms: 754
+      at: '2026-11-17T14:35:19.027282+01:00'
+  - case_id: bonnet-naissance-cotes-1-1
+    attempt: 3
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '33.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 283
+      output_tokens: 14
+      latency_ms: 1140
+      at: '2026-11-17T14:35:20.167335+01:00'
+  - case_id: exemple-bonnet-3-ans
+    attempt: 1
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '42'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 213
+      output_tokens: 14
+      latency_ms: 659
+      at: '2026-11-17T14:35:20.826136+01:00'
+  - case_id: exemple-bonnet-3-ans
+    attempt: 2
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '42'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 213
+      output_tokens: 14
+      latency_ms: 1041
+      at: '2026-11-17T14:35:21.867566+01:00'
+  - case_id: exemple-bonnet-3-ans
+    attempt: 3
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '42'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: mistralai/mistral-large-2512
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: mistralai/mistral-large-2512
+        model_version: mistralai/mistral-large-2512
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Mistral
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 213
+      output_tokens: 14
+      latency_ms: 1141
+      at: '2026-11-17T14:35:23.009013+01:00'
