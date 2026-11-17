@@ -1,8 +1,10 @@
 """Rapport en texte : met en colonnes les entrées du rapport, ne calcule rien."""
 
 from decimal import ROUND_HALF_EVEN, Decimal
+from pathlib import Path
 from typing import assert_never
 
+from knitproof.app.baseline import BaselineResult
 from knitproof.app.beanie import BeanieCalc
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.domain.beanie import BeaniePlan, RowRounding
@@ -209,3 +211,18 @@ def _number(value: Decimal, places: int = 2) -> str:
     """Décimal à la virgule, sans zéros inutiles ; présentation seulement (`ROUND_HALF_EVEN`)."""
     shown = value.quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_EVEN)
     return format(shown.normalize(), "f").replace(".", ",")
+
+
+def render_baseline(result: BaselineResult, written: Path) -> str:
+    """Une ligne par fournisseur (k/N, Wilson à 95 %, abstentions), puis le chemin écrit."""
+    lines = [
+        f"{item.provider:<{_COLUMN}}{item.correct}/{item.total}  "
+        f"[{_comma(item.low)} ; {_comma(item.high)}]  abstentions : {item.abstentions}"
+        for item in result.providers
+    ]
+    lines.append(f"Résultat : {written}")
+    return "\n".join(lines)
+
+
+def _comma(value: Decimal) -> str:
+    return str(value).replace(".", ",")
