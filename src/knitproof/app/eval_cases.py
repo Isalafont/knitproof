@@ -14,8 +14,10 @@ from pydantic import (
     BeforeValidator,
     ConfigDict,
     Field,
+    SerializerFunctionWrapHandler,
     StringConstraints,
     ValidationError,
+    model_serializer,
     model_validator,
 )
 
@@ -39,12 +41,33 @@ class InjectedError(StrEnum):
 
 
 class BaselineExpected(BaseModel):
-    """Attendu de la ligne de base : le tour visé (tête et aisance) et le montage du moteur."""
+    """Attendu de la ligne de base : le tour visé (tête et aisance) et le montage du moteur.
+
+    Soit un montage, soit l’abstention : une demande sans jauge n’a pas de montage calculable,
+    et seul un modèle qui s’abstient a juste.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     target_circumference_cm: PlainDecimal
-    cast_on_stitches: StrictPositiveInt
+    cast_on_stitches: StrictPositiveInt | None = None
+    abstain: bool = False
+
+    @model_validator(mode="after")
+    def _a_cast_on_or_an_abstention(self) -> Self:
+        if (self.cast_on_stitches is None) == (not self.abstain):
+            raise ValueError("expected : un montage, ou abstain à vrai, jamais les deux ni aucun")
+        return self
+
+    @model_serializer(mode="wrap")
+    def _omit_what_is_unused(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        """Un champ inutilisé sort du JSON : le hachage d’un cas à montage ne change pas."""
+        data: dict[str, object] = handler(self)
+        if not data.get("abstain"):
+            data.pop("abstain", None)
+        if data.get("cast_on_stitches") is None:
+            data.pop("cast_on_stitches", None)
+        return data
 
 
 class EvalCase(BaseModel):

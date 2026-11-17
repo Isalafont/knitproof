@@ -89,9 +89,14 @@ def resolve_gauge(request: BeanieRequest) -> SwatchMeasurement:
 def score(case: EvalCase, answer: CastOnAnswer) -> Judgement:
     """Juste si le tour fini du montage rendu tombe à ±1 cm du tour visé, d’après le moteur.
 
-    Un nombre ≤ 0 est faux sans tour fini : le moteur n’accepte que des entiers positifs.
+    Pour une abstention attendue, seule l’abstention est juste. Un nombre ≤ 0 est faux sans
+    tour fini : le moteur n’accepte que des entiers positifs.
     """
     stitches = answer.stitches
+    if case.expected.abstain:
+        # Sans jauge, aucun montage n’est calculable : s’abstenir est juste, un nombre est inventé.
+        right = Verdict.CORRECT if stitches is None else Verdict.WRONG
+        return Judgement(verdict=right, finished_cm=None)
     if stitches is None:
         return Judgement(verdict=Verdict.ABSTENTION, finished_cm=None)
     if stitches <= 0:

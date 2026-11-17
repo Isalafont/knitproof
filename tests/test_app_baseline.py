@@ -119,6 +119,29 @@ def test_a_gap_of_exactly_one_cm_is_correct(stitches: int) -> None:
     assert abs(judged.finished_cm - 43) == 1
 
 
+def _abstention_expected() -> EvalCase:
+    """L’exemple sans échantillon ni étiquette : s’abstenir est juste."""
+    case = _case()
+    request = BeanieRequest.model_validate({**case.request.model_dump(mode="json"), "swatch": None})
+    expected = case.expected.model_copy(update={"cast_on_stitches": None, "abstain": True})
+    return case.model_copy(update={"request": request, "expected": expected})
+
+
+def test_an_abstention_is_correct_when_one_is_expected() -> None:
+    judged = score(_abstention_expected(), CastOnAnswer(stitches=None))
+
+    assert judged.verdict is Verdict.CORRECT
+    assert judged.finished_cm is None
+
+
+@pytest.mark.parametrize("stitches", [88, 1, 0, -3])
+def test_a_number_is_wrong_when_an_abstention_is_expected(stitches: int) -> None:
+    judged = score(_abstention_expected(), CastOnAnswer(stitches=stitches))
+
+    assert judged.verdict is Verdict.WRONG
+    assert judged.finished_cm is None
+
+
 def _rounded(bounds: tuple[Decimal, Decimal]) -> tuple[Decimal, Decimal]:
     return bounds[0].quantize(Decimal("0.0001")), bounds[1].quantize(Decimal("0.0001"))
 

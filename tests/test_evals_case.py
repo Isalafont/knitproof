@@ -60,6 +60,28 @@ def test_a_case_without_the_expected_cast_on_is_refused() -> None:
         EvalCase.model_validate(_raw(expected={"target_circumference_cm": "44.5"}))
 
 
+def test_an_expected_abstention_has_no_cast_on() -> None:
+    case = EvalCase.model_validate(
+        _raw(expected={"target_circumference_cm": "44.5", "abstain": True})
+    )
+
+    assert case.expected.abstain is True
+    assert case.expected.cast_on_stitches is None
+
+
+@pytest.mark.parametrize(
+    "expected",
+    [
+        {"target_circumference_cm": "44.5", "cast_on_stitches": 88, "abstain": True},
+        {"target_circumference_cm": "44.5", "abstain": False},
+        {"target_circumference_cm": "44.5", "cast_on_stitches": None},
+    ],
+)
+def test_an_expected_with_both_or_neither_is_refused(expected: dict[str, object]) -> None:
+    with pytest.raises(ValidationError):
+        EvalCase.model_validate(_raw(expected=expected))
+
+
 def test_extra_fields_are_refused() -> None:
     with pytest.raises(ValidationError):
         EvalCase.model_validate(_raw(surplus=1))
