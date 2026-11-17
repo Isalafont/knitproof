@@ -1,0 +1,33 @@
+id: bonnet-fin-jersey-roule
+input: 'Je veux un bonnet fin et léger, juste posé sur la tête, à peine ajusté, au bord en jersey roulé.
+  Tour de tête de 56 cm, bonnet 3 cm plus petit. Échantillon bloqué : 24 mailles pour 10 cm avec des aiguilles
+  de 3,25 mm. Tricot en rond. Combien de mailles faut-il monter ?'
+request:
+  head_circumference:
+    value: '56'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 3.25 mm
+      kind: straight
+    after_blocking:
+      stitches: '24'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 3.25 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 1
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-3'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '53'
+  cast_on_stitches: 127

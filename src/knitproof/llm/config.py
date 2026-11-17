@@ -4,7 +4,8 @@ Fournisseurs : Anthropic, Mistral, OpenAI, OpenRouter (dont l’hébergeur est f
 (Moonshot AI) et Ollama (modèle local, sans clé).
 
 Aucune valeur par défaut cachée : un identifiant de modèle, une clé et un nombre de relances
-absents sont une erreur nommée. La température est facultative (ADR 0033).
+absents sont une erreur nommée. La température est facultative (ADR 0033) :
+`KNITPROOF_<P>_TEMPERATURE` prime sur `KNITPROOF_LLM_TEMPERATURE`, et `omit` n’en envoie aucune.
 """
 
 import math
@@ -26,6 +27,7 @@ _KEYS: Mapping[str, str] = {
 }
 _TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
 _RETRIES = "KNITPROOF_LLM_RETRIES"
+_OMIT = "omit"
 
 
 class ModelConfig(BaseModel):
@@ -58,7 +60,7 @@ def load_config(provider: Provider, environ: Mapping[str, str]) -> ModelConfig:
         api_key=SecretStr(_required(environ, _KEYS[provider])) if provider in _KEYS else None,
         base_url=base_url,
         host=_required(environ, f"{prefix}_HOST").strip() if provider == "openrouter" else None,
-        temperature=_temperature(environ),
+        temperature=_temperature(environ, prefix),
         retries=_retries(environ),
     )
 
@@ -79,16 +81,20 @@ def _model(environ: Mapping[str, str], variable: str, *, local: bool) -> str:
     return model
 
 
-def _temperature(environ: Mapping[str, str]) -> float | None:
-    text = environ.get(_TEMPERATURE, "").strip()
-    if not text:
+def _temperature(environ: Mapping[str, str], prefix: str) -> float | None:
+    """La variable du fournisseur prime, même vide ; `omit` n’envoie aucune température."""
+    variable = f"{prefix}_TEMPERATURE"
+    if variable not in environ:
+        variable = _TEMPERATURE
+    text = environ.get(variable, "").strip()
+    if not text or text.lower() == _OMIT:
         return None
     try:
         value = float(text)
     except ValueError:
-        raise InvalidSettingError(_TEMPERATURE, "un nombre entre 0 et 1 est attendu") from None
+        raise InvalidSettingError(variable, "un nombre entre 0 et 1 est attendu") from None
     if math.isnan(value) or not 0 <= value <= 1:
-        raise InvalidSettingError(_TEMPERATURE, "un nombre entre 0 et 1 est attendu")
+        raise InvalidSettingError(variable, "un nombre entre 0 et 1 est attendu")
     return value
 
 

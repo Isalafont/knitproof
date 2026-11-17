@@ -14,6 +14,7 @@ from pydantic_ai.models.openai import OpenAIChatModel, OpenAIResponsesModel
 from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.anthropic import AnthropicProvider
+from pydantic_ai.usage import RequestUsage
 
 from knitproof.llm.agents import agent_for, agent_on
 from knitproof.llm.config import ModelConfig, Provider
@@ -328,3 +329,33 @@ def test_an_agent_for_a_provider_never_reaches_the_network(provider: Provider) -
 
     with pytest.raises(RuntimeError, match="Model requests are not allowed"):
         extract(agent, settings, PROMPT, "Drops, 50 g")
+
+
+def test_the_tokens_of_a_call_are_returned() -> None:
+    def counted(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return ModelResponse(
+            parts=[ToolCallPart("final_result", {"brand": "Drops", "grams": 50})],
+            usage=RequestUsage(input_tokens=51, output_tokens=4),
+        )
+
+    agent = agent_on(FunctionModel(counted), Sample, retries=0)
+
+    extraction = extract(agent, config(), PROMPT, "Drops, 50 g")
+
+    assert extraction.usage.input_tokens == 51
+    assert extraction.usage.output_tokens == 4
+
+
+def test_unmeasured_tokens_are_unknown_not_zero() -> None:
+    def unmeasured(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return ModelResponse(
+            parts=[ToolCallPart("final_result", {"brand": "Drops", "grams": 50})],
+            usage=RequestUsage(unmeasured_requests=1),
+        )
+
+    agent = agent_on(FunctionModel(unmeasured), Sample, retries=0)
+
+    extraction = extract(agent, config(), PROMPT, "Drops, 50 g")
+
+    assert extraction.usage.input_tokens is None
+    assert extraction.usage.output_tokens is None

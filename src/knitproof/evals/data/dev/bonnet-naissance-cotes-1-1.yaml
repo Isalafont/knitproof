@@ -1,0 +1,34 @@
+id: bonnet-naissance-cotes-1-1
+input: 'Ma petite-fille arrive bientôt : je voudrais lui tricoter un bonnet de naissance. Le tour de tête
+  d’un nouveau-né fait 35 cm. J’aime que le bonnet tienne bien, donc je le fais 2 cm plus petit que sa
+  tête. Mon échantillon en jersey, lavé et bloqué, compte 26 mailles pour 10 cm avec des aiguilles de
+  2,5 mm. Je tricote en rond, avec un bord en côtes 1/1. Combien de mailles dois-je monter ?'
+request:
+  head_circumference:
+    value: '35'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 2.5 mm
+      kind: straight
+    after_blocking:
+      stitches: '26'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 2.5 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 2
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-2'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '33'
+  cast_on_stitches: 86

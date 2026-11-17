@@ -1,0 +1,29 @@
+id: bonnet-etiquette-seule
+input: 'Je tricote pour un adolescent qui aime les bonnets très serrés : tour de tête de 56 cm, et un
+  bonnet 8 cm plus petit que sa tête. Je n’ai pas le temps de faire un échantillon : je me fie à l’étiquette
+  de la pelote, qui annonce 18 mailles pour 10 cm avec des aiguilles de 5 mm. Bord en côtes 1/1, ouvrage
+  en rond. Combien de mailles faut-il monter ?'
+request:
+  head_circumference:
+    value: '56'
+    unit: cm
+    provenance: measured
+  needles:
+  - size: 5 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 2
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-8'
+    unit: cm
+    provenance: entered
+  label_gauge:
+    stitches: '18'
+    width:
+      value: '10'
+      unit: cm
+expected:
+  target_circumference_cm: '48'
+  cast_on_stitches: 86

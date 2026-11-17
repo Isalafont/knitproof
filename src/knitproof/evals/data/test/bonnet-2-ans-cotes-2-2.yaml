@@ -1,0 +1,33 @@
+id: bonnet-2-ans-cotes-2-2
+input: Mon petit garçon a deux ans et son tour de tête mesure 47 cm. Je souhaite un bonnet ajusté, 5 cm
+  plus petit que sa tête, tricoté en rond, bord en côtes 2/2. L’échantillon bloqué, fait avec des aiguilles
+  de 4 mm, donne 20 mailles pour 10 cm. Combien de mailles faut-il monter ?
+request:
+  head_circumference:
+    value: '47'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 4 mm
+      kind: straight
+    after_blocking:
+      stitches: '20'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 4 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 4
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-5'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '42'
+  cast_on_stitches: 84

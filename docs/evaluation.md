@@ -27,8 +27,9 @@ Figé le 12/11/2026 ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)). Toute
 - **Annotation** : chaque entrée du manifeste indique qui a annoté le cas et quand.
 - **Manifeste versionné** : un hachage par cas, vérifié en CI. Toute modification d’une valeur attendue est consignée avec son motif. Une valeur attendue n’est jamais modifiée pour faire passer un résultat.
 - **Taille** : 5 cas `dev` et 15 cas `test` par évaluation (ligne de base, étiquette, demande) ; résultats en k/N.
-- **Emplacement** : `src/knitproof/evals/data/<split>/`, un cas par fichier YAML, un `manifest.yaml` par split.
-- **Cas d’exemple** : l’`id` préfixé `exemple-` marque un cas d’exemple de format, jamais compté dans les 5 cas `dev` d’une évaluation réelle.
+- **Pièges de la ligne de base** : 7 cas `test` et 2 cas `dev` portent un piège, attendu tiré du moteur sans règle nouvelle : étiquette et échantillon bloqué (l’échantillon gagne), avant et après blocage (l’après gagne), tour fini donné au lieu de l’écart à la tête, jauge sur 5 cm, mesures en pouces avec une aisance en cm, étiquette seule (le moteur calcule sur l’étiquette). Un cas sans échantillon ni étiquette attend l’abstention. L’aisance s’y dit en mots (« ajusté », « serré ») et en cm, jamais en %.
+- **Emplacement** : `src/knitproof/evals/data/<split>/`, un cas par fichier YAML, un `manifest.yaml` par split ; les résultats de mesure vont dans `evals/results/`, un YAML daté par mesure.
+- **Cas d’exemple** : l’`id` préfixé `exemple-` marque un cas d’exemple de format, hors des 5 cas `dev` réels ; la ligne de base le mesure avec eux (6 cas, N = 18 sur `dev`).
 
 ## Erreurs injectées
 
@@ -64,7 +65,7 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 
 - Même prompt, versionné, pour tous les modèles.
 - Mode de sortie structurée consigné.
-- Température et nombre de passages fixés.
+- Température et nombre de passages fixés : 3 passages par cas, à température 0 ; une température non envoyée (Sonnet 5.5, Kimi) est consignée « non envoyée ».
 - Date de chaque passage.
 - Au moins un modèle ouvert ou souverain, accessible en direct (modèle local à poids ouverts, Mistral en direct, OpenGateLLM ou API compatible OpenAI) ; un agrégateur ne compte pas.
 
@@ -78,8 +79,8 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 | Modèle | Champs clés |
 |---|---|
 | `EvalManifest` | `version`, `split` (`dev` / `test`), et par entrée : `id` du cas, hachage SHA-256, annotatrice, date |
-| `EvalCase` | `id`, `input`, `expected`, `injected_error`, `absent_fields` |
-| `ModelRun` | modèle, version, prompt, température, mode de sortie structurée, jetons, coût, latence, date |
+| `EvalCase` | `id`, `input`, `request` (demande au format de `knitproof calc`), `expected` (tour visé, et montage du moteur ou `abstain`), `injected_error`, `absent_fields` |
+| `ModelRun` | modèle, version, prompt, température, mode de sortie structurée, jetons, latence, date (le coût viendra avec le rejeu en CI) |
 | `FieldScore`, `EvalResult` | exact, inventé, abstention ; erreur détectée et localisée |
 | `BaselineRun` | réponse du LLM seul, comparée au moteur |
 
@@ -93,3 +94,8 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 
 - 12/11/2026 — Mistral en direct ajouté comme accès souverain (CLA-127, ADR 0033) ; motif : aucune mesure faite.
 - 13/11/2026 — Modèle local à poids ouverts (Ollama) retenu comme accès souverain appelé ; Mistral en direct possible, non requis (CLA-62, ADR 0034) ; motif : aucune mesure faite.
+- 17/11/2026 — Forme du cas : `EvalCase` porte la demande structurée `request` et le montage attendu `cast_on_stitches`, recalculés par le moteur ; l’exemple est re-haché et re-signé (CLA-188, ADR 0035) ; motif : le verdict se juge sur le tour fini calculé, aucune mesure faite.
+- 17/11/2026 — Passages et température : 3 passages par cas, température 0, ou « non envoyée » pour un modèle qui la refuse (CLA-188, ADR 0035) ; motif : aucune mesure faite.
+- 17/11/2026 — Le coût est retiré du `ModelRun` jusqu’au rejeu en CI (CLA-188) ; motif : aucune grille de prix ni rejeu n’existent encore, aucune mesure faite.
+- 17/11/2026 — Pièges et abstention attendue : 7 cas `test` et 2 cas `dev` de la ligne de base sont des pièges ; un cas sans jauge attend l’abstention, seul passage juste (CLA-188, ADR 0035) ; motif : des cas faciles ne prouvent rien, aucune mesure faite.
+- 17/11/2026 — La ligne de base mesure aussi l’exemple sur `dev` (N = 18), décidé par Isabelle (CLA-188) ; motif : un cas de plus ne coûte rien, aucune mesure faite.

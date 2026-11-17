@@ -1,4 +1,60 @@
 id: exemple-bonnet-3-ans
-input: "Bonnet pour 3 ans, tour de tête 48 cm, aisance −10 %, échantillon bloqué 20 m pour 10 cm, côtes 2/2."
+input: Bonnet pour 3 ans, tour de tête 48 cm, ajusté, 5 cm de moins que la tête, échantillon bloqué 20
+  m pour 10 cm, côtes 2/2.
+request:
+  head_circumference:
+    value: '48'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 4 mm
+      kind: straight
+    before_blocking:
+      stitches: '22'
+      width:
+        value: '10'
+        unit: cm
+      rows: '30'
+      height:
+        value: '10'
+        unit: cm
+      rows_source:
+        reference: DROPS Children 49-25
+        to_verify: true
+    after_blocking:
+      stitches: '20'
+      width:
+        value: '10'
+        unit: cm
+      rows: '30'
+      height:
+        value: '10'
+        unit: cm
+      rows_source:
+        reference: DROPS Children 49-25
+        to_verify: true
+  needles:
+  - size: 4 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 4
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-5'
+    unit: cm
+    provenance: entered
+  total_height:
+    value: '20'
+    unit: cm
+    provenance: entered
+  brim_height:
+    value: '5'
+    unit: cm
+    provenance: entered
+  folded_brim: true
 expected:
-  target_circumference_cm: "43.2"
+  target_circumference_cm: '43'
+  cast_on_stitches: 84

@@ -1,0 +1,34 @@
+id: bonnet-5-ans-jersey-roule
+input: 'Un bonnet pour ma nièce de 5 ans, avec un bord en jersey roulé, tricoté en rond. Elle a un tour
+  de tête de 51 cm, et je le veux ajusté, à peu près 4 cm plus petit que sa tête. J’ai tricoté et bloqué
+  un échantillon avec des aiguilles de 5 mm : il donne 18 mailles pour 10 cm. De combien de mailles faut-il
+  partir ?'
+request:
+  head_circumference:
+    value: '51'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 5 mm
+      kind: straight
+    after_blocking:
+      stitches: '18'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 5 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 1
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-4'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '47'
+  cast_on_stitches: 85

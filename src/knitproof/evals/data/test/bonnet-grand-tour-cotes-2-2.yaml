@@ -1,0 +1,33 @@
+id: bonnet-grand-tour-cotes-2-2
+input: 'Mon père a un grand tour de tête, 61 cm, et préfère un bonnet qui serre bien : 8 cm de moins que
+  sa tête. Mon échantillon, bloqué après lavage, fait 20 mailles pour 10 cm avec des aiguilles de 4 mm.
+  Bord en côtes 2/2, tricot en rond. Combien de mailles à monter ?'
+request:
+  head_circumference:
+    value: '61'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 4 mm
+      kind: straight
+    after_blocking:
+      stitches: '20'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 4 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 4
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-8'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '53'
+  cast_on_stitches: 104

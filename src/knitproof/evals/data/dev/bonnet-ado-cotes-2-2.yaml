@@ -1,0 +1,33 @@
+id: bonnet-ado-cotes-2-2
+input: Je tricote un bonnet épais pour un ado. Son tour de tête est de 55 cm et il le veut très serré,
+  environ 8 cm de moins que sa tête. Mon échantillon, mouillé puis séché à plat, fait 16 mailles pour
+  10 cm en aiguilles de 6 mm. Bord en côtes 2/2, ouvrage en rond. Combien de mailles à monter ?
+request:
+  head_circumference:
+    value: '55'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 6 mm
+      kind: straight
+    after_blocking:
+      stitches: '16'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 6 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 4
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-8'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '47'
+  cast_on_stitches: 76

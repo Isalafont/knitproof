@@ -1,0 +1,39 @@
+id: bonnet-avant-et-apres-blocage
+input: Bonnet très chaud en laine épaisse, bord en jersey roulé, tour de tête de 59 cm ; je le veux bien
+  ajusté, 6 cm plus petit que la tête. Mon échantillon mesure 18 mailles pour 10 cm avant lavage, et 16
+  mailles pour 10 cm après lavage et blocage, en aiguilles de 6 mm. Ouvrage en rond. Combien de mailles
+  monter ?
+request:
+  head_circumference:
+    value: '59'
+    unit: cm
+    provenance: measured
+  needles:
+  - size: 6 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 1
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-6'
+    unit: cm
+    provenance: entered
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 6 mm
+      kind: straight
+    after_blocking:
+      stitches: '16'
+      width:
+        value: '10'
+        unit: cm
+    before_blocking:
+      stitches: '18'
+      width:
+        value: '10'
+        unit: cm
+expected:
+  target_circumference_cm: '53'
+  cast_on_stitches: 85

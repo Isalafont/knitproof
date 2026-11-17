@@ -1,0 +1,33 @@
+id: bonnet-adulte-souple-cotes-2-2
+input: 'Pour moi, un bonnet un peu souple, pas trop serré : tour de tête de 57 cm, et seulement 3 cm de
+  moins pour le bonnet. Mon échantillon bloqué fait 22 mailles pour 10 cm en aiguilles de 3,5 mm. Je tricote
+  en rond, bord en côtes 2/2. De combien de mailles faut-il partir ?'
+request:
+  head_circumference:
+    value: '57'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 3.5 mm
+      kind: straight
+    after_blocking:
+      stitches: '22'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 3.5 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 4
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-3'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '54'
+  cast_on_stitches: 120

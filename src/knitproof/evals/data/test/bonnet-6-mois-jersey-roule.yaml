@@ -1,0 +1,33 @@
+id: bonnet-6-mois-jersey-roule
+input: Je prépare un bonnet pour un bébé de six mois dont le tour de tête fait 42 cm. Je le veux un peu
+  ajusté, 3 cm de moins que sa tête. Mon échantillon lavé et bloqué compte 24 mailles pour 10 cm en aiguilles
+  de 3 mm. Je tricote en rond avec un bord en jersey roulé. Quel nombre de mailles dois-je monter ?
+request:
+  head_circumference:
+    value: '42'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 3 mm
+      kind: straight
+    after_blocking:
+      stitches: '24'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 3 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 1
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-3'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '39'
+  cast_on_stitches: 94

@@ -1,0 +1,34 @@
+id: bonnet-jauge-sur-5-cm
+input: 'Mon fils de sept ans veut un gros bonnet souple, avec un bord en jersey roulé. Son tour de tête
+  est de 52 cm et je le fais juste un peu plus petit, 3 cm de moins. J’ai bloqué un petit échantillon
+  de 5 cm de large en aiguilles de 5,5 mm : il compte 9 mailles. Ouvrage tricoté en rond. De combien de
+  mailles faut-il partir ?'
+request:
+  head_circumference:
+    value: '52'
+    unit: cm
+    provenance: measured
+  needles:
+  - size: 5.5 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 1
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-3'
+    unit: cm
+    provenance: entered
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 5.5 mm
+      kind: straight
+    after_blocking:
+      stitches: '9'
+      width:
+        value: '5'
+        unit: cm
+expected:
+  target_circumference_cm: '49'
+  cast_on_stitches: 88

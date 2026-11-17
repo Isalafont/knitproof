@@ -4,7 +4,7 @@ Détail des commandes de knitproof, de l’organisation du code et de la contrib
 
 ## Organisation du code
 
-`domain` et `engine` portent le modèle de patron, le calcul du bonnet et la vérification des comptes de mailles ; `app` et `cli` portent les commandes `knitproof calc` et `knitproof verify` ; `llm` porte la configuration, la fabrique d’agents et l’appel de sortie structurée (voir « Modèles ») ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs sorties de référence vivent dans `examples/sorties/` et un test garde les blocs du README contre elles (balise `<!-- sortie : … -->` avant chaque bloc). Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
+`domain` et `engine` portent le modèle de patron, le calcul du bonnet et la vérification des comptes de mailles ; `app` et `cli` portent les commandes `knitproof calc`, `knitproof verify` et `knitproof eval` ; `llm` porte la configuration, la fabrique d’agents et l’appel de sortie structurée (voir « Modèles ») ; les autres paquets de `src/knitproof/` sont vides pour l’instant. Ils fixent les contrats de couches, que `uv run lint-imports` vérifie. Les deux exemples de la section « Ce que ça donne » vivent dans `examples/` ; leurs sorties de référence vivent dans `examples/sorties/` et un test garde les blocs du README contre elles (balise `<!-- sortie : … -->` avant chaque bloc). Les patrons synthétiques justes vivent dans `examples/synthetiques/`, et la CI les vérifie tous.
 
 ## Données Ravelry
 
@@ -23,6 +23,7 @@ La couche `llm` appelle Anthropic, Mistral, OpenAI, OpenRouter, Kimi (Moonshot A
 | `KNITPROOF_OLLAMA_MODEL`, `KNITPROOF_OLLAMA_BASE_URL` | modèle local : nom avec étiquette explicite (`qwen3:8b`, ni `:latest` ni nom sans étiquette) et adresse, obligatoires ; aucune clé |
 | `KNITPROOF_MOONSHOTAI_BASE_URL` | adresse de Kimi, facultative ; `https://api.moonshot.ai/v1` par défaut, `https://api.moonshot.cn/v1` pour une clé de la console chinoise |
 | `KNITPROOF_LLM_TEMPERATURE` | entre 0 et 1, facultative |
+| `KNITPROOF_ANTHROPIC_TEMPERATURE`, `KNITPROOF_MISTRAL_TEMPERATURE`, `KNITPROOF_OPENAI_TEMPERATURE`, `KNITPROOF_OPENROUTER_TEMPERATURE`, `KNITPROOF_MOONSHOTAI_TEMPERATURE`, `KNITPROOF_OLLAMA_TEMPERATURE` | température du fournisseur, facultative ; prime sur la globale, même vide ; `omit` n’envoie aucune température |
 | `KNITPROOF_LLM_RETRIES` | relances de sortie, obligatoire (0 ou plus) |
 
 La température est facultative parce que certains modèles la refusent : Sonnet 5.5 répond 400 si `temperature` est posé ([doc Anthropic](https://platform.claude.com/docs/en/models/sonnet-5-5/overview)) et pydanticAI la retire pour Opus 4.7, 4.8, 5 et 5.5 ([doc pydanticAI](https://pydantic.dev/docs/ai/models/anthropic/)). Absente, rien n’est envoyé. Les modèles de raisonnement d’OpenAI peuvent aussi refuser `temperature`, Kimi aussi (à prouver par l’appel `live`).
@@ -41,6 +42,20 @@ uv run --env-file .env pytest -m live -k ollama
 Kimi : créer un compte sur platform.kimi.ai ; la recharge minimale est de 1 $.
 
 Modèle local : installer Ollama, puis `ollama pull` avec un nom à étiquette explicite (par exemple `ollama pull qwen3:8b`), et renseigner `KNITPROOF_OLLAMA_BASE_URL=http://localhost:11434/v1`.
+
+## Mesurer la ligne de base « LLM seul »
+
+`knitproof eval` interroge chaque fournisseur nommé, 3 fois par cas, avec le prompt figé `baseline-cast-on-v1`, et juge chaque réponse par le moteur : le tour fini du montage rendu doit tomber à ±1 cm du tour visé ([ADR 0035](adr/0035-ligne-de-base-llm-seul.md)). Une réponse `null` ou refusée est une abstention, juste seulement sur un cas qui attend l’abstention (aucune jauge).
+
+```sh
+uv run --env-file .env knitproof eval --split dev --models anthropic,openrouter,ollama
+```
+
+- `--split` : `dev` (5 cas et l’exemple, N = 18) ou `test` (15 cas, N = 45) ; ne lancer `test` qu’après le gel du prompt.
+- `--models` : des noms de fournisseurs (`anthropic`, `mistral`, `openai`, `openrouter`, `moonshotai`, `ollama`), un modèle par fournisseur, celui de `KNITPROOF_<P>_MODEL`.
+- `--results` : dossier du résultat, `evals/results` par défaut. Le YAML `AAAA-MM-JJTHHMM-<split>.yaml` n’écrase jamais un fichier.
+- Chaque fournisseur demande une température explicite, `KNITPROOF_<P>_TEMPERATURE` ou, à défaut, `KNITPROOF_LLM_TEMPERATURE`, à `0` ou `omit` (modèle qui la refuse : Sonnet 5.5, Kimi) ; toute autre valeur est refusée.
+- Sortie : une ligne par fournisseur, `k/N [bas ; haut]` (intervalle de Wilson à 95 %) et les abstentions. Code 0 si la mesure est faite, 3 si la configuration est invalide ou si le fournisseur répond par une erreur : aucun résultat partiel n’est écrit.
 
 ## Calculer un bonnet
 

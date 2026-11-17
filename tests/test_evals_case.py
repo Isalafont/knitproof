@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from knitproof.evals.case import EvalCase, InjectedError, case_hash
+from knitproof.app.eval_cases import EvalCase, InjectedError, case_hash
 
 SEVEN_TYPES = {
     "size_confusion",
@@ -18,11 +18,24 @@ SEVEN_TYPES = {
 }
 
 
+REQUEST: dict[str, object] = {
+    "head_circumference": {"value": "48", "unit": "cm", "provenance": "measured"},
+    "ease": {"value": "-10", "unit": "percent", "provenance": "entered"},
+    "swatch": {
+        "needle": {"size": "4 mm", "kind": "straight"},
+        "after_blocking": {"stitches": "20", "width": {"value": "10", "unit": "cm"}},
+    },
+    "needles": [{"size": "4 mm", "kind": "double_pointed"}],
+    "stitch_multiple": {"repeat_multiple": 4, "repeat_offset": 0, "provenance": "entered"},
+}
+
+
 def _raw(**changes: object) -> dict[str, object]:
     raw: dict[str, object] = {
         "id": "cas-1",
         "input": "Bonnet pour 3 ans.",
-        "expected": {"target_circumference_cm": "44.5"},
+        "request": REQUEST,
+        "expected": {"target_circumference_cm": "44.5", "cast_on_stitches": 88},
     }
     raw.update(changes)
     return raw
@@ -33,6 +46,40 @@ def test_a_valid_case_loads() -> None:
     assert case.expected.target_circumference_cm == Decimal("44.5")
     assert case.injected_error is None
     assert case.absent_fields == ()
+
+
+def test_a_case_without_a_request_is_refused() -> None:
+    raw = _raw()
+    del raw["request"]
+    with pytest.raises(ValidationError):
+        EvalCase.model_validate(raw)
+
+
+def test_a_case_without_the_expected_cast_on_is_refused() -> None:
+    with pytest.raises(ValidationError):
+        EvalCase.model_validate(_raw(expected={"target_circumference_cm": "44.5"}))
+
+
+def test_an_expected_abstention_has_no_cast_on() -> None:
+    case = EvalCase.model_validate(
+        _raw(expected={"target_circumference_cm": "44.5", "abstain": True})
+    )
+
+    assert case.expected.abstain is True
+    assert case.expected.cast_on_stitches is None
+
+
+@pytest.mark.parametrize(
+    "expected",
+    [
+        {"target_circumference_cm": "44.5", "cast_on_stitches": 88, "abstain": True},
+        {"target_circumference_cm": "44.5", "abstain": False},
+        {"target_circumference_cm": "44.5", "cast_on_stitches": None},
+    ],
+)
+def test_an_expected_with_both_or_neither_is_refused(expected: dict[str, object]) -> None:
+    with pytest.raises(ValidationError):
+        EvalCase.model_validate(_raw(expected=expected))
 
 
 def test_extra_fields_are_refused() -> None:
@@ -66,7 +113,8 @@ def test_hash_is_stable_when_keys_are_reordered() -> None:
     first = EvalCase.model_validate(_raw())
     reordered = EvalCase.model_validate(
         {
-            "expected": {"target_circumference_cm": "44.5"},
+            "expected": {"cast_on_stitches": 88, "target_circumference_cm": "44.5"},
+            "request": REQUEST,
             "input": "Bonnet pour 3 ans.",
             "id": "cas-1",
         }
@@ -75,7 +123,7 @@ def test_hash_is_stable_when_keys_are_reordered() -> None:
 
 
 def test_hash_changes_with_the_expected_value() -> None:
-    other = _raw(expected={"target_circumference_cm": "45"})
+    other = _raw(expected={"target_circumference_cm": "45", "cast_on_stitches": 88})
     assert case_hash(EvalCase.model_validate(_raw())) != case_hash(EvalCase.model_validate(other))
 
 
@@ -89,4 +137,4 @@ def test_hash_is_64_lowercase_hexadecimal_characters() -> None:
 def test_the_json_dump_renders_the_decimal_as_a_string() -> None:
     # Constaté par essai ; la doc de Pydantic ne le garantit pas.
     dumped = EvalCase.model_validate(_raw()).model_dump(mode="json")
-    assert dumped["expected"] == {"target_circumference_cm": "44.5"}
+    assert dumped["expected"] == {"target_circumference_cm": "44.5", "cast_on_stitches": 88}
