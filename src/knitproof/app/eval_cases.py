@@ -1,9 +1,10 @@
-"""Le manifeste haché d’un split et sa vérification contre les cas (ADR 0032)."""
+"""Les cas d’évaluation, leur hachage et leur manifeste (ADR 0032)."""
 
 import datetime
+import hashlib
+import json
 from collections.abc import Mapping
 from enum import StrEnum
-from importlib.resources import files
 from importlib.resources.abc import Traversable
 from typing import Annotated, Self
 
@@ -18,9 +19,63 @@ from pydantic import (
     model_validator,
 )
 
+from knitproof.domain.measure import PlainDecimal
 from knitproof.domain.provenance import _only_a_date
 from knitproof.domain.yarn import Text
-from knitproof.evals.case import EvalCase, case_hash, content_hash
+
+
+class InjectedError(StrEnum):
+    """Les types d’erreur volontaire de `docs/evaluation.md`."""
+
+    SIZE_CONFUSION = "size_confusion"
+    UNBLOCKED_GAUGE = "unblocked_gauge"
+    UNIT_MISMATCH = "unit_mismatch"
+    REPEAT_NOT_FITTING = "repeat_not_fitting"
+    COUNT_MISMATCH = "count_mismatch"
+    MISSING_FIELD = "missing_field"
+    PROMPT_INJECTION = "prompt_injection"
+
+
+class BaselineExpected(BaseModel):
+    """Attendu de la ligne de base : le tour fini visé, tête et aisance comprises."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    target_circumference_cm: PlainDecimal
+
+
+class EvalCase(BaseModel):
+    """Une demande, ce qu’on en attend, et l’erreur volontaire qu’elle porte."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: Annotated[str, StringConstraints(pattern=r"^[a-z0-9-]+$")]
+    input: Text
+    expected: BaselineExpected
+    injected_error: InjectedError | None = None
+    absent_fields: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def _absent_fields_are_unique(self) -> Self:
+        if len(set(self.absent_fields)) != len(self.absent_fields):
+            raise ValueError("absent_fields : doublon")
+        return self
+
+
+def case_hash(case: EvalCase) -> str:
+    """SHA-256 du JSON canonique du cas validé : insensible à la mise en forme du YAML."""
+    return _digest(case.model_dump(mode="json"))
+
+
+def content_hash(case: EvalCase) -> str:
+    """Comme `case_hash`, sans l’`id` : une copie sous un autre `id` a le même contenu."""
+    return _digest(case.model_dump(mode="json", exclude={"id"}))
+
+
+def _digest(dumped: dict[str, object]) -> str:
+    canonical = json.dumps(dumped, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
 
 MANIFEST_NAME = "manifest.yaml"
 
@@ -64,7 +119,7 @@ class EvalManifest(BaseModel):
         return self
 
 
-def load_eval_sets(root: Traversable | None = None) -> Mapping[Split, tuple[EvalCase, ...]]:
+def load_eval_sets(root: Traversable) -> Mapping[Split, tuple[EvalCase, ...]]:
     """Charge `dev` et `test` et refuse un même `id` ou un même contenu dans les deux."""
     sets = {split: load_split(split, root) for split in Split}
     dev, test = sets[Split.DEV], sets[Split.TEST]
@@ -79,10 +134,9 @@ def load_eval_sets(root: Traversable | None = None) -> Mapping[Split, tuple[Eval
     return sets
 
 
-def load_split(split: Split, root: Traversable | None = None) -> tuple[EvalCase, ...]:
+def load_split(split: Split, root: Traversable) -> tuple[EvalCase, ...]:
     """Charge les cas de `<root>/<split>/` et les compare au manifeste du dossier."""
-    base = root if root is not None else files("knitproof.evals") / "data"
-    folder = base / split.value
+    folder = root / split.value
     manifest = _load_manifest(split, folder / MANIFEST_NAME)
     sources = sorted(
         (item for item in folder.iterdir() if item.name.endswith(".yaml")),

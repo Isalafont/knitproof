@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from knitproof.evals.case import EvalCase, InjectedError, case_hash
+from knitproof.app.eval_cases import EvalCase, InjectedError, case_hash
 
 SEVEN_TYPES = {
     "size_confusion",

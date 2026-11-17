@@ -6,8 +6,15 @@ from pathlib import Path
 import pytest
 import yaml
 
-from knitproof.evals.case import EvalCase, case_hash
-from knitproof.evals.manifest import EvalDataError, EvalManifest, Split, load_eval_sets, load_split
+from knitproof.app.eval_cases import (
+    EvalCase,
+    EvalDataError,
+    EvalManifest,
+    Split,
+    case_hash,
+    load_eval_sets,
+    load_split,
+)
 
 
 def _case(case_id: str = "cas-1", target: str = "44") -> dict[str, object]:
