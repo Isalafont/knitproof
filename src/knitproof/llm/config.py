@@ -4,7 +4,9 @@ Fournisseurs : Anthropic, Mistral, OpenAI, OpenRouter (dont l’hébergeur est f
 (Moonshot AI) et Ollama (modèle local, sans clé).
 
 Aucune valeur par défaut cachée : un identifiant de modèle, une clé et un nombre de relances
-absents sont une erreur nommée. La température est facultative (ADR 0033) :
+absents sont une erreur nommée. Un modèle et un hébergeur donnés à `load_config` (CLA-199)
+remplacent `KNITPROOF_<P>_MODEL` et `KNITPROOF_OPENROUTER_HOST`, avec les mêmes contrôles ;
+l’hébergeur n’existe que pour OpenRouter. La température est facultative (ADR 0033) :
 `KNITPROOF_<P>_TEMPERATURE` prime sur `KNITPROOF_LLM_TEMPERATURE`, et `omit` n’en envoie aucune.
 """
 
@@ -44,10 +46,21 @@ class ModelConfig(BaseModel):
     retries: int
 
 
-def load_config(provider: Provider, environ: Mapping[str, str]) -> ModelConfig:
-    """Lit la configuration de `provider` dans `environ` (jamais `os.environ` d’office)."""
+def load_config(
+    provider: Provider,
+    environ: Mapping[str, str],
+    *,
+    model: str | None = None,
+    host: str | None = None,
+) -> ModelConfig:
+    """Lit la configuration de `provider` dans `environ` (jamais `os.environ` d’office).
+
+    `model` et `host`, quand ils sont donnés, remplacent les variables de l’environnement.
+    """
     if provider not in get_args(Provider):
         raise InvalidSettingError("provider", f"{provider!r} inconnu")
+    if host is not None and provider != "openrouter":
+        raise InvalidSettingError("host", "un hébergeur n’existe que pour OpenRouter")
     prefix = f"KNITPROOF_{provider.upper()}"
     base_url = environ.get(f"{prefix}_BASE_URL") or None
     if provider == "ollama" and not base_url:
@@ -56,10 +69,10 @@ def load_config(provider: Provider, environ: Mapping[str, str]) -> ModelConfig:
         raise InvalidSettingError(f"{prefix}_BASE_URL", "OpenRouter n’admet pas d’adresse propre")
     return ModelConfig(
         provider=provider,
-        model=_model(environ, f"{prefix}_MODEL", local=provider == "ollama"),
+        model=_model(environ, f"{prefix}_MODEL", model, local=provider == "ollama"),
         api_key=SecretStr(_required(environ, _KEYS[provider])) if provider in _KEYS else None,
         base_url=base_url,
-        host=_required(environ, f"{prefix}_HOST").strip() if provider == "openrouter" else None,
+        host=_host(environ, f"{prefix}_HOST", host) if provider == "openrouter" else None,
         temperature=_temperature(environ, prefix),
         retries=_retries(environ),
     )
@@ -72,8 +85,24 @@ def _required(environ: Mapping[str, str], variable: str) -> str:
     return value
 
 
-def _model(environ: Mapping[str, str], variable: str, *, local: bool) -> str:
-    model = _required(environ, variable).strip()
+def _given_or_required(
+    environ: Mapping[str, str], variable: str, given: str | None, field: str
+) -> str:
+    if given is None:
+        return _required(environ, variable).strip()
+    if not given.strip():
+        raise MissingSettingError(field)
+    return given.strip()
+
+
+def _host(environ: Mapping[str, str], variable: str, given: str | None) -> str:
+    return _given_or_required(environ, variable, given, "host")
+
+
+def _model(environ: Mapping[str, str], variable: str, given: str | None, *, local: bool) -> str:
+    model = _given_or_required(environ, variable, given, "model")
+    if given is not None:
+        variable = "model"
     if local and (":" not in model or model.lower().endswith(":latest")):
         raise InvalidSettingError(variable, "une étiquette explicite est attendue, pas « :latest »")
     if model.lower().endswith("-latest"):
