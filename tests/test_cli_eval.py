@@ -24,6 +24,8 @@ ENVIRONMENT = {
     "KNITPROOF_OLLAMA_MODEL": "qwen3:8b",
     "KNITPROOF_OLLAMA_BASE_URL": "http://localhost:11434/v1",
     "KNITPROOF_OLLAMA_TEMPERATURE": "0",
+    "OPENROUTER_API_KEY": "fausse",
+    "KNITPROOF_OPENROUTER_TEMPERATURE": "0",
     "KNITPROOF_LLM_RETRIES": "0",
 }
 
@@ -61,6 +63,66 @@ def test_one_line_per_model_and_a_dated_result(
     saved = yaml.safe_load(written[0].read_text(encoding="utf-8"))
     assert [item["provider"] for item in saved["providers"]] == ["anthropic", "ollama"]
     assert saved["passes"] == 3
+
+
+def test_two_openrouter_entries_are_wired_with_their_hosts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _install(monkeypatch, stitches=88)
+    models = "openrouter:mistralai/m@mistral/eu,openrouter:moonshotai/k@moonshotai"
+
+    code = main(["eval", "--split", "dev", "--models", models, "--results", str(tmp_path)])
+
+    out = capsys.readouterr().out
+    written = list(tmp_path.glob("*-dev.yaml"))
+    saved = yaml.safe_load(written[0].read_text(encoding="utf-8"))
+    assert code == 0
+    assert out.count("/18") == 2
+    assert [(item["model"], item["host"]) for item in saved["providers"]] == [
+        ("mistralai/m", "mistral/eu"),
+        ("moonshotai/k", "moonshotai"),
+    ]
+
+
+def test_a_model_given_in_the_entry_reaches_the_agent_factory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _install(monkeypatch, stitches=88)
+    seen: list[ModelConfig] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        seen.append(config)
+        return agent_on(
+            FunctionModel(
+                lambda messages, info: ModelResponse(
+                    parts=[ToolCallPart("final_result", {"stitches": 88})]
+                )
+            ),
+            CastOnAnswer,
+            config.retries,
+        )
+
+    monkeypatch.setattr("knitproof.app.baseline.build_agent", factory)
+
+    code = main(
+        ["eval", "--split", "dev", "--models", "ollama:llama3.2:3b", "--results", str(tmp_path)]
+    )
+
+    assert code == 0
+    assert [config.model for config in seen] == ["llama3.2:3b"]
+
+
+def test_malformed_entries_exit_3_naming_the_entry_without_a_result(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _install(monkeypatch, stitches=88)
+
+    for entry in ("ollama:", "openrouter:x@", "anthropic@x"):
+        code = main(["eval", "--split", "dev", "--models", entry, "--results", str(tmp_path)])
+
+        assert code == 3
+        assert entry in capsys.readouterr().err
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_an_abstaining_model_is_shown_with_its_abstentions(

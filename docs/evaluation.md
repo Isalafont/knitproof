@@ -65,7 +65,7 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 
 - Même prompt, versionné, pour tous les modèles.
 - Mode de sortie structurée consigné.
-- Température et nombre de passages fixés : 3 passages par cas, à température 0 ; une température non envoyée (Sonnet 5.5, Kimi) est consignée « non envoyée ».
+- Température et nombre de passages fixés : 3 passages par cas, à température 0 ; une température non envoyée (Sonnet 5.5) est consignée « non envoyée ».
 - Date de chaque passage.
 - Au moins un modèle ouvert ou souverain, accessible en direct (modèle local à poids ouverts, Mistral en direct, OpenGateLLM ou API compatible OpenAI) ; un agrégateur ne compte pas.
 
@@ -99,3 +99,4 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 - 17/11/2026 — Le coût est retiré du `ModelRun` jusqu’au rejeu en CI (CLA-188) ; motif : aucune grille de prix ni rejeu n’existent encore, aucune mesure faite.
 - 17/11/2026 — Pièges et abstention attendue : 7 cas `test` et 2 cas `dev` de la ligne de base sont des pièges ; un cas sans jauge attend l’abstention, seul passage juste (CLA-188, ADR 0035) ; motif : des cas faciles ne prouvent rien, aucune mesure faite.
 - 17/11/2026 — La ligne de base mesure aussi l’exemple sur `dev` (N = 18), décidé par Isabelle (CLA-188) ; motif : un cas de plus ne coûte rien, aucune mesure faite.
+- 17/11/2026 — Kimi K3.1 Pro accepte la température 0 par OpenRouter (CLA-199, mesure 2026-11-17T1528) ; motif : la mesure réelle le prouve ; « par fournisseur » (ADR 0035) se lit « par entrée » ; correction factuelle, règle inchangée.

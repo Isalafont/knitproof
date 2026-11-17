@@ -6,7 +6,7 @@ from decimal import Decimal, localcontext
 from enum import StrEnum
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Literal, TypeGuard, get_args
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict
@@ -15,13 +15,14 @@ from pydantic_ai.exceptions import ModelAPIError
 
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, load_split
+from knitproof.app.model_entries import ModelEntry, ModelEntryError, parse_entry
 from knitproof.domain.measure import SwatchMeasurement
 from knitproof.domain.needle import KnittingMethod
 from knitproof.domain.reading import ModelReading
 from knitproof.engine.cast_on import check_cast_on
 from knitproof.engine.gauge import resolve_gauge as resolve_swatch
 from knitproof.llm.agents import agent_for
-from knitproof.llm.config import ModelConfig, Provider, load_config
+from knitproof.llm.config import ModelConfig, load_config
 from knitproof.llm.errors import ExtractionRejectedError, LlmError
 from knitproof.llm.extract import Prompt, extract
 
@@ -29,7 +30,6 @@ TOLERANCE_CM = Decimal(1)
 WILSON_Z = Decimal("1.96")  # 95 %
 _WILSON_PRECISION = 28
 PASSES = 3
-PROVIDER_NAMES: tuple[str, ...] = get_args(Provider)
 BASELINE_PROMPT = Prompt(
     id="baseline-cast-on-v1",
     text=(
@@ -163,11 +163,16 @@ class BaselineRun(BaseModel):
 
 
 class ProviderResult(BaseModel):
-    """k/N d’un fournisseur sur cas et passages, avec l’intervalle de Wilson à 95 %."""
+    """k/N d’une entrée sur cas et passages, avec l’intervalle de Wilson à 95 %.
+
+    `model` et `host` (hébergeur demandé) sont absents des résultats d’avant CLA-199.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     provider: str
+    model: str | None = None
+    host: str | None = None
     correct: int
     wrong: int
     abstentions: int
@@ -198,19 +203,19 @@ def build_agent(config: ModelConfig) -> Agent[None, CastOnAnswer]:
 def run_baseline(
     split: Split,
     data: Traversable,
-    providers: Sequence[str],
+    entries: Sequence[str],
     environ: Mapping[str, str],
     *,
     clock: Callable[[], float],
     now: Callable[[], datetime.datetime],
     agent_factory: AgentFactory | None = None,
 ) -> BaselineResult:
-    """Interroge chaque fournisseur, `PASSES` fois par cas, et juge chaque réponse.
+    """Interroge chaque entrée de `--models`, `PASSES` fois par cas, et juge chaque réponse.
 
     Toute la configuration se valide avant le premier appel. Une erreur du fournisseur arrête
     la mesure : aucun résultat partiel.
     """
-    configs = [_config_of(name, environ) for name in _checked(providers)]
+    configs = _resolved(entries, environ)
     try:
         cases = load_split(split, data)
     except EvalDataError as error:
@@ -246,29 +251,36 @@ def write_result(result: BaselineResult, folder: Path) -> Path:
     return path
 
 
-def _checked(providers: Sequence[str]) -> Sequence[str]:
-    if not providers:
-        raise BaselineError("au moins un fournisseur est attendu")
-    seen: set[str] = set()
-    for name in providers:
-        if name not in PROVIDER_NAMES:
+def _resolved(entries: Sequence[str], environ: Mapping[str, str]) -> list[ModelConfig]:
+    """Une configuration par entrée ; deux entrées de même fournisseur, modèle et hébergeur
+    résolus sont un doublon, même écrites autrement."""
+    if not entries:
+        raise BaselineError("au moins une entrée est attendue")
+    configs: list[ModelConfig] = []
+    seen: set[tuple[str, str, str | None]] = set()
+    for text in entries:
+        try:
+            entry = parse_entry(text)
+        except ModelEntryError as error:
+            raise BaselineError(str(error)) from error
+        config = _config_of(entry, environ)
+        identity = (config.provider, config.model, config.host)
+        if identity in seen:
             raise BaselineError(
-                f"fournisseur « {name} » inconnu ; attendus : {', '.join(PROVIDER_NAMES)}"
+                f"entrée « {text} » : même fournisseur, modèle et hébergeur nommés deux fois"
             )
-        if name in seen:
-            raise BaselineError(f"fournisseur « {name} » nommé deux fois")
-        seen.add(name)
-    return providers
+        seen.add(identity)
+        configs.append(config)
+    return configs
 
 
-def _config_of(name: str, environ: Mapping[str, str]) -> ModelConfig:
-    """La configuration du fournisseur, avec une température explicite : 0 ou `omit`."""
-    if not _is_provider(name):
-        raise BaselineError(f"fournisseur « {name} » inconnu")
+def _config_of(entry: ModelEntry, environ: Mapping[str, str]) -> ModelConfig:
+    """La configuration de l’entrée, avec une température explicite : 0 ou `omit`."""
+    name = entry.provider
     try:
-        config = load_config(name, environ)
+        config = load_config(name, environ, model=entry.model, host=entry.host)
     except LlmError as error:
-        raise BaselineError(str(error)) from error
+        raise BaselineError(f"entrée « {entry.text} » : {error}") from error
     own = f"KNITPROOF_{name.upper()}_TEMPERATURE"
     variable = own if own in environ else _GLOBAL_TEMPERATURE
     if not environ.get(variable, "").strip():
@@ -278,10 +290,6 @@ def _config_of(name: str, environ: Mapping[str, str]) -> ModelConfig:
     if config.temperature not in (None, 0.0):
         raise BaselineError(f"{variable} : la ligne de base se mesure à température 0")
     return config
-
-
-def _is_provider(name: str) -> TypeGuard[Provider]:
-    return name in PROVIDER_NAMES
 
 
 def _measure(
@@ -302,6 +310,8 @@ def _measure(
     precision = Decimal("0.0001")
     return ProviderResult(
         provider=config.provider,
+        model=config.model,
+        host=config.host,
         correct=correct,
         wrong=verdicts.count(Verdict.WRONG),
         abstentions=verdicts.count(Verdict.ABSTENTION),

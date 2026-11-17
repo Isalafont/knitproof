@@ -23,7 +23,6 @@ from pydantic_ai.usage import RequestUsage
 from knitproof.app.baseline import (
     BASELINE_PROMPT,
     PASSES,
-    PROVIDER_NAMES,
     AgentFactory,
     BaselineError,
     BaselineResult,
@@ -36,6 +35,7 @@ from knitproof.app.baseline import (
 )
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash
+from knitproof.app.model_entries import PROVIDER_NAMES
 from knitproof.llm.agents import agent_on
 from knitproof.llm.config import ModelConfig
 
@@ -95,9 +95,10 @@ def test_a_non_positive_number_is_wrong_without_a_finished_circumference(stitche
 
 @given(stitches=st.integers(min_value=1, max_value=400))
 def test_the_verdict_is_correct_exactly_within_one_cm(stitches: int) -> None:
-    # Jauge 20 m pour 10 cm : le tour fini vaut stitches / 2 ; tour visé 43,2 cm.
+    # Jauge 20 m pour 10 cm : le tour fini vaut stitches / 2 ;
+    # tour visé 43 cm (48 cm, 5 cm en moins).
     finished = Fraction(stitches, 2)
-    within = abs(finished - Fraction(432, 10)) <= 1
+    within = abs(finished - 43) <= 1
 
     verdict = score(_case(), CastOnAnswer(stitches=stitches)).verdict
 
@@ -242,14 +243,14 @@ def _answering(*replies: dict[str, object] | Exception) -> AgentFactory:
 
 def _run(
     factory: AgentFactory,
-    providers: Sequence[str] = ("anthropic", "ollama"),
+    entries: Sequence[str] = ("anthropic", "ollama"),
     environ: Mapping[str, str] = ENVIRONMENT,
 ) -> BaselineResult:
     ticks = itertools.count()
     return run_baseline(
         Split.DEV,
         DATA,
-        providers,
+        entries,
         environ,
         clock=lambda: next(ticks) * 0.5,
         now=lambda: NOW,
@@ -284,7 +285,7 @@ def test_a_null_answer_is_an_abstention_never_correct() -> None:
 
 
 def test_a_rejected_output_is_an_abstention_with_its_reason() -> None:
-    result = _run(_answering({"stitches": "quatre-vingt-huit"}), providers=("ollama",))
+    result = _run(_answering({"stitches": "quatre-vingt-huit"}), entries=("ollama",))
 
     runs = result.providers[0].runs
     assert {run.verdict for run in runs} == {Verdict.ABSTENTION}
@@ -293,7 +294,7 @@ def test_a_rejected_output_is_an_abstention_with_its_reason() -> None:
 
 
 def test_the_model_run_is_complete_for_a_read_pass() -> None:
-    result = _run(_answering({"stitches": 88}), providers=("anthropic",))
+    result = _run(_answering({"stitches": 88}), entries=("anthropic",))
 
     first = result.providers[0].runs[0]
     assert first.run.provider == "anthropic"
@@ -309,7 +310,7 @@ def test_the_model_run_is_complete_for_a_read_pass() -> None:
 
 
 def test_the_temperature_sent_is_recorded() -> None:
-    result = _run(_answering({"stitches": 88}), providers=("ollama",))
+    result = _run(_answering({"stitches": 88}), entries=("ollama",))
 
     assert result.providers[0].runs[0].run.temperature == 0.0
 
@@ -326,12 +327,12 @@ def test_a_provider_http_error_stops_the_measure_without_a_result() -> None:
     failing = ModelHTTPError(400, "claude", body="temperature is not supported")
 
     with pytest.raises(BaselineError, match="anthropic"):
-        _run(_answering(failing), providers=("anthropic",))
+        _run(_answering(failing), entries=("anthropic",))
 
 
 def test_an_unknown_provider_is_refused_with_the_known_names() -> None:
     with pytest.raises(BaselineError, match="inconnu") as info:
-        _run(_answering({"stitches": 88}), providers=("gemini",))
+        _run(_answering({"stitches": 88}), entries=("gemini",))
 
     assert all(name in str(info.value) for name in PROVIDER_NAMES)
 
@@ -383,19 +384,68 @@ def test_a_global_zero_counts_as_explicit() -> None:
     environ = {k: v for k, v in ENVIRONMENT.items() if k != "KNITPROOF_OLLAMA_TEMPERATURE"}
     environ["KNITPROOF_LLM_TEMPERATURE"] = "0"
 
-    result = _run(_answering({"stitches": 88}), providers=("ollama",), environ=environ)
+    result = _run(_answering({"stitches": 88}), entries=("ollama",), environ=environ)
 
     assert result.providers[0].runs[0].run.temperature == 0.0
 
 
-def test_a_provider_named_twice_is_refused() -> None:
+def test_the_same_entry_twice_is_refused() -> None:
     with pytest.raises(BaselineError, match="deux fois"):
-        _run(_answering({"stitches": 88}), providers=("ollama", "ollama"))
+        _run(_answering({"stitches": 88}), entries=("ollama", "ollama"))
+
+
+def test_the_same_resolved_model_twice_is_refused() -> None:
+    with pytest.raises(BaselineError, match="deux fois"):
+        _run(_answering({"stitches": 88}), entries=("ollama", "ollama:qwen3:8b"))
+
+
+def test_two_models_of_one_provider_make_two_lines() -> None:
+    result = _run(_answering({"stitches": 88}), entries=("ollama:qwen3:8b", "ollama:llama3.2:3b"))
+
+    first, second = result.providers
+    assert [first.runs[0].run.model, second.runs[0].run.model] == ["qwen3:8b", "llama3.2:3b"]
+    assert first.runs[0].run.prompt_sha256 == second.runs[0].run.prompt_sha256
+    assert first.total == second.total
+
+
+def test_one_model_on_two_hosts_makes_two_lines() -> None:
+    environ = {
+        **ENVIRONMENT,
+        "OPENROUTER_API_KEY": "fausse",
+        "KNITPROOF_OPENROUTER_TEMPERATURE": "0",
+    }
+    seen: list[ModelConfig] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        seen.append(config)
+        return _answering({"stitches": 88})(config)
+
+    result = _run(factory, entries=("openrouter:x@a", "openrouter:x@b"), environ=environ)
+
+    assert len(result.providers) == 2
+    assert [(c.model, c.host) for c in seen] == [("x", "a"), ("x", "b")]
+
+
+def test_a_malformed_entry_is_refused_before_any_call() -> None:
+    calls: list[int] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        calls.append(1)
+        return _answering({"stitches": 88})(config)
+
+    with pytest.raises(BaselineError, match="ollama:"):
+        _run(factory, entries=("anthropic", "ollama:"))
+    assert calls == []
+
+
+def test_a_config_error_names_the_typed_entry() -> None:
+    with pytest.raises(BaselineError, match="ollama:qwen3"):
+        _run(_answering({"stitches": 88}), entries=("ollama:qwen3",))
 
 
 def test_no_provider_is_refused() -> None:
     with pytest.raises(BaselineError, match="au moins un"):
-        _run(_answering({"stitches": 88}), providers=())
+        _run(_answering({"stitches": 88}), entries=())
 
 
 def test_a_split_without_a_case_is_refused() -> None:
@@ -411,3 +461,45 @@ def test_a_split_without_a_case_is_refused() -> None:
             now=lambda: NOW,
             agent_factory=_answering({"stitches": 88}),
         )
+
+
+def test_each_line_records_its_model_and_host() -> None:
+    environ = {
+        **ENVIRONMENT,
+        "OPENROUTER_API_KEY": "fausse",
+        "KNITPROOF_OPENROUTER_TEMPERATURE": "0",
+    }
+
+    result = _run(
+        _answering({"stitches": 88}),
+        entries=("ollama:qwen3:8b", "openrouter:x@a", "openrouter:y:free@b"),
+        environ=environ,
+    )
+
+    assert [(item.provider, item.model, item.host) for item in result.providers] == [
+        ("ollama", "qwen3:8b", None),
+        ("openrouter", "x", "a"),
+        ("openrouter", "y:free", "b"),
+    ]
+
+
+_RESULTS = Path(__file__).parent.parent / "evals" / "results"
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "2026-11-17T1409-dev.yaml",
+        "2026-11-17T1428-dev.yaml",
+        "2026-11-17T1435-dev.yaml",
+        "2026-11-17T1443-dev.yaml",
+        "2026-11-17T1458-dev.yaml",
+        "2026-11-17T1528-dev.yaml",
+    ],
+)
+def test_results_written_before_cla_199_still_validate(name: str) -> None:
+    text = (_RESULTS / name).read_text(encoding="utf-8")
+
+    result = BaselineResult.model_validate(yaml.safe_load(text))
+
+    assert result.providers

@@ -1,0 +1,464 @@
+split: dev
+prompt_id: baseline-cast-on-v1
+prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+passes: 3
+measured_on: '2026-11-17T15:28:24.857696+01:00'
+providers:
+- provider: openrouter
+  correct: 18
+  wrong: 0
+  abstentions: 0
+  total: 18
+  low: '0.8241'
+  high: '1.0000'
+  runs:
+  - case_id: bonnet-1-an-tour-fini-donne
+    attempt: 1
+    answer:
+      stitches: 92
+    rejection: null
+    finished_cm: '41.81818181818181818181818182'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 442
+      output_tokens: 181
+      latency_ms: 5066
+      at: '2026-11-17T15:28:29.960215+01:00'
+  - case_id: bonnet-1-an-tour-fini-donne
+    attempt: 2
+    answer:
+      stitches: 92
+    rejection: null
+    finished_cm: '41.81818181818181818181818182'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 442
+      output_tokens: 294
+      latency_ms: 7472
+      at: '2026-11-17T15:28:37.432925+01:00'
+  - case_id: bonnet-1-an-tour-fini-donne
+    attempt: 3
+    answer:
+      stitches: 92
+    rejection: null
+    finished_cm: '41.81818181818181818181818182'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 442
+      output_tokens: 223
+      latency_ms: 5493
+      at: '2026-11-17T15:28:42.926050+01:00'
+  - case_id: bonnet-5-ans-jersey-roule
+    attempt: 1
+    answer:
+      stitches: 85
+    rejection: null
+    finished_cm: '47.22222222222222222222222222'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 438
+      output_tokens: 196
+      latency_ms: 4510
+      at: '2026-11-17T15:28:47.436737+01:00'
+  - case_id: bonnet-5-ans-jersey-roule
+    attempt: 2
+    answer:
+      stitches: 85
+    rejection: null
+    finished_cm: '47.22222222222222222222222222'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 438
+      output_tokens: 218
+      latency_ms: 5603
+      at: '2026-11-17T15:28:53.039545+01:00'
+  - case_id: bonnet-5-ans-jersey-roule
+    attempt: 3
+    answer:
+      stitches: 85
+    rejection: null
+    finished_cm: '47.22222222222222222222222222'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 438
+      output_tokens: 341
+      latency_ms: 8922
+      at: '2026-11-17T15:29:01.962086+01:00'
+  - case_id: bonnet-ado-cotes-2-2
+    attempt: 1
+    answer:
+      stitches: 76
+    rejection: null
+    finished_cm: '47.5'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 429
+      output_tokens: 371
+      latency_ms: 8766
+      at: '2026-11-17T15:29:10.729047+01:00'
+  - case_id: bonnet-ado-cotes-2-2
+    attempt: 2
+    answer:
+      stitches: 76
+    rejection: null
+    finished_cm: '47.5'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 429
+      output_tokens: 336
+      latency_ms: 7759
+      at: '2026-11-17T15:29:18.488404+01:00'
+  - case_id: bonnet-ado-cotes-2-2
+    attempt: 3
+    answer:
+      stitches: 76
+    rejection: null
+    finished_cm: '47.5'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 429
+      output_tokens: 187
+      latency_ms: 4646
+      at: '2026-11-17T15:29:23.134823+01:00'
+  - case_id: bonnet-adulte-avant-et-apres-blocage
+    attempt: 1
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '52'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 442
+      output_tokens: 241
+      latency_ms: 6056
+      at: '2026-11-17T15:29:29.191001+01:00'
+  - case_id: bonnet-adulte-avant-et-apres-blocage
+    attempt: 2
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '52'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 442
+      output_tokens: 205
+      latency_ms: 5209
+      at: '2026-11-17T15:29:34.400357+01:00'
+  - case_id: bonnet-adulte-avant-et-apres-blocage
+    attempt: 3
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '52'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 442
+      output_tokens: 195
+      latency_ms: 4559
+      at: '2026-11-17T15:29:38.959748+01:00'
+  - case_id: bonnet-naissance-cotes-1-1
+    attempt: 1
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '33.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 459
+      output_tokens: 219
+      latency_ms: 5180
+      at: '2026-11-17T15:29:44.140243+01:00'
+  - case_id: bonnet-naissance-cotes-1-1
+    attempt: 2
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '33.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 459
+      output_tokens: 160
+      latency_ms: 3916
+      at: '2026-11-17T15:29:48.056471+01:00'
+  - case_id: bonnet-naissance-cotes-1-1
+    attempt: 3
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '33.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 459
+      output_tokens: 226
+      latency_ms: 5355
+      at: '2026-11-17T15:29:53.412024+01:00'
+  - case_id: exemple-bonnet-3-ans
+    attempt: 1
+    answer:
+      stitches: 88
+    rejection: null
+    finished_cm: '44'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 375
+      output_tokens: 897
+      latency_ms: 20972
+      at: '2026-11-17T15:30:14.389409+01:00'
+  - case_id: exemple-bonnet-3-ans
+    attempt: 2
+    answer:
+      stitches: 88
+    rejection: null
+    finished_cm: '44'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 375
+      output_tokens: 437
+      latency_ms: 10402
+      at: '2026-11-17T15:30:24.792567+01:00'
+  - case_id: exemple-bonnet-3-ans
+    attempt: 3
+    answer:
+      stitches: 88
+    rejection: null
+    finished_cm: '44'
+    verdict: correct
+    run:
+      provider: openrouter
+      model: moonshotai/kimi-k3.1-pro
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: openrouter
+        model: moonshotai/kimi-k3.1-pro
+        model_version: moonshotai/kimi-k3.1-pro
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: Moonshot AI
+      temperature: 0.0
+      output_mode: tool
+      input_tokens: 375
+      output_tokens: 675
+      latency_ms: 17660
+      at: '2026-11-17T15:30:42.453729+01:00'

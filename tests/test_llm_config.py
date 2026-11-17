@@ -267,3 +267,48 @@ def test_omit_sends_no_temperature() -> None:
 def test_a_bad_provider_temperature_is_named() -> None:
     with pytest.raises(InvalidSettingError, match="KNITPROOF_OLLAMA_TEMPERATURE"):
         load_config("ollama", environ("ollama", KNITPROOF_OLLAMA_TEMPERATURE="chaud"))
+
+
+def test_a_given_model_replaces_the_variable() -> None:
+    env = environ("openrouter", KNITPROOF_OPENROUTER_MODEL=None)
+
+    config = load_config("openrouter", env, model="m/x", host="mistral/eu")
+
+    assert config.model == "m/x"
+    assert config.host == "mistral/eu"
+
+
+@pytest.mark.parametrize(
+    ("provider", "model"),
+    [("anthropic", "x-latest"), ("ollama", "qwen3"), ("ollama", "qwen3:latest")],
+)
+def test_a_given_model_is_checked_like_the_variable(provider: Provider, model: str) -> None:
+    with pytest.raises(InvalidSettingError):
+        load_config(provider, environ(provider), model=model)
+
+
+@pytest.mark.parametrize("provider", ["anthropic", "mistral", "moonshotai", "ollama"])
+def test_a_given_host_outside_openrouter_is_refused(provider: Provider) -> None:
+    with pytest.raises(InvalidSettingError):
+        load_config(provider, environ(provider), host="x")
+
+
+def test_without_a_given_host_openrouter_reads_the_variable() -> None:
+    config = load_config("openrouter", environ("openrouter"), model="m/x")
+
+    assert config.model == "m/x"
+    assert config.host == "mistral"
+
+
+def test_a_refused_given_model_names_the_field_not_the_variable() -> None:
+    with pytest.raises(InvalidSettingError) as info:
+        load_config("ollama", environ("ollama"), model="qwen3")
+
+    assert "model" in str(info.value)
+    assert "KNITPROOF_OLLAMA_MODEL" not in str(info.value)
+
+
+@pytest.mark.parametrize("blank", [" ", ""])
+def test_a_blank_given_model_is_refused(blank: str) -> None:
+    with pytest.raises(LlmError):
+        load_config("anthropic", environ("anthropic"), model=blank)

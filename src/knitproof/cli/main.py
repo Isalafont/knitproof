@@ -78,7 +78,11 @@ def _parser() -> argparse.ArgumentParser:
     calc.add_argument("request", type=Path, help="fichier de demande YAML")
     measure = commands.add_parser("eval", help="mesurer la ligne de base « LLM seul »")
     measure.add_argument("--split", choices=[split.value for split in Split], required=True)
-    measure.add_argument("--models", required=True, help="fournisseurs séparés par des virgules")
+    measure.add_argument(
+        "--models",
+        required=True,
+        help="entrées `fournisseur[:modèle][@hébergeur]` séparées par des virgules",
+    )
     measure.add_argument(
         "--results", type=Path, default=Path("evals/results"), help="dossier des résultats"
     )
