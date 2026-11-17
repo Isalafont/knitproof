@@ -16,12 +16,24 @@ from knitproof.app.eval_cases import (
     load_split,
 )
 
+REQUEST: dict[str, object] = {
+    "head_circumference": {"value": "48", "unit": "cm", "provenance": "measured"},
+    "ease": {"value": "-10", "unit": "percent", "provenance": "entered"},
+    "swatch": {
+        "needle": {"size": "4 mm", "kind": "straight"},
+        "after_blocking": {"stitches": "20", "width": {"value": "10", "unit": "cm"}},
+    },
+    "needles": [{"size": "4 mm", "kind": "double_pointed"}],
+    "stitch_multiple": {"repeat_multiple": 4, "repeat_offset": 0, "provenance": "entered"},
+}
+
 
 def _case(case_id: str = "cas-1", target: str = "44") -> dict[str, object]:
     return {
         "id": case_id,
         "input": "Bonnet pour 3 ans.",
-        "expected": {"target_circumference_cm": target},
+        "request": REQUEST,
+        "expected": {"target_circumference_cm": target, "cast_on_stitches": 88},
     }
 
 

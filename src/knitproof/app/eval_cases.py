@@ -19,6 +19,8 @@ from pydantic import (
     model_validator,
 )
 
+from knitproof.app.beanie_request import BeanieRequest
+from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import PlainDecimal
 from knitproof.domain.provenance import _only_a_date
 from knitproof.domain.yarn import Text
@@ -37,11 +39,12 @@ class InjectedError(StrEnum):
 
 
 class BaselineExpected(BaseModel):
-    """Attendu de la ligne de base : le tour fini visé, tête et aisance comprises."""
+    """Attendu de la ligne de base : le tour visé (tête et aisance) et le montage du moteur."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     target_circumference_cm: PlainDecimal
+    cast_on_stitches: StrictPositiveInt
 
 
 class EvalCase(BaseModel):
@@ -51,6 +54,7 @@ class EvalCase(BaseModel):
 
     id: Annotated[str, StringConstraints(pattern=r"^[a-z0-9-]+$")]
     input: Text
+    request: BeanieRequest
     expected: BaselineExpected
     injected_error: InjectedError | None = None
     absent_fields: tuple[str, ...] = ()
