@@ -1,5 +1,9 @@
 """La jauge, le verdict et l’intervalle de la ligne de base (CLA-188)."""
 
+import datetime
+import hashlib
+import itertools
+from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from fractions import Fraction
 from importlib.resources import files
@@ -8,10 +12,30 @@ import pytest
 import yaml
 from hypothesis import given
 from hypothesis import strategies as st
+from pydantic_ai import Agent
+from pydantic_ai.exceptions import ModelHTTPError
+from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
+from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.usage import RequestUsage
 
-from knitproof.app.baseline import CastOnAnswer, Verdict, resolve_gauge, score, wilson
+from knitproof.app.baseline import (
+    BASELINE_PROMPT,
+    PASSES,
+    PROVIDER_NAMES,
+    AgentFactory,
+    BaselineError,
+    BaselineResult,
+    CastOnAnswer,
+    Verdict,
+    resolve_gauge,
+    run_baseline,
+    score,
+    wilson,
+)
 from knitproof.app.beanie_request import BeanieRequest
-from knitproof.app.eval_cases import EvalCase, EvalDataError
+from knitproof.app.eval_cases import EvalCase, EvalDataError, Split
+from knitproof.llm.agents import agent_on
+from knitproof.llm.config import ModelConfig
 
 _EXAMPLE = files("knitproof") / "evals" / "data" / "dev" / "exemple-bonnet-3-ans.yaml"
 
@@ -130,3 +154,190 @@ def test_wilson_grows_with_the_successes(data: st.DataObject) -> None:
 
     assert low <= next_low
     assert high <= next_high
+
+
+DATA = files("knitproof") / "evals" / "data"
+NOW = datetime.datetime(2026, 11, 17, 9, 30, tzinfo=datetime.UTC)
+ENVIRONMENT = {
+    "ANTHROPIC_API_KEY": "fausse",
+    "KNITPROOF_ANTHROPIC_MODEL": "claude-sonnet-5-5-20261001",
+    "KNITPROOF_ANTHROPIC_TEMPERATURE": "omit",
+    "KNITPROOF_OLLAMA_MODEL": "qwen3:8b",
+    "KNITPROOF_OLLAMA_BASE_URL": "http://localhost:11434/v1",
+    "KNITPROOF_OLLAMA_TEMPERATURE": "0",
+    "KNITPROOF_LLM_RETRIES": "0",
+}
+
+
+def _answering(*replies: dict[str, object] | Exception) -> AgentFactory:
+    """Une fabrique dont l’agent rend `replies` tour à tour, puis la dernière en boucle."""
+    queue = list(replies)
+
+    def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        item = queue.pop(0) if len(queue) > 1 else queue[0]
+        if isinstance(item, Exception):
+            raise item
+        return ModelResponse(
+            parts=[ToolCallPart("final_result", item)],
+            usage=RequestUsage(input_tokens=51, output_tokens=4),
+        )
+
+    return lambda config: agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+
+def _run(
+    factory: AgentFactory,
+    providers: Sequence[str] = ("anthropic", "ollama"),
+    environ: Mapping[str, str] = ENVIRONMENT,
+) -> BaselineResult:
+    ticks = itertools.count()
+    return run_baseline(
+        Split.DEV,
+        DATA,
+        providers,
+        environ,
+        clock=lambda: next(ticks) * 0.5,
+        now=lambda: NOW,
+        agent_factory=factory,
+    )
+
+
+def test_two_providers_get_the_same_prompt_and_the_same_number_of_passes() -> None:
+    result = _run(_answering({"stitches": 88}))
+
+    assert [item.provider for item in result.providers] == ["anthropic", "ollama"]
+    for item in result.providers:
+        assert len(item.runs) == PASSES == 3
+        assert {run.run.prompt_id for run in item.runs} == {"baseline-cast-on-v1"}
+        assert {run.run.prompt_sha256 for run in item.runs} == {BASELINE_PROMPT.sha256}
+        assert (item.correct, item.total) == (3, 3)
+
+
+def test_a_model_that_is_always_wrong_scores_zero() -> None:
+    result = _run(_answering({"stitches": 96}))
+
+    for item in result.providers:
+        assert (item.correct, item.wrong, item.abstentions, item.total) == (0, 3, 0, 3)
+        assert item.low == Decimal("0.0000")
+
+
+def test_a_null_answer_is_an_abstention_never_correct() -> None:
+    result = _run(_answering({"stitches": None}))
+
+    for item in result.providers:
+        assert (item.correct, item.abstentions) == (0, 3)
+
+
+def test_a_rejected_output_is_an_abstention_with_its_reason() -> None:
+    result = _run(_answering({"stitches": "quatre-vingt-huit"}), providers=("ollama",))
+
+    runs = result.providers[0].runs
+    assert {run.verdict for run in runs} == {Verdict.ABSTENTION}
+    assert all(run.answer is None and run.rejection for run in runs)
+    assert all(run.run.reading is None and run.run.input_tokens is None for run in runs)
+
+
+def test_the_model_run_is_complete_for_a_read_pass() -> None:
+    result = _run(_answering({"stitches": 88}), providers=("anthropic",))
+
+    first = result.providers[0].runs[0]
+    assert first.run.provider == "anthropic"
+    assert first.run.model == "claude-sonnet-5-5-20261001"
+    assert first.run.reading is not None
+    assert first.run.reading.model_version
+    assert first.run.temperature is None  # « non envoyée »
+    assert first.run.output_mode == "tool"
+    assert (first.run.input_tokens, first.run.output_tokens) == (51, 4)
+    assert first.run.latency_ms == 500
+    assert first.run.at == NOW
+    assert (first.verdict, first.finished_cm) == (Verdict.CORRECT, Decimal(44))
+
+
+def test_the_temperature_sent_is_recorded() -> None:
+    result = _run(_answering({"stitches": 88}), providers=("ollama",))
+
+    assert result.providers[0].runs[0].run.temperature == 0.0
+
+
+def test_the_prompt_hash_is_stable() -> None:
+    expected = hashlib.sha256(BASELINE_PROMPT.text.encode("utf-8")).hexdigest()
+
+    assert BASELINE_PROMPT.id == "baseline-cast-on-v1"
+    assert BASELINE_PROMPT.sha256 == expected
+    assert BASELINE_PROMPT.sha256 == _run(_answering({"stitches": 88})).prompt_sha256
+
+
+def test_a_provider_http_error_stops_the_measure_without_a_result() -> None:
+    failing = ModelHTTPError(400, "claude", body="temperature is not supported")
+
+    with pytest.raises(BaselineError, match="anthropic"):
+        _run(_answering(failing), providers=("anthropic",))
+
+
+def test_an_unknown_provider_is_refused_with_the_known_names() -> None:
+    with pytest.raises(BaselineError, match="inconnu") as info:
+        _run(_answering({"stitches": 88}), providers=("gemini",))
+
+    assert all(name in str(info.value) for name in PROVIDER_NAMES)
+
+
+def test_a_missing_setting_is_named_before_any_call() -> None:
+    calls: list[int] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        calls.append(1)
+        return _answering({"stitches": 88})(config)
+
+    environ = {k: v for k, v in ENVIRONMENT.items() if k != "ANTHROPIC_API_KEY"}
+
+    with pytest.raises(BaselineError, match="ANTHROPIC_API_KEY"):
+        _run(factory, environ=environ)
+    assert calls == []
+
+
+@pytest.mark.parametrize("value", ["0.5", "1"])
+def test_a_temperature_other_than_zero_is_refused(value: str) -> None:
+    environ = {**ENVIRONMENT, "KNITPROOF_OLLAMA_TEMPERATURE": value}
+
+    with pytest.raises(BaselineError, match="KNITPROOF_OLLAMA_TEMPERATURE"):
+        _run(_answering({"stitches": 88}), environ=environ)
+
+
+def test_an_inherited_global_temperature_other_than_zero_is_refused() -> None:
+    environ = {k: v for k, v in ENVIRONMENT.items() if k != "KNITPROOF_OLLAMA_TEMPERATURE"}
+    environ["KNITPROOF_LLM_TEMPERATURE"] = "0.7"
+
+    with pytest.raises(BaselineError, match="KNITPROOF_LLM_TEMPERATURE"):
+        _run(_answering({"stitches": 88}), environ=environ)
+
+
+@pytest.mark.parametrize("blank", [None, ""])
+def test_a_provider_without_an_explicit_temperature_is_refused(blank: str | None) -> None:
+    environ = {k: v for k, v in ENVIRONMENT.items() if k != "KNITPROOF_OLLAMA_TEMPERATURE"}
+    if blank is not None:
+        environ["KNITPROOF_OLLAMA_TEMPERATURE"] = blank
+        environ["KNITPROOF_LLM_TEMPERATURE"] = "0"
+
+    with pytest.raises(
+        BaselineError, match="KNITPROOF_OLLAMA_TEMPERATURE ou KNITPROOF_LLM_TEMPERATURE"
+    ):
+        _run(_answering({"stitches": 88}), environ=environ)
+
+
+def test_a_global_zero_counts_as_explicit() -> None:
+    environ = {k: v for k, v in ENVIRONMENT.items() if k != "KNITPROOF_OLLAMA_TEMPERATURE"}
+    environ["KNITPROOF_LLM_TEMPERATURE"] = "0"
+
+    result = _run(_answering({"stitches": 88}), providers=("ollama",), environ=environ)
+
+    assert result.providers[0].runs[0].run.temperature == 0.0
+
+
+def test_a_provider_named_twice_is_refused() -> None:
+    with pytest.raises(BaselineError, match="deux fois"):
+        _run(_answering({"stitches": 88}), providers=("ollama", "ollama"))
+
+
+def test_no_provider_is_refused() -> None:
+    with pytest.raises(BaselineError, match="au moins un"):
+        _run(_answering({"stitches": 88}), providers=())
