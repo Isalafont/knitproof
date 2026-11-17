@@ -26,7 +26,7 @@ La couche `llm` appelle Anthropic, Mistral, OpenAI, OpenRouter, Kimi (Moonshot A
 | `KNITPROOF_ANTHROPIC_TEMPERATURE`, `KNITPROOF_MISTRAL_TEMPERATURE`, `KNITPROOF_OPENAI_TEMPERATURE`, `KNITPROOF_OPENROUTER_TEMPERATURE`, `KNITPROOF_MOONSHOTAI_TEMPERATURE`, `KNITPROOF_OLLAMA_TEMPERATURE` | température du fournisseur, facultative ; prime sur la globale, même vide ; `omit` n’envoie aucune température |
 | `KNITPROOF_LLM_RETRIES` | relances de sortie, obligatoire (0 ou plus) |
 
-La température est facultative parce que certains modèles la refusent : Sonnet 5.5 répond 400 si `temperature` est posé ([doc Anthropic](https://platform.claude.com/docs/en/models/sonnet-5-5/overview)) et pydanticAI la retire pour Opus 4.7, 4.8, 5 et 5.5 ([doc pydanticAI](https://pydantic.dev/docs/ai/models/anthropic/)). Absente, rien n’est envoyé. Les modèles de raisonnement d’OpenAI peuvent aussi refuser `temperature`, Kimi aussi (à prouver par l’appel `live`).
+La température est facultative parce que certains modèles la refusent : Sonnet 5.5 répond 400 si `temperature` est posé ([doc Anthropic](https://platform.claude.com/docs/en/models/sonnet-5-5/overview)) et pydanticAI la retire pour Opus 4.7, 4.8, 5 et 5.5 ([doc pydanticAI](https://pydantic.dev/docs/ai/models/anthropic/)). Absente, rien n’est envoyé. Les modèles de raisonnement d’OpenAI peuvent aussi refuser `temperature`, Kimi en direct aussi (non prouvé, à prouver par l’appel `live`) ; Kimi K3.1 Pro par OpenRouter a accepté 0 le 17/11/2026.
 
 `uv run pytest` n’appelle jamais un fournisseur : les requêtes réelles sont interdites en test. L’appel de contrôle, un par fournisseur, se lance à la main :
 
@@ -45,17 +45,17 @@ Modèle local : installer Ollama, puis `ollama pull` avec un nom à étiquette e
 
 ## Mesurer la ligne de base « LLM seul »
 
-`knitproof eval` interroge chaque fournisseur nommé, 3 fois par cas, avec le prompt figé `baseline-cast-on-v1`, et juge chaque réponse par le moteur : le tour fini du montage rendu doit tomber à ±1 cm du tour visé ([ADR 0035](adr/0035-ligne-de-base-llm-seul.md)). Une réponse `null` ou refusée est une abstention, juste seulement sur un cas qui attend l’abstention (aucune jauge).
+`knitproof eval` interroge chaque entrée de `--models`, 3 fois par cas, avec le prompt figé `baseline-cast-on-v1`, et juge chaque réponse par le moteur : le tour fini du montage rendu doit tomber à ±1 cm du tour visé ([ADR 0035](adr/0035-ligne-de-base-llm-seul.md)). Une réponse `null` ou refusée est une abstention, juste seulement sur un cas qui attend l’abstention (aucune jauge).
 
 ```sh
 uv run --env-file .env knitproof eval --split dev --models anthropic,openrouter,ollama
 ```
 
 - `--split` : `dev` (5 cas et l’exemple, N = 18) ou `test` (15 cas, N = 45) ; ne lancer `test` qu’après le gel du prompt.
-- `--models` : des noms de fournisseurs (`anthropic`, `mistral`, `openai`, `openrouter`, `moonshotai`, `ollama`), un modèle par fournisseur, celui de `KNITPROOF_<P>_MODEL`.
+- `--models` : des entrées `fournisseur[:modèle][@hébergeur]` séparées par des virgules. Fournisseurs : `anthropic`, `mistral`, `openai`, `openrouter`, `moonshotai`, `ollama`. On coupe au dernier `@` (l’hébergeur, OpenRouter seulement), puis au premier `:` : le reste est le modèle, étiquette Ollama ou suffixe OpenRouter compris (`ollama:qwen3:8b`, `openrouter:x:free`). Sans modèle, c’est `KNITPROOF_<P>_MODEL` ; sans hébergeur, `KNITPROOF_OPENROUTER_HOST`. Une entrée se définit par son fournisseur, son modèle et son hébergeur résolus : `openrouter` et `openrouter:<modèle de .env>` sont le même doublon, refusé. Un modèle vide après `:`, un hébergeur vide après `@`, un `@` hors OpenRouter ou un fournisseur inconnu sont refusés, avec l’entrée tapée dans le message. La température reste une par fournisseur : deux modèles OpenRouter partagent `KNITPROOF_OPENROUTER_TEMPERATURE`. Les variantes `:nitro` et `:floor` changent le routage ; leur effet avec `@hébergeur` n’est pas documenté ([variantes OpenRouter](https://openrouter.ai/docs/guides/routing/model-variants)). Exemple : `--models openrouter:mistralai/mistral-small-3.2-24b-instruct@mistral/eu,openrouter:moonshotai/kimi-k3.1-pro@moonshotai,ollama:qwen3:8b`.
 - `--results` : dossier du résultat, `evals/results` par défaut. Le YAML `AAAA-MM-JJTHHMM-<split>.yaml` n’écrase jamais un fichier.
-- Chaque fournisseur demande une température explicite, `KNITPROOF_<P>_TEMPERATURE` ou, à défaut, `KNITPROOF_LLM_TEMPERATURE`, à `0` ou `omit` (modèle qui la refuse : Sonnet 5.5, Kimi) ; toute autre valeur est refusée.
-- Sortie : une ligne par fournisseur, `k/N [bas ; haut]` (intervalle de Wilson à 95 %) et les abstentions. Code 0 si la mesure est faite, 3 si la configuration est invalide ou si le fournisseur répond par une erreur : aucun résultat partiel n’est écrit.
+- Chaque entrée demande une température explicite, `KNITPROOF_<P>_TEMPERATURE` ou, à défaut, `KNITPROOF_LLM_TEMPERATURE`, à `0` ou `omit` (modèle qui la refuse : Sonnet 5.5 ; Kimi en direct, non prouvé ; Kimi K3.1 Pro par OpenRouter a accepté 0 le 17/11/2026) ; toute autre valeur est refusée.
+- Sortie : une ligne par entrée, nommée `fournisseur:modèle[@hébergeur]`, `k/N [bas ; haut]` (intervalle de Wilson à 95 %) et les abstentions. Code 0 si la mesure est faite, 3 si la configuration est invalide ou si le fournisseur répond par une erreur : aucun résultat partiel n’est écrit.
 
 ## Calculer un bonnet
 
