@@ -114,17 +114,6 @@ def test_an_unknown_provider_exits_3_and_lists_the_known_ones(
     assert "anthropic" in capsys.readouterr().err
 
 
-def test_an_empty_test_split_exits_3(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    _install(monkeypatch, stitches=88)
-
-    code = main(["eval", "--split", "test", "--models", "ollama", "--results", str(tmp_path)])
-
-    assert code == 3
-    assert "aucun cas" in capsys.readouterr().err
-
-
 def test_a_result_is_never_overwritten(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

@@ -13,6 +13,7 @@ from knitproof.engine.gauge import resolve_gauge as resolve_swatch
 DATA = files("knitproof") / "evals" / "data"
 EXAMPLE = "exemple-bonnet-3-ans"
 DEV_COUNT = 5
+TEST_COUNT = 15
 SETS = load_eval_sets(DATA)
 CASES = [case for cases in SETS.values() for case in cases]
 ANSWERED = [case for case in CASES if not case.expected.abstain]
@@ -24,7 +25,7 @@ def test_the_shipped_data_loads() -> None:
     real = [case for case in SETS[Split.DEV] if case.id != EXAMPLE]
     assert EXAMPLE in {case.id for case in SETS[Split.DEV]}
     assert len(real) == DEV_COUNT
-    assert SETS[Split.TEST] == ()
+    assert len(SETS[Split.TEST]) == TEST_COUNT
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.id)

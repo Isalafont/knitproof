@@ -1,0 +1,34 @@
+id: bonnet-mesures-en-pouces
+input: 'Bonnet pour une fillette de dix ans. Mon patron américain donne tout en pouces : son tour de tête
+  est de 20 pouces. Je le veux ajusté, 5 cm plus petit que sa tête. Mon échantillon bloqué, tricoté avec
+  des aiguilles de 4 mm, compte 21 mailles sur 4 pouces. Je tricote en rond, bord en côtes 1/1. Combien
+  de mailles monter ?'
+request:
+  head_circumference:
+    value: '20'
+    unit: in
+    provenance: measured
+  needles:
+  - size: 4 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 2
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-5'
+    unit: cm
+    provenance: entered
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 4 mm
+      kind: straight
+    after_blocking:
+      stitches: '21'
+      width:
+        value: '4'
+        unit: in
+expected:
+  target_circumference_cm: '45.80'
+  cast_on_stitches: 94

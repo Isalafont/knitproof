@@ -1,0 +1,33 @@
+id: bonnet-adulte-cotes-2-2
+input: Un bonnet pour mon mari, tour de tête de 57 cm. Il le veut ajusté, alors je compte 6 cm de moins
+  que sa tête. Mon échantillon lavé et bloqué donne 23 mailles pour 10 cm avec des aiguilles de 3,5 mm.
+  Tricot en rond, bord en côtes 2/2. Combien de mailles dois-je monter ?
+request:
+  head_circumference:
+    value: '57'
+    unit: cm
+    provenance: measured
+  swatch:
+    stitch: stockinette
+    needle:
+      size: 3.5 mm
+      kind: straight
+    after_blocking:
+      stitches: '23'
+      width:
+        value: '10'
+        unit: cm
+  needles:
+  - size: 3.5 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 4
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-6'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '51'
+  cast_on_stitches: 116

@@ -1,0 +1,23 @@
+id: bonnet-sans-jauge-abstention
+input: Je veux tricoter un bonnet d’adulte au petit tour de tête, 54,5 cm, ajusté, environ 4 cm plus petit
+  que ma tête. J’ai un fil fin et des aiguilles de 3 mm, mais je n’ai ni fait d’échantillon ni gardé l’étiquette
+  de la pelote. Bord en côtes 1/1, tricot en rond. Combien de mailles dois-je monter ?
+request:
+  head_circumference:
+    value: '54.5'
+    unit: cm
+    provenance: measured
+  needles:
+  - size: 3 mm
+    kind: double_pointed
+  stitch_multiple:
+    repeat_multiple: 2
+    repeat_offset: 0
+    provenance: entered
+  ease:
+    value: '-4'
+    unit: cm
+    provenance: entered
+expected:
+  target_circumference_cm: '50.5'
+  abstain: true

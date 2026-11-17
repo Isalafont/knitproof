@@ -396,3 +396,18 @@ def test_a_provider_named_twice_is_refused() -> None:
 def test_no_provider_is_refused() -> None:
     with pytest.raises(BaselineError, match="au moins un"):
         _run(_answering({"stitches": 88}), providers=())
+
+
+def test_a_split_without_a_case_is_refused() -> None:
+    ticks = itertools.count()
+
+    with pytest.raises(BaselineError, match="aucun cas"):
+        run_baseline(
+            Split.TEST,
+            DATA,
+            ["ollama"],
+            ENVIRONMENT,
+            clock=lambda: next(ticks) * 0.5,
+            now=lambda: NOW,
+            agent_factory=_answering({"stitches": 88}),
+        )
