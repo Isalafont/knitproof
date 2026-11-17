@@ -1,6 +1,7 @@
 """Appel de contrôle réel, un par fournisseur, lancé à la main (CLA-127, CA5).
 
-Lancement : `uv run --env-file .env pytest -m live -k anthropic`, puis `-k mistral`.
+Lancement : `uv run --env-file .env pytest -m live -k anthropic`, puis `-k mistral`, `-k openai`,
+`-k openrouter`, `-k moonshotai` et `-k ollama`.
 """
 
 import os
@@ -23,7 +24,9 @@ class ControlAnswer(BaseModel):
 
 
 @pytest.mark.live
-@pytest.mark.parametrize("provider", ["anthropic", "mistral"])
+@pytest.mark.parametrize(
+    "provider", ["anthropic", "mistral", "openai", "openrouter", "moonshotai", "ollama"]
+)
 def test_a_real_call_returns_a_validated_object(
     provider: Provider, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -37,3 +40,5 @@ def test_a_real_call_returns_a_validated_object(
 
     assert isinstance(extraction.value, ControlAnswer)
     assert extraction.reading.model_version
+    if provider == "openrouter":
+        assert extraction.reading.host

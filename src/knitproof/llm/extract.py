@@ -49,19 +49,32 @@ def extract[T: BaseModel](
         result = agent.run_sync(source, instructions=prompt.text, model_settings=settings)
     except UnexpectedModelBehavior as error:
         raise ExtractionRejectedError(f"sortie du modèle refusée : {error}") from error
-    reading = reading_from(config, prompt, result.response.model_name)
+    downstream = (result.response.provider_details or {}).get("downstream_provider")
+    reading = reading_from(config, prompt, result.response.model_name, downstream)
     return Extraction(value=result.output, reading=reading)
 
 
-def reading_from(config: ModelConfig, prompt: Prompt, model_name: str | None) -> ModelReading:
-    """La trace d’une lecture ; sans nom de modèle rendu par la réponse, elle est refusée."""
+def reading_from(
+    config: ModelConfig, prompt: Prompt, model_name: str | None, downstream: str | None = None
+) -> ModelReading:
+    """La trace d’une lecture ; sans nom de modèle rendu par la réponse, elle est refusée.
+
+    Pour OpenRouter, `downstream` est l’hébergeur effectif rendu par la réponse ; sans lui, la
+    trace est refusée. Les autres fournisseurs n’ont pas d’hébergeur.
+    """
     version = (model_name or "").strip()
     if not version:
         raise ExtractionRejectedError("la réponse ne donne pas le nom du modèle")
+    host: str | None = None
+    if config.provider == "openrouter":
+        host = (downstream or "").strip()
+        if not host:
+            raise ExtractionRejectedError("la réponse ne donne pas l’hébergeur du modèle")
     return ModelReading(
         provider=config.provider,
         model=config.model,
         model_version=version,
+        host=host,
         prompt_id=prompt.id,
         prompt_sha256=prompt.sha256,
     )

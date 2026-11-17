@@ -9,6 +9,9 @@ from pydantic_ai import Agent
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.models.ollama import OllamaModel
+from pydantic_ai.models.openai import OpenAIChatModel, OpenAIResponsesModel
+from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.anthropic import AnthropicProvider
 
@@ -18,6 +21,10 @@ from knitproof.llm.errors import ExtractionRejectedError
 from knitproof.llm.extract import Prompt, extract, reading_from
 
 PROMPT = Prompt(id="sample-v1", text="Rends la marque et le poids du texte.")
+
+
+LOCAL_URL = "http://localhost:11434/v1"
+MODELS: dict[Provider, str] = {"openrouter": "vendeur/modele-fige-1", "ollama": "modele:8b"}
 
 
 class Sample(BaseModel):
@@ -31,12 +38,15 @@ def config(
     retries: int = 0,
     provider: Provider = "anthropic",
     base_url: str | None = None,
+    host: str | None = None,
 ) -> ModelConfig:
+    local = provider == "ollama"
     return ModelConfig(
         provider=provider,
-        model="modele-fige-1",
-        api_key=SecretStr("fausse"),
-        base_url=base_url,
+        model=MODELS.get(provider, "modele-fige-1"),
+        api_key=None if local else SecretStr("fausse"),
+        base_url=base_url or (LOCAL_URL if local else None),
+        host=host,
         temperature=temperature,
         retries=retries,
     )
@@ -208,9 +218,113 @@ def test_agent_for_applies_the_configured_retries(retries: int) -> None:
     assert len(calls) == retries + 1
 
 
-@pytest.mark.parametrize("provider", ["anthropic", "mistral"])
+def test_agent_for_openai_uses_the_responses_model() -> None:
+    agent = agent_for(config(provider="openai"), Sample)
+
+    assert isinstance(agent.model, OpenAIResponsesModel)
+
+
+def test_agent_for_moonshotai_reads_the_international_address_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MOONSHOTAI_BASE_URL", "http://piege.test/v1")
+
+    agent = agent_for(config(provider="moonshotai"), Sample)
+
+    assert isinstance(agent.model, OpenAIChatModel)
+    assert agent.model.system == "moonshotai"
+    assert agent.model.base_url == "https://api.moonshot.ai/v1/"
+
+
+def test_agent_for_moonshotai_uses_the_configured_address() -> None:
+    agent = agent_for(config(provider="moonshotai", base_url="https://api.moonshot.cn/v1"), Sample)
+
+    assert agent.model is not None
+    assert not isinstance(agent.model, str)
+    assert agent.model.base_url == "https://api.moonshot.cn/v1/"
+
+
+def test_agent_for_ollama_uses_the_local_address_without_a_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OLLAMA_BASE_URL", "http://piege.test/v1")
+    monkeypatch.setenv("OLLAMA_API_KEY", "cle-de-l-environnement")
+
+    agent = agent_for(config(provider="ollama"), Sample)
+
+    assert isinstance(agent.model, OllamaModel)
+    assert agent.model.base_url == f"{LOCAL_URL}/"
+    assert agent.model.client.api_key == "ollama"
+
+
+def test_agent_for_openrouter_fixes_the_host_without_fallback() -> None:
+    agent = agent_for(config(provider="openrouter", host="mistral"), Sample)
+
+    assert isinstance(agent.model, OpenRouterModel)
+    settings = dict(agent.model.settings or {})
+    assert settings["openrouter_provider"] == {
+        "only": ["mistral"],
+        "allow_fallbacks": False,
+    }
+
+
+def test_the_reading_keeps_the_host_returned_by_openrouter() -> None:
+    reading = reading_from(
+        config(provider="openrouter", host="mistral"), PROMPT, "nom-rendu", downstream="Mistral"
+    )
+
+    assert reading.host == "Mistral"
+
+
+@pytest.mark.parametrize("downstream", [None, "", "  "])
+def test_a_response_of_openrouter_without_host_is_rejected(downstream: str | None) -> None:
+    with pytest.raises(ExtractionRejectedError):
+        reading_from(
+            config(provider="openrouter", host="mistral"),
+            PROMPT,
+            "nom-rendu",
+            downstream=downstream,
+        )
+
+
+def test_the_other_providers_keep_no_host() -> None:
+    reading = reading_from(config(), PROMPT, "nom-rendu", downstream="Ignore")
+
+    assert reading.host is None
+
+
+def test_extract_notes_the_host_returned_by_openrouter() -> None:
+    def hosted(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return ModelResponse(
+            parts=[ToolCallPart("final_result", {"brand": "Drops", "grams": 50})],
+            provider_details={"downstream_provider": "Mistral"},
+        )
+
+    agent = agent_on(FunctionModel(hosted), Sample, retries=0)
+    settings = config(provider="openrouter", host="mistral")
+
+    extraction = extract(agent, settings, PROMPT, "Drops, 50 g")
+
+    assert extraction.reading.host == "Mistral"
+
+
+def test_extract_rejects_an_openrouter_response_without_host() -> None:
+    def unhosted(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return answer({"brand": "Drops", "grams": 50})
+
+    agent = agent_on(FunctionModel(unhosted), Sample, retries=0)
+    settings = config(provider="openrouter", host="mistral")
+
+    with pytest.raises(ExtractionRejectedError):
+        extract(agent, settings, PROMPT, "Drops, 50 g")
+
+
+@pytest.mark.parametrize(
+    "provider", ["anthropic", "mistral", "openai", "openrouter", "moonshotai", "ollama"]
+)
 def test_an_agent_for_a_provider_never_reaches_the_network(provider: Provider) -> None:
-    agent = agent_for(config(provider=provider), Sample)
+    settings = config(provider=provider, host="mistral")
+    agent = agent_for(settings, Sample)
 
     with pytest.raises(RuntimeError, match="Model requests are not allowed"):
-        extract(agent, config(provider=provider), PROMPT, "Drops, 50 g")
+        extract(agent, settings, PROMPT, "Drops, 50 g")
