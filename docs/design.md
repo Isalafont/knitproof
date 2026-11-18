@@ -75,3 +75,9 @@ RGAA 4.1 AA : contrastes ci-dessus, cibles d’au moins 44 px, focus visible mar
 7. Pied de page : licence du code, lien « Pour les développeurs », accessibilité.
 
 Les chiffres de la fiche d’exemple sont illustratifs : à remplacer par une sortie de `knitproof calc` avant la démo.
+
+## Écrans de calcul et de vérification
+
+- Chaque écran reprend l’en-tête de l’accueil : logo vers l’accueil, menu avec la page courante marquée (`aria-current`), sélecteur de langue. Pas de lien « Retour à l’accueil », qui doublerait le logo.
+- Le titre et l’introduction couvrent toute la largeur ; le formulaire et les conseils commencent sur la même ligne.
+- Vérification : coller le texte, ou importer un patron en PDF ou en photo (marqué « Bientôt » tant que la lecture n’existe pas). Le texte lu est montré à la personne pour correction avant la vérification.
