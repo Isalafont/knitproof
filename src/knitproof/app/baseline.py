@@ -3,16 +3,29 @@
 import datetime
 from collections.abc import Callable, Mapping, Sequence
 from decimal import Decimal, localcontext
-from enum import StrEnum
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelAPIError
 
+from knitproof.app.baseline_models import (
+    BaselineError as BaselineError,
+)
+from knitproof.app.baseline_models import (
+    BaselineRun as BaselineRun,
+)
+from knitproof.app.baseline_models import (
+    CastOnAnswer as CastOnAnswer,
+)
+from knitproof.app.baseline_models import (
+    ModelRun as ModelRun,
+)
+from knitproof.app.baseline_models import (
+    Verdict as Verdict,
+)
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, load_split
 from knitproof.app.model_entries import ModelEntry, ModelEntryError, parse_entry
@@ -41,20 +54,6 @@ BASELINE_PROMPT = Prompt(
 _GLOBAL_TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
 
 type AgentFactory = Callable[[ModelConfig], Agent[None, CastOnAnswer]]
-
-
-class CastOnAnswer(BaseModel):
-    """Ce que rend le modèle : un nombre de mailles à monter, ou `null` s’il s’abstient."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    stitches: int | None
-
-
-class Verdict(StrEnum):
-    CORRECT = "correct"
-    WRONG = "wrong"
-    ABSTENTION = "abstention"
 
 
 class Judgement(BaseModel):
@@ -123,47 +122,6 @@ def wilson(successes: int, trials: int) -> tuple[Decimal, Decimal]:
         low = max(Decimal(0), min(center - half, rate))
         high = min(Decimal(1), max(center + half, rate))
     return low, high
-
-
-class BaselineError(Exception):
-    """La mesure ne peut pas se faire : configuration invalide ou erreur du fournisseur."""
-
-
-class ModelRun(BaseModel):
-    """Un passage : qui a répondu, avec quel prompt et quels réglages (`None` : non envoyée).
-
-    `attempts` compte les essais HTTP du passage ; `None` pour une mesure d’avant CLA-197, dont les
-    réessais des SDK étaient invisibles. `latency_ms` est celle du seul essai qui a répondu.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    provider: str
-    model: str
-    prompt_id: str
-    prompt_sha256: str
-    reading: ModelReading | None
-    temperature: float | None
-    output_mode: Literal["tool"]
-    input_tokens: int | None
-    output_tokens: int | None
-    latency_ms: int
-    attempts: int | None = None
-    at: datetime.datetime
-
-
-class BaselineRun(BaseModel):
-    """Un passage sur un cas : la réponse (ou le refus), le tour fini et le verdict."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    case_id: str
-    attempt: int
-    answer: CastOnAnswer | None
-    rejection: str | None
-    finished_cm: Decimal | None
-    verdict: Verdict
-    run: ModelRun
 
 
 class ProviderResult(BaseModel):
