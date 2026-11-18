@@ -71,7 +71,7 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 
 ## Exécution
 
-- **Mesure en direct** : lancée à la main, datée, résultats versionnés.
+- **Mesure en direct** : lancée à la main, datée, résultats versionnés. Chaque passage est écrit dans un journal `.partial.jsonl` avant l’appel suivant ; une mesure interrompue se reprend par `--resume` et reste une seule mesure, au `measured_on` du premier lancement ([ADR 0037](adr/0037-reprise-d-une-mesure-interrompue.md)).
 - **CI** : vérifie le manifeste et rejoue les réponses de modèle enregistrées. Aucun appel payant.
 
 ## Modèles de données
@@ -101,3 +101,4 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 - 17/11/2026 — La ligne de base mesure aussi l’exemple sur `dev` (N = 18), décidé par Isabelle (CLA-188) ; motif : un cas de plus ne coûte rien, aucune mesure faite.
 - 17/11/2026 — Kimi K3.1 Pro accepte la température 0 par OpenRouter (CLA-199, mesure 2026-11-17T1528) ; motif : la mesure réelle le prouve ; « par fournisseur » (ADR 0035) se lit « par entrée » ; correction factuelle, règle inchangée.
 - 17/11/2026 — Le `ModelRun` porte `attempts`, le nombre d’essais HTTP du passage ; la latence est celle du seul essai qui répond ; `None` pour les mesures d’avant (CLA-197, ADR 0036) ; motif : une mesure doit dire qu’elle a traversé des erreurs passagères.
+- 18/11/2026 — Une mesure interrompue se reprend par `--resume` depuis un journal de passages ; la mesure reprise reste une seule mesure, `measured_on` et nom du fichier du premier lancement, chaque passage daté (CLA-203, ADR 0037) ; motif : aucune mesure `test` faite.
