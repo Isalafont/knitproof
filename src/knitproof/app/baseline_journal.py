@@ -101,6 +101,10 @@ class Journal:
         """L’en-tête d’un journal, pour reprendre la date du premier lancement."""
         return cls._read(path)[0]
 
+    @property
+    def path(self) -> Path:
+        return self._path
+
     def recorded(self, identity: EntryIdentity, case_id: str, attempt: int) -> BaselineRun | None:
         """Le passage déjà enregistré, ou `None`."""
         return self._known.get((identity, case_id, attempt))
@@ -108,15 +112,12 @@ class Journal:
     def record(self, identity: EntryIdentity, run: BaselineRun) -> None:
         """Ajoute le passage et le vide sur disque avant de rendre la main."""
         line = JournalLine(identity=identity, run=run)
-        text = line.model_dump_json() + "\n"
-        if not self._born:
-            text = self._header.model_dump_json() + "\n" + text
-        mode = "a" if self._born else "x"
+        self._path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with self._path.open(mode, encoding="utf-8", newline="\n") as handle:
-                handle.write(text)
-                handle.flush()
-                os.fsync(handle.fileno())
+            if not self._born:
+                self._append("x", self._header.model_dump_json() + "\n")
+                self._born = True
+            self._append("a", line.model_dump_json() + "\n")
         except FileExistsError as error:
             raise JournalError(f"{self._path} : le journal existe déjà") from error
         self._born = True
@@ -125,6 +126,12 @@ class Journal:
     def discard(self) -> None:
         """Supprime le journal, une fois le résultat daté écrit."""
         self._path.unlink(missing_ok=True)
+
+    def _append(self, mode: str, text: str) -> None:
+        with self._path.open(mode, encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
 
     @staticmethod
     def _read(path: Path) -> tuple[JournalHeader, dict[_Key, BaselineRun], int]:
@@ -137,7 +144,10 @@ class Journal:
         try:
             header = JournalHeader.model_validate_json(lines[0])
         except (IndexError, ValidationError) as error:
-            raise JournalError(f"{path} : en-tête absent ou illisible") from error
+            raise JournalError(
+                f"{path} : en-tête absent ou illisible ; supprimer le journal et relancer "
+                "sans --resume"
+            ) from error
         known: dict[_Key, BaselineRun] = {}
         size = len(lines[0]) + 1
         for number, raw in enumerate(lines[1:], start=2):
@@ -153,5 +163,13 @@ class Journal:
 
 
 def _shown(value: object) -> str:
-    text = str(value)
+    if isinstance(value, tuple) and all(isinstance(item, EntryIdentity) for item in value):
+        text = ", ".join(_entry_text(item) for item in value)
+    else:
+        text = str(value)
     return text if len(text) <= _SHOWN_MAX else text[: _SHOWN_MAX - 3] + "..."
+
+
+def _entry_text(identity: EntryIdentity) -> str:
+    host = f"@{identity.host}" if identity.host else ""
+    return f"{identity.provider}:{identity.model}{host}"

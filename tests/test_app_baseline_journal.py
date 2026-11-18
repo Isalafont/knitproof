@@ -1,6 +1,7 @@
 """Le journal JSON Lines des passages d’une mesure (CLA-203)."""
 
 import datetime
+import os
 from decimal import Decimal
 from pathlib import Path
 
@@ -219,3 +220,45 @@ def test_discard_removes_the_file_and_tolerates_its_absence(tmp_path: Path) -> N
     journal.discard()
 
     assert not path.exists()
+
+
+def test_a_journal_cut_inside_its_header_tells_to_delete_it_and_relaunch(tmp_path: Path) -> None:
+    path = tmp_path / "j.partial.jsonl"
+    path.write_text(_header().model_dump_json()[:40], encoding="utf-8")
+
+    with pytest.raises(JournalError, match=r"supprimer le journal.*sans --resume"):
+        Journal.resume(path, _header())
+
+
+def test_the_header_is_written_alone_before_the_first_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "j.partial.jsonl"
+    seen: list[str] = []
+    real = os.fsync
+
+    def spy(descriptor: int) -> None:
+        seen.append(path.read_text(encoding="utf-8"))
+        real(descriptor)
+
+    monkeypatch.setattr("knitproof.app.baseline_journal.os.fsync", spy)
+
+    Journal.start(path, _header()).record(IDENTITY, _run())
+
+    assert len(seen) == 2
+    assert seen[0].count("\n") == 1  # l’en-tête seul est sur disque avant le passage
+    assert seen[1].count("\n") == 2
+
+
+def test_a_refusal_on_entries_shows_them_as_provider_model_host(tmp_path: Path) -> None:
+    path = tmp_path / "j.partial.jsonl"
+    Journal.start(path, _header()).record(IDENTITY, _run())
+    reversed_entries = (OTHER, IDENTITY)
+
+    with pytest.raises(JournalError) as raised:
+        Journal.resume(path, _header(entries=reversed_entries))
+
+    message = str(raised.value)
+    assert "ollama:qwen3:8b, openrouter:x@a" in message
+    assert "openrouter:x@a, ollama:qwen3:8b" in message
+    assert "EntryIdentity" not in message

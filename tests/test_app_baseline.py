@@ -28,11 +28,14 @@ from knitproof.app.baseline import (
     BaselineResult,
     CastOnAnswer,
     Verdict,
+    measure_baseline,
     resolve_gauge,
     run_baseline,
     score,
     wilson,
+    write_result,
 )
+from knitproof.app.baseline_journal import JournalLine
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash
 from knitproof.app.model_entries import PROVIDER_NAMES
@@ -573,3 +576,113 @@ def test_results_written_before_cla_199_still_validate(name: str) -> None:
     result = BaselineResult.model_validate(yaml.safe_load(text))
 
     assert result.providers
+
+
+def _measure_into(
+    folder: Path,
+    factory: AgentFactory,
+    entries: Sequence[str] = ("anthropic", "ollama"),
+    environ: Mapping[str, str] = ENVIRONMENT,
+    resume: Path | None = None,
+) -> tuple[BaselineResult, Path]:
+    ticks = itertools.count()
+    return measure_baseline(
+        Split.DEV,
+        DATA,
+        entries,
+        environ,
+        folder,
+        clock=lambda: next(ticks) * 0.5,
+        sleep=lambda seconds: None,
+        now=lambda: NOW,
+        resume=resume,
+        agent_factory=factory,
+    )
+
+
+def _journal_lines(folder: Path) -> list[JournalLine]:
+    (path,) = folder.glob("*.partial.jsonl")
+    lines = path.read_text(encoding="utf-8").splitlines()[1:]
+    return [JournalLine.model_validate_json(line) for line in lines]
+
+
+def test_each_pass_is_written_with_its_reading_before_the_next_call(tmp_path: Path) -> None:
+    written_at_each_call: list[int] = []
+    last_readings: list[bool] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            lines = _journal_lines(tmp_path) if list(tmp_path.glob("*.partial.jsonl")) else []
+            written_at_each_call.append(len(lines))
+            last_readings.append(bool(lines) and lines[-1].run.run.reading is not None)
+            return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
+
+        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+    _measure_into(tmp_path, factory)
+
+    assert written_at_each_call == [0, 1, 2, 3, 4, 5]  # à l’appel n, n - 1 passages écrits
+    assert last_readings == [False] + [True] * 5
+
+
+def test_an_error_at_the_fourth_pass_leaves_three_passes_and_no_result(tmp_path: Path) -> None:
+    failing = ModelHTTPError(400, "claude", body="refusé")
+    ok: dict[str, object] = {"stitches": 88}
+
+    with pytest.raises(BaselineError, match="ollama"):
+        _measure_into(tmp_path, _answering(ok, ok, ok, failing))
+
+    assert len(_journal_lines(tmp_path)) == 3
+    assert list(tmp_path.glob("*.yaml")) == []
+
+
+def test_a_measure_without_interruption_writes_the_same_result_and_drops_the_journal(
+    tmp_path: Path,
+) -> None:
+    factory = _answering({"stitches": 88})
+
+    result, written = _measure_into(tmp_path / "journal", factory)
+
+    plain = write_result(_run(factory), tmp_path / "plain")
+    assert written.name == plain.name
+    assert yaml.safe_load(written.read_text(encoding="utf-8")) == yaml.safe_load(
+        plain.read_text(encoding="utf-8")
+    )
+    assert list((tmp_path / "journal").glob("*.partial.jsonl")) == []
+    assert result == _run(factory)
+
+
+def test_an_existing_result_is_refused_before_any_call(tmp_path: Path) -> None:
+    calls: list[int] = []
+    (tmp_path / "2026-11-17T0930-dev.yaml").write_text("déjà là", encoding="utf-8")
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            calls.append(1)
+            return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
+
+        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+    with pytest.raises(BaselineError, match="existe déjà"):
+        _measure_into(tmp_path, factory)
+
+    assert calls == []
+    assert list(tmp_path.glob("*.partial.jsonl")) == []
+
+
+def test_an_existing_journal_is_refused_by_a_fresh_launch_naming_it(tmp_path: Path) -> None:
+    journal = tmp_path / "2026-11-17T0930-dev.partial.jsonl"
+    journal.write_text("restes", encoding="utf-8")
+
+    with pytest.raises(BaselineError, match=r"partial\.jsonl.*existe déjà"):
+        _measure_into(tmp_path, _answering({"stitches": 88}))
+
+    assert journal.read_text(encoding="utf-8") == "restes"
+
+
+def test_a_result_and_a_leftover_journal_tell_to_delete_the_journal(tmp_path: Path) -> None:
+    (tmp_path / "2026-11-17T0930-dev.yaml").write_text("déjà là", encoding="utf-8")
+    (tmp_path / "2026-11-17T0930-dev.partial.jsonl").write_text("restes", encoding="utf-8")
+
+    with pytest.raises(BaselineError, match="supprimer le journal"):
+        _measure_into(tmp_path, _answering({"stitches": 88}))

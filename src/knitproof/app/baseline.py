@@ -11,6 +11,13 @@ from pydantic import BaseModel, ConfigDict
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelAPIError
 
+from knitproof.app.baseline_journal import (
+    CaseHash,
+    EntryIdentity,
+    Journal,
+    JournalError,
+    JournalHeader,
+)
 from knitproof.app.baseline_models import (
     BaselineError as BaselineError,
 )
@@ -27,7 +34,7 @@ from knitproof.app.baseline_models import (
     Verdict as Verdict,
 )
 from knitproof.app.beanie_request import BeanieRequest
-from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, load_split
+from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash, load_split
 from knitproof.app.model_entries import ModelEntry, ModelEntryError, parse_entry
 from knitproof.domain.measure import SwatchMeasurement
 from knitproof.domain.needle import KnittingMethod
@@ -172,23 +179,20 @@ def run_baseline(
     sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
     agent_factory: AgentFactory | None = None,
+    journal: Journal | None = None,
+    measured_on: datetime.datetime | None = None,
 ) -> BaselineResult:
     """Interroge chaque entrée de `--models`, `PASSES` fois par cas, et juge chaque réponse.
 
     Toute la configuration se valide avant le premier appel. Une erreur du fournisseur arrête
-    la mesure : aucun résultat partiel.
+    la mesure : sans journal, aucun résultat partiel ; avec un journal, chaque passage y est
+    écrit avant l’appel suivant, et les passages déjà écrits ne sont pas rappelés.
     """
-    configs = _resolved(entries, environ)
-    try:
-        cases = load_split(split, data)
-    except EvalDataError as error:
-        raise BaselineError(str(error)) from error
-    if not cases:
-        raise BaselineError(f"le split « {split.value} » ne contient aucun cas")
+    configs, cases = _prepared(split, data, entries, environ)
     factory = agent_factory or build_agent
-    started = now()
+    started = measured_on or now()
     results = tuple(
-        _measure(config, factory(config), cases, clock, sleep, now) for config in configs
+        _measure(config, factory(config), cases, clock, sleep, now, journal) for config in configs
     )
     return BaselineResult(
         split=split,
@@ -200,10 +204,68 @@ def run_baseline(
     )
 
 
+def measure_baseline(
+    split: Split,
+    data: Traversable,
+    entries: Sequence[str],
+    environ: Mapping[str, str],
+    results: Path,
+    *,
+    clock: Callable[[], float],
+    sleep: Callable[[float], None],
+    now: Callable[[], datetime.datetime],
+    resume: Path | None = None,
+    agent_factory: AgentFactory | None = None,
+) -> tuple[BaselineResult, Path]:
+    """La mesure complète : journal, reprise, YAML daté, puis suppression du journal.
+
+    `resume` rouvre le journal d’une mesure interrompue : `measured_on` et le nom du YAML sont
+    ceux du premier lancement. Le YAML daté se vérifie absent avant tout appel.
+    """
+    configs, cases = _prepared(split, data, entries, environ)
+    try:
+        started = Journal.read_header(resume).measured_on if resume else now()
+        target = _result_path(started, split, results)
+        journal_path = target.with_suffix(".partial.jsonl")
+        if target.exists():
+            hint = f" ; supprimer le journal {journal_path}" if journal_path.exists() else ""
+            raise BaselineError(f"{target} : existe déjà, rien n’est écrasé{hint}")
+        header = JournalHeader(
+            split=split,
+            prompt_sha256=BASELINE_PROMPT.sha256,
+            passes=PASSES,
+            measured_on=started,
+            cases=tuple(CaseHash(case_id=case.id, sha256=case_hash(case)) for case in cases),
+            entries=tuple(_identity(config) for config in configs),
+        )
+        journal = Journal.resume(resume, header) if resume else Journal.start(journal_path, header)
+    except JournalError as error:
+        raise BaselineError(str(error)) from error
+    try:
+        result = run_baseline(
+            split,
+            data,
+            entries,
+            environ,
+            clock=clock,
+            sleep=sleep,
+            now=now,
+            agent_factory=agent_factory,
+            journal=journal,
+            measured_on=started,
+        )
+    except BaselineError as error:
+        if journal.path.exists():
+            raise BaselineError(f"{error}\nreprise : --resume {journal.path}") from error
+        raise
+    written = write_result(result, results)
+    journal.discard()
+    return result, written
+
+
 def write_result(result: BaselineResult, folder: Path) -> Path:
     """Écrit le YAML daté `AAAA-MM-JJTHHMM-<split>.yaml` ; refuse d’écraser un fichier."""
-    stamp = result.measured_on.strftime("%Y-%m-%dT%H%M")
-    path = folder / f"{stamp}-{result.split.value}.yaml"
+    path = _result_path(result.measured_on, result.split, folder)
     folder.mkdir(parents=True, exist_ok=True)
     text = yaml.safe_dump(
         result.model_dump(mode="json"), allow_unicode=True, sort_keys=False, width=100
@@ -214,6 +276,28 @@ def write_result(result: BaselineResult, folder: Path) -> Path:
     except FileExistsError as error:
         raise BaselineError(f"{path} : existe déjà, rien n’est écrasé") from error
     return path
+
+
+def _result_path(measured_on: datetime.datetime, split: Split, folder: Path) -> Path:
+    stamp = measured_on.strftime("%Y-%m-%dT%H%M")
+    return folder / f"{stamp}-{split.value}.yaml"
+
+
+def _prepared(
+    split: Split, data: Traversable, entries: Sequence[str], environ: Mapping[str, str]
+) -> tuple[list[ModelConfig], tuple[EvalCase, ...]]:
+    configs = _resolved(entries, environ)
+    try:
+        cases = load_split(split, data)
+    except EvalDataError as error:
+        raise BaselineError(str(error)) from error
+    if not cases:
+        raise BaselineError(f"le split « {split.value} » ne contient aucun cas")
+    return configs, cases
+
+
+def _identity(config: ModelConfig) -> EntryIdentity:
+    return EntryIdentity(provider=config.provider, model=config.model, host=config.host)
 
 
 def _resolved(entries: Sequence[str], environ: Mapping[str, str]) -> list[ModelConfig]:
@@ -264,12 +348,18 @@ def _measure(
     clock: Callable[[], float],
     sleep: Callable[[float], None],
     now: Callable[[], datetime.datetime],
+    journal: Journal | None,
 ) -> ProviderResult:
-    runs = tuple(
-        _pass(config, agent, case, attempt, clock, sleep, now)
-        for case in cases
-        for attempt in range(1, PASSES + 1)
-    )
+    identity = _identity(config)
+    runs: list[BaselineRun] = []
+    for case in cases:
+        for attempt in range(1, PASSES + 1):
+            kept = journal.recorded(identity, case.id, attempt) if journal else None
+            if kept is None:
+                kept = _pass(config, agent, case, attempt, clock, sleep, now)
+                if journal:
+                    journal.record(identity, kept)
+            runs.append(kept)
     verdicts = [run.verdict for run in runs]
     correct = verdicts.count(Verdict.CORRECT)
     low, high = wilson(correct, len(runs))
@@ -284,7 +374,7 @@ def _measure(
         total=len(runs),
         low=low.quantize(precision),
         high=high.quantize(precision),
-        runs=runs,
+        runs=tuple(runs),
     )
 
 
