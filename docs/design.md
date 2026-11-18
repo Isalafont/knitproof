@@ -33,9 +33,9 @@ Le logo actuel (maille en V et coche) reste. Fond crème, texte marine, terracot
 | Surface (cartes) | `#FFFCF6` | — |
 | Texte | `#26244A` marine | 13:1 sur le fond |
 | Texte secondaire | `#4A4662`, `#5A5670` | 8:1 et 6,2:1 |
-| Accent texte et bouton principal | `#A8462A` terracotta foncée | 5,2:1 ; texte crème dessus 5,7:1 |
+| Accent texte et bouton principal | `#A8462A` terracotta foncée | 5,2:1 ; texte `#FFFCF6` dessus 5,7:1 |
 | Terracotta du logo | `#E0714F` | 2,8:1 : décor seulement, jamais du texte |
-| Bande sombre | `#26244A`, cartes `#33305E` | texte `#DCD6EA` 8,6:1 ; bouton `#F0A68C` avec texte marine 7,4:1 |
+| Bande sombre | `#26244A`, cartes `#33305E` | texte `#DCD6EA` 8,6:1 sur les cartes ; bouton `#F0A68C` avec texte marine 7,4:1 |
 
 Typographies (Google Fonts) :
 
@@ -54,15 +54,15 @@ Chaque valeur affichée porte une pastille : couleur, icône et nom écrit, jama
 | Échantillon | Swatch | `#2F5229` / `#DCE8D5`, 7:1 | `user_swatch` |
 | Étiquette de la laine | Yarn label | `#6B4A0E` / `#F6E1B8`, 6,3:1 | `yarn_label` |
 | Référence | Reference | `#24406E` / `#D8E1F0`, 7,8:1 | `fiber_library`, `reference_measurement` |
-| Votre mesure | Your measurement | `#5E2F5E` / `#EADBEA`, 7,7:1 | `user_measurement`, `user_input`, `person_decision` |
+| Votre mesure | Your measurement | `#5E2F5E` / `#EADBEA`, 7,7:1 | `user_measurement` |
 
-Un résultat du moteur (`engine`) ne porte pas de pastille mais une coche : « À monter, calcul vérifié ». À confirmer à l’écran de calcul : la pastille de `ravelry` et celle de `model_inference`, une hypothèse qui doit se distinguer d’une valeur mesurée.
+Un résultat du moteur (`engine`) ne porte pas de pastille mais une coche : « À monter, calcul vérifié ». À confirmer à l’écran de calcul : la pastille de `user_input` et de `person_decision` (une saisie ou un choix n’est pas une mesure : « Votre choix » ?), celle de `ravelry` et celle de `model_inference`, une hypothèse qui doit se distinguer d’une valeur mesurée.
 
 Un doute s’affiche en encadré ambre, avec la raison et le geste attendu : « Lavez et bloquez votre échantillon avant de vous fier au calcul. Sinon, tricotez à vos risques et périls ! 😉 »
 
 ## Accessibilité
 
-RGAA 4.1 AA : contrastes ci-dessus, cibles d’au moins 44 px, focus visible marine, vrais liens et boutons, icônes décoratives masquées, mise en page qui passe en une colonne sur téléphone.
+RGAA 4.1 AA : contrastes ci-dessus, cibles d’au moins 44 px, focus visible marine, clair (`#F0A68C`) sur la bande sombre, vrais liens et boutons, icônes décoratives masquées, mise en page qui passe en une colonne sur téléphone.
 
 ## Page d’accueil
 
