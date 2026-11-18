@@ -21,7 +21,7 @@ Boutons pleine largeur et d’au moins 52 px de haut pour les actions principale
 
 | Support | Pour qui | Ton |
 |---|---|---|
-| Interface web | tricoteuses, d’abord | simple, sans jargon technique ; un trait d’humour bienvenu |
+| Interface web | tricoteuses d’abord, sur téléphone et tablette ; créatrices de patrons, sur ordinateur | simple, sans jargon technique ; un trait d’humour bienvenu |
 | README, `docs/` | développeurs, recruteurs | ingénierie : moteur déterministe, provenance, évaluation |
 
 Dans l’interface, on évite « moteur », « provenance », « prouvé », « LLM », « aisance négative ». On dit « knitproof calcule », « vous savez d’où vient un chiffre », « bonnet plus serré que la tête ».
@@ -95,9 +95,9 @@ Les chiffres de la fiche d’exemple sont illustratifs : à remplacer par une so
 ## Écrans de calcul et de vérification
 
 - Chaque écran reprend l’en-tête de l’accueil : logo vers l’accueil, menu avec la page courante marquée (`aria-current`), sélecteur de langue. Pas de lien « Retour à l’accueil », qui doublerait le logo.
-- Le titre et l’introduction couvrent toute la largeur ; le formulaire et les conseils commencent sur la même ligne.
+- Sur ordinateur et tablette, le titre et l’introduction couvrent toute la largeur ; le formulaire et les conseils commencent sur la même ligne.
 - Résultat du calcul : sans les rangs de la tricoteuse, l’encadré « Hauteur : mesurez plutôt que compter » donne le bord et le corps en cm (« Corps : jusqu’à 19,3 cm »), les rangs en estimation, et un champ « Mes rangs pour 10 cm » pour recalculer sur place. Ces hauteurs viennent du moteur ([CLA-208](https://linear.app/claude-personnal/issue/CLA-208)). La calotte reste en rangs : elle suit les diminutions.
-- Un écart de vérification dit « Juste » ou « Écart » en toutes lettres, avec le compte annoncé, le compte calculé, l’endroit et le pourquoi.
+- Un écart de vérification dit « Juste » ou « Écart » en toutes lettres, avec « Annoncé » et « Compté », l’endroit et le pourquoi.
 - Vérification : coller le texte, ou importer un patron en PDF ou en photo (marqué « Bientôt » tant que la lecture n’existe pas). Le texte lu est montré à la personne pour correction avant la vérification.
 
 ## Mode tricot
