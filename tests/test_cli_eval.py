@@ -259,3 +259,88 @@ def test_a_result_is_never_overwritten(
 
     assert code == 3
     assert "existe déjà" in capsys.readouterr().err
+
+
+def _install_failing_at(
+    monkeypatch: pytest.MonkeyPatch, calls: list[int], stop: int | None
+) -> None:
+    """Un modèle qui répond 88, sauf au `stop`-ième appel où le fournisseur refuse (400)."""
+
+    def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+        calls.append(1)
+        if len(calls) == stop:
+            raise ModelHTTPError(400, "claude", body="refusé")
+        return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+    monkeypatch.setattr("knitproof.app.baseline.build_agent", factory)
+    monkeypatch.setattr(os, "environ", dict(ENVIRONMENT))
+
+
+def test_a_stopped_measure_keeps_its_journal_and_a_resume_finishes_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    calls: list[int] = []
+    _install_failing_at(monkeypatch, calls, stop=2)
+    args = ["eval", "--split", "dev", "--models", "ollama", "--results", str(tmp_path)]
+
+    assert main(args) == 3
+
+    (journal,) = tmp_path.glob("*-dev.partial.jsonl")
+    assert str(journal) in capsys.readouterr().err
+    assert list(tmp_path.glob("*.yaml")) == []
+
+    calls.clear()
+    _install_failing_at(monkeypatch, calls, stop=None)
+    code = main([*args, "--resume", str(journal)])
+
+    out = capsys.readouterr().out
+    assert code == 0
+    assert len(calls) == 17  # 18 passages, 1 acquis
+    assert len(list(tmp_path.glob("*-dev.yaml"))) == 1
+    assert list(tmp_path.glob("*.partial.jsonl")) == []
+    assert "0/18" not in out
+
+
+def test_the_stop_message_names_the_resume_option(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _install_failing_at(monkeypatch, [], stop=2)
+
+    main(["eval", "--split", "dev", "--models", "ollama", "--results", str(tmp_path)])
+
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    assert f"reprise : --resume {journal}" in capsys.readouterr().err
+
+
+def test_a_journal_of_other_models_exits_3_naming_the_field(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    calls: list[int] = []
+    _install_failing_at(monkeypatch, calls, stop=2)
+    main(["eval", "--split", "dev", "--models", "ollama", "--results", str(tmp_path)])
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    capsys.readouterr()
+    calls.clear()
+    _install_failing_at(monkeypatch, calls, stop=None)
+
+    code = main(
+        [
+            "eval",
+            "--split",
+            "dev",
+            "--models",
+            "anthropic,ollama",
+            "--results",
+            str(tmp_path),
+            "--resume",
+            str(journal),
+        ]
+    )
+
+    assert code == 3
+    assert "entries" in capsys.readouterr().err
+    assert calls == []
+    assert journal.exists()
