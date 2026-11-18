@@ -150,7 +150,7 @@ Une flèche signifie « dépend de ».
 | `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source ; fichiers dans `library/data/`, format dans son `README.md` ; le chargeur type chaque fichier par un registre explicite (nom de fichier → modèle d’entrée), un fichier absent du registre est refusé |
 | `llm` | Objets d’extraction, appels aux modèles (réessai sur 429 et 5xx, [ADR 0036](adr/0036-reessai-sur-erreur-passagere.md)), conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
-| `app` | Cas d’usage : `verify_pattern`, `plan_beanie`, `run_baseline` (ligne de base « LLM seul ») ; lecture des entrées de `--models` (`model_entries.py`) ; modèles de cas et de manifeste d’évaluation (`eval_cases.py`) | Seul point d’entrée pour `cli`, `api` et `web` |
+| `app` | Cas d’usage : `verify_pattern`, `plan_beanie`, `run_baseline` et `measure_baseline` (ligne de base « LLM seul », journal et reprise dans `baseline_journal.py`, [ADR 0037](adr/0037-reprise-d-une-mesure-interrompue.md)) ; lecture des entrées de `--models` (`model_entries.py`) ; modèles de cas et de manifeste d’évaluation (`eval_cases.py`) | Seul point d’entrée pour `cli`, `api` et `web` |
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
 | `evals` | Données d’évaluation | Voir [`evaluation.md`](evaluation.md) ; cas et manifestes hachés dans `evals/data/<split>/` ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)) ; les modèles de cas et la mesure vivent dans `app`, car `BeanieRequest` y vit ; `cli` résout le chemin des données et le passe à `app` ([ADR 0035](adr/0035-ligne-de-base-llm-seul.md)) |
 
@@ -383,6 +383,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0034 — OpenAI, OpenRouter, Kimi et modèle local](adr/0034-openai-openrouter-kimi-et-modele-local.md)
 - [ADR 0035 — Ligne de base « LLM seul »](adr/0035-ligne-de-base-llm-seul.md)
 - [ADR 0036 — Réessai sur erreur passagère](adr/0036-reessai-sur-erreur-passagere.md)
+- [ADR 0037 — Reprise d’une mesure interrompue](adr/0037-reprise-d-une-mesure-interrompue.md)
 
 ## 13. Projets proches
 

@@ -28,11 +28,14 @@ from knitproof.app.baseline import (
     BaselineResult,
     CastOnAnswer,
     Verdict,
+    measure_baseline,
     resolve_gauge,
     run_baseline,
     score,
     wilson,
+    write_result,
 )
+from knitproof.app.baseline_journal import JournalHeader, JournalLine
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash
 from knitproof.app.model_entries import PROVIDER_NAMES
@@ -573,3 +576,246 @@ def test_results_written_before_cla_199_still_validate(name: str) -> None:
     result = BaselineResult.model_validate(yaml.safe_load(text))
 
     assert result.providers
+
+
+def _measure_into(
+    folder: Path,
+    factory: AgentFactory,
+    entries: Sequence[str] = ("anthropic", "ollama"),
+    environ: Mapping[str, str] = ENVIRONMENT,
+    resume: Path | None = None,
+    at: datetime.datetime = NOW,
+) -> tuple[BaselineResult, Path]:
+    ticks = itertools.count()
+    return measure_baseline(
+        Split.DEV,
+        DATA,
+        entries,
+        environ,
+        folder,
+        clock=lambda: next(ticks) * 0.5,
+        sleep=lambda seconds: None,
+        now=lambda: at,
+        resume=resume,
+        agent_factory=factory,
+    )
+
+
+def _journal_lines(folder: Path) -> list[JournalLine]:
+    (path,) = folder.glob("*.partial.jsonl")
+    lines = path.read_text(encoding="utf-8").splitlines()[1:]
+    return [JournalLine.model_validate_json(line) for line in lines]
+
+
+def test_each_pass_is_written_with_its_reading_before_the_next_call(tmp_path: Path) -> None:
+    written_at_each_call: list[int] = []
+    last_readings: list[bool] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            lines = _journal_lines(tmp_path) if list(tmp_path.glob("*.partial.jsonl")) else []
+            written_at_each_call.append(len(lines))
+            last_readings.append(bool(lines) and lines[-1].run.run.reading is not None)
+            return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
+
+        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+    _measure_into(tmp_path, factory)
+
+    assert written_at_each_call == [0, 1, 2, 3, 4, 5]  # à l’appel n, n - 1 passages écrits
+    assert last_readings == [False] + [True] * 5
+
+
+def test_an_error_at_the_fourth_pass_leaves_three_passes_and_no_result(tmp_path: Path) -> None:
+    failing = ModelHTTPError(400, "claude", body="refusé")
+    ok: dict[str, object] = {"stitches": 88}
+
+    with pytest.raises(BaselineError, match="ollama"):
+        _measure_into(tmp_path, _answering(ok, ok, ok, failing))
+
+    assert len(_journal_lines(tmp_path)) == 3
+    assert list(tmp_path.glob("*.yaml")) == []
+
+
+def test_a_measure_without_interruption_writes_the_same_result_and_drops_the_journal(
+    tmp_path: Path,
+) -> None:
+    factory = _answering({"stitches": 88})
+
+    result, written = _measure_into(tmp_path / "journal", factory)
+
+    plain = write_result(_run(factory), tmp_path / "plain")
+    assert written.name == plain.name
+    assert yaml.safe_load(written.read_text(encoding="utf-8")) == yaml.safe_load(
+        plain.read_text(encoding="utf-8")
+    )
+    assert list((tmp_path / "journal").glob("*.partial.jsonl")) == []
+    assert result == _run(factory)
+
+
+def test_an_existing_result_is_refused_before_any_call(tmp_path: Path) -> None:
+    calls: list[int] = []
+    (tmp_path / "2026-11-17T0930-dev.yaml").write_text("déjà là", encoding="utf-8")
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            calls.append(1)
+            return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
+
+        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+
+    with pytest.raises(BaselineError, match="existe déjà"):
+        _measure_into(tmp_path, factory)
+
+    assert calls == []
+    assert list(tmp_path.glob("*.partial.jsonl")) == []
+
+
+def test_an_existing_journal_is_refused_by_a_fresh_launch_naming_it(tmp_path: Path) -> None:
+    journal = tmp_path / "2026-11-17T0930-dev.partial.jsonl"
+    journal.write_text("restes", encoding="utf-8")
+
+    with pytest.raises(BaselineError, match=r"partial\.jsonl.*existe déjà"):
+        _measure_into(tmp_path, _answering({"stitches": 88}))
+
+    assert journal.read_text(encoding="utf-8") == "restes"
+
+
+def test_a_result_and_a_leftover_journal_tell_to_delete_the_journal(tmp_path: Path) -> None:
+    (tmp_path / "2026-11-17T0930-dev.yaml").write_text("déjà là", encoding="utf-8")
+    (tmp_path / "2026-11-17T0930-dev.partial.jsonl").write_text("restes", encoding="utf-8")
+
+    with pytest.raises(BaselineError, match="supprimer le journal"):
+        _measure_into(tmp_path, _answering({"stitches": 88}))
+
+
+def _counting(reply: dict[str, object]) -> tuple[AgentFactory, list[int]]:
+    """Une fabrique dont l’agent rend toujours `reply` et compte ses appels."""
+    calls: list[int] = []
+
+    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+        def answer(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            calls.append(1)
+            return ModelResponse(parts=[ToolCallPart("final_result", reply)])
+
+        return agent_on(FunctionModel(answer), CastOnAnswer, config.retries)
+
+    return factory, calls
+
+
+_OK: dict[str, object] = {"stitches": 88}
+_LATER = NOW + datetime.timedelta(days=1)
+
+
+@pytest.mark.parametrize(
+    "failing",
+    [
+        ModelHTTPError(429, "claude", body="limite"),
+        ModelHTTPError(400, "claude", body="refusé"),
+        ModelHTTPError(401, "claude", body="clé"),
+    ],
+    ids=["429", "400", "401"],
+)
+def test_a_resume_calls_only_the_missing_passes(tmp_path: Path, failing: Exception) -> None:
+    with pytest.raises(BaselineError, match="reprise : --resume"):
+        _measure_into(tmp_path, _answering(_OK, _OK, failing))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    factory, calls = _counting(_OK)
+
+    result, written = _measure_into(tmp_path, factory, resume=journal, at=_LATER)
+
+    assert len(calls) == 4  # 6 passages, 2 acquis
+    assert written.name == "2026-11-17T0930-dev.yaml"
+    assert result.measured_on == NOW
+    assert [run.run.at for item in result.providers for run in item.runs] == [
+        NOW,
+        NOW,
+        _LATER,
+        _LATER,
+        _LATER,
+        _LATER,
+    ]
+    assert result.providers[0].total == 3
+    assert not journal.exists()
+
+
+def test_a_resumed_measure_equals_one_made_in_one_go(tmp_path: Path) -> None:
+    failing = ModelHTTPError(400, "claude", body="refusé")
+    with pytest.raises(BaselineError):
+        _measure_into(tmp_path, _answering(_OK, _OK, failing))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+
+    result, written = _measure_into(tmp_path, _answering(_OK), resume=journal)
+
+    assert result == _run(_answering(_OK))
+    assert yaml.safe_load(written.read_text(encoding="utf-8")) == yaml.safe_load(
+        write_result(_run(_answering(_OK)), tmp_path / "plain").read_text(encoding="utf-8")
+    )
+
+
+def test_a_refused_pass_is_recorded_and_never_called_again(tmp_path: Path) -> None:
+    bad: dict[str, object] = {"stitches": "quatre-vingt-huit"}
+    failing = ModelHTTPError(400, "claude", body="refusé")
+    with pytest.raises(BaselineError):
+        _measure_into(tmp_path, _answering(bad, bad, failing), entries=("ollama",))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    factory, calls = _counting(_OK)
+
+    result, _ = _measure_into(tmp_path, factory, entries=("ollama",), resume=journal)
+
+    runs = result.providers[0].runs
+    assert len(calls) == 1
+    assert [run.rejection is not None for run in runs] == [True, True, False]
+
+
+def test_a_complete_journal_calls_nothing_and_writes_the_result(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def full_disk(result: BaselineResult, folder: Path) -> Path:
+        raise BaselineError("disque plein")
+
+    with monkeypatch.context() as patch:
+        patch.setattr("knitproof.app.baseline.write_result", full_disk)
+        with pytest.raises(BaselineError, match="disque plein"):
+            _measure_into(tmp_path, _answering(_OK))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    assert len(_journal_lines(tmp_path)) == 6
+    factory, calls = _counting(_OK)
+
+    result, written = _measure_into(tmp_path, factory, resume=journal)
+
+    assert calls == []
+    assert written.exists()
+    assert result.providers[1].total == 3
+    assert not journal.exists()
+
+
+def test_a_journal_of_another_prompt_is_refused_before_any_call(tmp_path: Path) -> None:
+    failing = ModelHTTPError(400, "claude", body="refusé")
+    with pytest.raises(BaselineError):
+        _measure_into(tmp_path, _answering(_OK, failing), entries=("ollama",))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    lines = journal.read_text(encoding="utf-8").split("\n")
+    header = JournalHeader.model_validate_json(lines[0])
+    changed = header.model_copy(update={"prompt_sha256": "f" * 64})
+    journal.write_text("\n".join([changed.model_dump_json(), *lines[1:]]), encoding="utf-8")
+    factory, calls = _counting(_OK)
+
+    with pytest.raises(BaselineError, match="prompt_sha256"):
+        _measure_into(tmp_path, factory, entries=("ollama",), resume=journal)
+
+    assert calls == []
+
+
+def test_other_models_than_the_journal_are_refused_before_any_call(tmp_path: Path) -> None:
+    failing = ModelHTTPError(400, "claude", body="refusé")
+    with pytest.raises(BaselineError):
+        _measure_into(tmp_path, _answering(_OK, failing), entries=("ollama",))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    factory, calls = _counting(_OK)
+
+    with pytest.raises(BaselineError, match="entries"):
+        _measure_into(tmp_path, factory, entries=("anthropic", "ollama"), resume=journal)
+
+    assert calls == []
+    assert journal.exists()

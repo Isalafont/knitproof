@@ -22,5 +22,8 @@ wheels/
 # Patrons réels pour essais privés (droits d’auteur) : jamais versionnés
 /local-patterns/
 
+# Journal d’une mesure en cours (CLA-203), jamais versionné
+*.partial.jsonl
+
 # macOS
 .DS_Store

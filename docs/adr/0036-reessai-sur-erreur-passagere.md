@@ -15,7 +15,7 @@ Décision d’Isabelle du 17/11/2026.
 - **Attente** : `KNITPROOF_LLM_HTTP_WAIT` × 2^(essai − 1), portée au `Retry-After` s’il est plus long, plafonnée à 60 s.
 - **SDK** : `ModelSettings(max_retries=0)` est envoyé à chaque appel ; seule la boucle réessaie. Un test sans réseau compte les requêtes reçues par chaque fournisseur.
 - **Trace** : `attempts` dans le `ModelRun` ; `None` pour les mesures d’avant ; la latence ne compte que l’essai qui répond.
-- **Épuisement** : `TransientCallError` arrête la mesure, sans résultat partiel.
+- **Épuisement** : `TransientCallError` arrête la mesure, sans résultat partiel ; le journal des passages acquis permet de la reprendre ([ADR 0037](0037-reprise-d-une-mesure-interrompue.md)).
 
 ## Alternatives écartées
 
