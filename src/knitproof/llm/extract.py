@@ -15,12 +15,13 @@ from pydantic_ai.settings import ModelSettings
 
 from knitproof.domain.reading import ModelReading
 from knitproof.llm.config import MAX_WAIT_S, ModelConfig
-from knitproof.llm.errors import ExtractionRejectedError, TransientCallError
+from knitproof.llm.errors import ExtractionRejectedError, QuotaExhaustedError, TransientCallError
 
 _TOO_MANY_REQUESTS = 429
 _FIRST_5XX = 500
 _LAST_5XX = 599
 _MS = 1000
+_ANTHROPIC_SPEND_CAP = "enforced_spend_limit_reached"
 
 
 @dataclass(frozen=True)
@@ -93,6 +94,8 @@ def extract[T: BaseModel](
                 latency_ms=_since(clock, began),
             ) from error
         except ModelHTTPError as error:
+            if _is_anthropic_spend_cap(error, config.provider):
+                raise QuotaExhaustedError(f"quota épuisé ({_ANTHROPIC_SPEND_CAP})") from error
             if not is_transient(error):
                 raise
             if attempts > config.http_retries:
@@ -120,6 +123,26 @@ def extract[T: BaseModel](
     return Extraction(
         value=result.output, reading=reading, usage=tokens, attempts=attempts, latency_ms=latency_ms
     )
+
+
+def _is_anthropic_spend_cap(error: ModelHTTPError, provider: str) -> bool:
+    """Le 429 d’Anthropic dont `error.details.error_code` signale le plafond de dépense atteint.
+
+    Le code est celui que la doc désigne pour le distinguer d’une limite de débit :
+    https://platform.claude.com/docs/en/api/rate-limits#reaching-your-spend-cap
+    """
+    if provider != "anthropic" or error.status_code != _TOO_MANY_REQUESTS:
+        return False
+    body = error.body
+    if not isinstance(body, dict):
+        return False
+    detail = body.get("error")
+    if not isinstance(detail, dict):
+        return False
+    details = detail.get("details")
+    if not isinstance(details, dict):
+        return False
+    return details.get("error_code") == _ANTHROPIC_SPEND_CAP
 
 
 def _since(clock: Callable[[], float], began: float) -> int:

@@ -27,7 +27,7 @@ from pydantic_ai.usage import RequestUsage
 
 from knitproof.llm.agents import agent_for, agent_on
 from knitproof.llm.config import ModelConfig, Provider
-from knitproof.llm.errors import ExtractionRejectedError, TransientCallError
+from knitproof.llm.errors import ExtractionRejectedError, QuotaExhaustedError, TransientCallError
 from knitproof.llm.extract import Extraction, Prompt, extract, reading_from
 
 PROMPT = Prompt(id="sample-v1", text="Rends la marque et le poids du texte.")
@@ -631,3 +631,108 @@ def test_a_provider_receives_a_single_request_when_retries_are_off(
         call(agent, config(provider=provider), PROMPT, "x")
 
     assert len(seen) == 1
+
+
+# Corps du 429 de plafond de dépense, tel que la doc le décrit :
+# https://platform.claude.com/docs/en/api/rate-limits#reaching-your-spend-cap
+SPEND_CAP: dict[str, object] = {
+    "type": "error",
+    "error": {
+        "type": "rate_limit_error",
+        "message": "You have reached your specified API usage limits.",
+        "details": {"error_code": "enforced_spend_limit_reached"},
+    },
+    "request_id": "req_011CSHoEeqs5C35K2UUqR7Fy",
+}
+
+
+def _ramp_limit() -> dict[str, object]:
+    return {
+        "type": "error",
+        "error": {
+            "type": "rate_limit_error",
+            "message": "Ramp limit exceeded.",
+            "details": {"error_code": "ramp_limit_exceeded"},
+        },
+    }
+
+
+def test_the_anthropic_spend_cap_stops_at_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", True)
+    seen: list[httpx.Request] = []
+    waits: list[float] = []
+
+    def refuse(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(429, json=SPEND_CAP)
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(refuse))
+    agent = _agent_on_client("anthropic", client)
+
+    with pytest.raises(QuotaExhaustedError) as raised:
+        call(agent, config(http_retries=3), PROMPT, "x", sleep=waits.append)
+
+    assert len(seen) == 1
+    assert waits == []
+    assert isinstance(raised.value.__cause__, ModelHTTPError)
+
+
+def test_a_ramp_limit_is_still_retried(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(models, "ALLOW_MODEL_REQUESTS", True)
+    seen: list[httpx.Request] = []
+    waits: list[float] = []
+
+    def refuse(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(429, headers={"retry-after": "1"}, json=_ramp_limit())
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(refuse))
+    agent = _agent_on_client("anthropic", client)
+
+    with pytest.raises(TransientCallError):
+        call(agent, config(http_retries=2), PROMPT, "x", sleep=waits.append)
+
+    assert len(seen) == 3
+    assert len(waits) == 2
+
+
+def test_the_spend_cap_code_counts_only_for_anthropic() -> None:
+    model = Failing(
+        ModelHTTPError(429, "modele", body=SPEND_CAP), ModelHTTPError(429, "modele", body=SPEND_CAP)
+    )
+    agent = agent_on(FunctionModel(model), Sample, retries=0)
+
+    cfg = config(provider="openrouter", host="vendeur", http_retries=1)
+    with pytest.raises(TransientCallError):
+        call(agent, cfg, PROMPT, "x")
+
+    assert model.calls == 2
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"type": "error", "error": {"type": "rate_limit_error", "message": "limite"}},
+        {"error": {"details": "texte"}},
+        {"error": "texte"},
+        "texte",
+        None,
+    ],
+)
+def test_a_429_without_details_is_still_retried(body: object) -> None:
+    model = Failing(ModelHTTPError(429, "modele", body=body), ModelHTTPError(429, "modele"))
+    agent = agent_on(FunctionModel(model), Sample, retries=0)
+
+    with pytest.raises(TransientCallError):
+        call(agent, config(http_retries=1), PROMPT, "x")
+
+    assert model.calls == 2
+
+
+@pytest.mark.parametrize("status", [400, 500])
+def test_the_spend_cap_body_counts_only_on_a_429(status: int) -> None:
+    model = Failing(ModelHTTPError(status, "modele", body=SPEND_CAP))
+    agent = agent_on(FunctionModel(model), Sample, retries=0)
+
+    with pytest.raises(ModelHTTPError if status == 400 else TransientCallError):
+        call(agent, config(http_retries=0), PROMPT, "x")

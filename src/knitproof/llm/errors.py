@@ -40,3 +40,7 @@ class TransientCallError(LlmError):
     def __init__(self, message: str, *, attempts: int) -> None:
         super().__init__(message)
         self.attempts = attempts
+
+
+class QuotaExhaustedError(LlmError):
+    """Le quota de dépense du fournisseur est épuisé : pas de réessai ; la cause est `__cause__`."""
