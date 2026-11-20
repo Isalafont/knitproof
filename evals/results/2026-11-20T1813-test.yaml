@@ -1,0 +1,1186 @@
+split: test
+prompt_id: baseline-cast-on-v1
+prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+passes: 3
+measured_on: '2026-11-20T18:13:14.753511+01:00'
+providers:
+- provider: anthropic
+  model: claude-opus-5-5
+  host: null
+  correct: 45
+  wrong: 0
+  abstentions: 0
+  total: 45
+  low: '0.9213'
+  high: '1.0000'
+  runs:
+  - case_id: bonnet-2-ans-cotes-2-2
+    attempt: 1
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '42'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 471
+      output_tokens: 87
+      latency_ms: 2921
+      attempts: 1
+      at: '2026-11-20T18:13:17.718428+01:00'
+  - case_id: bonnet-2-ans-cotes-2-2
+    attempt: 2
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '42'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 471
+      output_tokens: 80
+      latency_ms: 2231
+      attempts: 1
+      at: '2026-11-20T18:13:19.953315+01:00'
+  - case_id: bonnet-2-ans-cotes-2-2
+    attempt: 3
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '42'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 471
+      output_tokens: 69
+      latency_ms: 2143
+      attempts: 1
+      at: '2026-11-20T18:13:22.097670+01:00'
+  - case_id: bonnet-6-mois-jersey-roule
+    attempt: 1
+    answer:
+      stitches: 94
+    rejection: null
+    finished_cm: '39.16666666666666666666666667'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 478
+      output_tokens: 101
+      latency_ms: 2283
+      attempts: 1
+      at: '2026-11-20T18:13:24.382526+01:00'
+  - case_id: bonnet-6-mois-jersey-roule
+    attempt: 2
+    answer:
+      stitches: 94
+    rejection: null
+    finished_cm: '39.16666666666666666666666667'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 478
+      output_tokens: 96
+      latency_ms: 2268
+      attempts: 1
+      at: '2026-11-20T18:13:26.652099+01:00'
+  - case_id: bonnet-6-mois-jersey-roule
+    attempt: 3
+    answer:
+      stitches: 94
+    rejection: null
+    finished_cm: '39.16666666666666666666666667'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 478
+      output_tokens: 114
+      latency_ms: 2688
+      attempts: 1
+      at: '2026-11-20T18:13:29.340831+01:00'
+  - case_id: bonnet-ado-fille-cotes-2-2
+    attempt: 1
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '47.27272727272727272727272727'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 474
+      output_tokens: 90
+      latency_ms: 1936
+      attempts: 1
+      at: '2026-11-20T18:13:31.278237+01:00'
+  - case_id: bonnet-ado-fille-cotes-2-2
+    attempt: 2
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '47.27272727272727272727272727'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 474
+      output_tokens: 78
+      latency_ms: 1804
+      attempts: 1
+      at: '2026-11-20T18:13:33.083689+01:00'
+  - case_id: bonnet-ado-fille-cotes-2-2
+    attempt: 3
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '47.27272727272727272727272727'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 474
+      output_tokens: 80
+      latency_ms: 1766
+      attempts: 1
+      at: '2026-11-20T18:13:34.852257+01:00'
+  - case_id: bonnet-adulte-cotes-2-2
+    attempt: 1
+    answer:
+      stitches: 116
+    rejection: null
+    finished_cm: '50.43478260869565217391304348'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 468
+      output_tokens: 101
+      latency_ms: 2302
+      attempts: 1
+      at: '2026-11-20T18:13:37.156985+01:00'
+  - case_id: bonnet-adulte-cotes-2-2
+    attempt: 2
+    answer:
+      stitches: 116
+    rejection: null
+    finished_cm: '50.43478260869565217391304348'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 468
+      output_tokens: 116
+      latency_ms: 2472
+      attempts: 1
+      at: '2026-11-20T18:13:39.631226+01:00'
+  - case_id: bonnet-adulte-cotes-2-2
+    attempt: 3
+    answer:
+      stitches: 116
+    rejection: null
+    finished_cm: '50.43478260869565217391304348'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 468
+      output_tokens: 121
+      latency_ms: 2371
+      attempts: 1
+      at: '2026-11-20T18:13:42.004520+01:00'
+  - case_id: bonnet-adulte-souple-cotes-2-2
+    attempt: 1
+    answer:
+      stitches: 120
+    rejection: null
+    finished_cm: '54.54545454545454545454545455'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 465
+      output_tokens: 140
+      latency_ms: 2555
+      attempts: 1
+      at: '2026-11-20T18:13:44.561408+01:00'
+  - case_id: bonnet-adulte-souple-cotes-2-2
+    attempt: 2
+    answer:
+      stitches: 120
+    rejection: null
+    finished_cm: '54.54545454545454545454545455'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 465
+      output_tokens: 114
+      latency_ms: 2254
+      attempts: 1
+      at: '2026-11-20T18:13:46.817149+01:00'
+  - case_id: bonnet-adulte-souple-cotes-2-2
+    attempt: 3
+    answer:
+      stitches: 120
+    rejection: null
+    finished_cm: '54.54545454545454545454545455'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 465
+      output_tokens: 115
+      latency_ms: 2425
+      attempts: 1
+      at: '2026-11-20T18:13:49.244504+01:00'
+  - case_id: bonnet-avant-et-apres-blocage
+    attempt: 1
+    answer:
+      stitches: 85
+    rejection: null
+    finished_cm: '53.125'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 484
+      output_tokens: 163
+      latency_ms: 2952
+      attempts: 1
+      at: '2026-11-20T18:13:52.199093+01:00'
+  - case_id: bonnet-avant-et-apres-blocage
+    attempt: 2
+    answer:
+      stitches: 85
+    rejection: null
+    finished_cm: '53.125'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 484
+      output_tokens: 118
+      latency_ms: 2399
+      attempts: 1
+      at: '2026-11-20T18:13:54.600527+01:00'
+  - case_id: bonnet-avant-et-apres-blocage
+    attempt: 3
+    answer:
+      stitches: 85
+    rejection: null
+    finished_cm: '53.125'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 484
+      output_tokens: 124
+      latency_ms: 2733
+      attempts: 1
+      at: '2026-11-20T18:13:57.334603+01:00'
+  - case_id: bonnet-etiquette-et-echantillon-bloque
+    attempt: 1
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '44.21052631578947368421052632'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 506
+      output_tokens: 92
+      latency_ms: 2378
+      attempts: 1
+      at: '2026-11-20T18:13:59.714468+01:00'
+  - case_id: bonnet-etiquette-et-echantillon-bloque
+    attempt: 2
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '44.21052631578947368421052632'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 506
+      output_tokens: 89
+      latency_ms: 2302
+      attempts: 1
+      at: '2026-11-20T18:14:02.017747+01:00'
+  - case_id: bonnet-etiquette-et-echantillon-bloque
+    attempt: 3
+    answer:
+      stitches: 84
+    rejection: null
+    finished_cm: '44.21052631578947368421052632'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 506
+      output_tokens: 94
+      latency_ms: 2425
+      attempts: 1
+      at: '2026-11-20T18:14:04.445162+01:00'
+  - case_id: bonnet-etiquette-seule
+    attempt: 1
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '47.77777777777777777777777778'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 498
+      output_tokens: 97
+      latency_ms: 2305
+      attempts: 1
+      at: '2026-11-20T18:14:06.752453+01:00'
+  - case_id: bonnet-etiquette-seule
+    attempt: 2
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '47.77777777777777777777777778'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 498
+      output_tokens: 99
+      latency_ms: 2275
+      attempts: 1
+      at: '2026-11-20T18:14:09.028558+01:00'
+  - case_id: bonnet-etiquette-seule
+    attempt: 3
+    answer:
+      stitches: 86
+    rejection: null
+    finished_cm: '47.77777777777777777777777778'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 498
+      output_tokens: 93
+      latency_ms: 2246
+      attempts: 1
+      at: '2026-11-20T18:14:11.276228+01:00'
+  - case_id: bonnet-fin-jersey-roule
+    attempt: 1
+    answer:
+      stitches: 127
+    rejection: null
+    finished_cm: '52.91666666666666666666666667'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 467
+      output_tokens: 120
+      latency_ms: 2639
+      attempts: 1
+      at: '2026-11-20T18:14:13.920108+01:00'
+  - case_id: bonnet-fin-jersey-roule
+    attempt: 2
+    answer:
+      stitches: 127
+    rejection: null
+    finished_cm: '52.91666666666666666666666667'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 467
+      output_tokens: 131
+      latency_ms: 2676
+      attempts: 1
+      at: '2026-11-20T18:14:16.599158+01:00'
+  - case_id: bonnet-fin-jersey-roule
+    attempt: 3
+    answer:
+      stitches: 127
+    rejection: null
+    finished_cm: '52.91666666666666666666666667'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 467
+      output_tokens: 127
+      latency_ms: 2561
+      attempts: 1
+      at: '2026-11-20T18:14:19.162637+01:00'
+  - case_id: bonnet-grand-tour-cotes-2-2
+    attempt: 1
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '52'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 461
+      output_tokens: 241
+      latency_ms: 3287
+      attempts: 1
+      at: '2026-11-20T18:14:22.451060+01:00'
+  - case_id: bonnet-grand-tour-cotes-2-2
+    attempt: 2
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '52'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 461
+      output_tokens: 152
+      latency_ms: 2688
+      attempts: 1
+      at: '2026-11-20T18:14:25.140024+01:00'
+  - case_id: bonnet-grand-tour-cotes-2-2
+    attempt: 3
+    answer:
+      stitches: 104
+    rejection: null
+    finished_cm: '52'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 461
+      output_tokens: 228
+      latency_ms: 3646
+      attempts: 1
+      at: '2026-11-20T18:14:28.788404+01:00'
+  - case_id: bonnet-jauge-sur-5-cm
+    attempt: 1
+    answer:
+      stitches: 88
+    rejection: null
+    finished_cm: '48.88888888888888888888888889'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 483
+      output_tokens: 96
+      latency_ms: 2317
+      attempts: 1
+      at: '2026-11-20T18:14:31.106630+01:00'
+  - case_id: bonnet-jauge-sur-5-cm
+    attempt: 2
+    answer:
+      stitches: 88
+    rejection: null
+    finished_cm: '48.88888888888888888888888889'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 483
+      output_tokens: 87
+      latency_ms: 2129
+      attempts: 1
+      at: '2026-11-20T18:14:33.237358+01:00'
+  - case_id: bonnet-jauge-sur-5-cm
+    attempt: 3
+    answer:
+      stitches: 88
+    rejection: null
+    finished_cm: '48.88888888888888888888888889'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 483
+      output_tokens: 85
+      latency_ms: 2341
+      attempts: 1
+      at: '2026-11-20T18:14:35.580239+01:00'
+  - case_id: bonnet-mesures-en-pouces
+    attempt: 1
+    answer:
+      stitches: 94
+    rejection: null
+    finished_cm: '45.47809523809523809523809524'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 485
+      output_tokens: 198
+      latency_ms: 2810
+      attempts: 1
+      at: '2026-11-20T18:14:38.392563+01:00'
+  - case_id: bonnet-mesures-en-pouces
+    attempt: 2
+    answer:
+      stitches: 94
+    rejection: null
+    finished_cm: '45.47809523809523809523809524'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 485
+      output_tokens: 206
+      latency_ms: 3399
+      attempts: 1
+      at: '2026-11-20T18:14:41.793331+01:00'
+  - case_id: bonnet-mesures-en-pouces
+    attempt: 3
+    answer:
+      stitches: 94
+    rejection: null
+    finished_cm: '45.47809523809523809523809524'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 485
+      output_tokens: 213
+      latency_ms: 3047
+      attempts: 1
+      at: '2026-11-20T18:14:44.843485+01:00'
+  - case_id: bonnet-premature-cotes-1-1
+    attempt: 1
+    answer:
+      stitches: 78
+    rejection: null
+    finished_cm: '30'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 488
+      output_tokens: 74
+      latency_ms: 2214
+      attempts: 1
+      at: '2026-11-20T18:14:47.059038+01:00'
+  - case_id: bonnet-premature-cotes-1-1
+    attempt: 2
+    answer:
+      stitches: 78
+    rejection: null
+    finished_cm: '30'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 488
+      output_tokens: 70
+      latency_ms: 2084
+      attempts: 1
+      at: '2026-11-20T18:14:49.145417+01:00'
+  - case_id: bonnet-premature-cotes-1-1
+    attempt: 3
+    answer:
+      stitches: 78
+    rejection: null
+    finished_cm: '30'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 488
+      output_tokens: 77
+      latency_ms: 2033
+      attempts: 1
+      at: '2026-11-20T18:14:51.180092+01:00'
+  - case_id: bonnet-sans-jauge-abstention
+    attempt: 1
+    answer:
+      stitches: null
+    rejection: null
+    finished_cm: null
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 481
+      output_tokens: 92
+      latency_ms: 2257
+      attempts: 1
+      at: '2026-11-20T18:14:53.439056+01:00'
+  - case_id: bonnet-sans-jauge-abstention
+    attempt: 2
+    answer:
+      stitches: null
+    rejection: null
+    finished_cm: null
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 481
+      output_tokens: 34
+      latency_ms: 1950
+      attempts: 1
+      at: '2026-11-20T18:14:55.390894+01:00'
+  - case_id: bonnet-sans-jauge-abstention
+    attempt: 3
+    answer:
+      stitches: null
+    rejection: null
+    finished_cm: null
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 481
+      output_tokens: 34
+      latency_ms: 1900
+      attempts: 1
+      at: '2026-11-20T18:14:57.291959+01:00'
+  - case_id: bonnet-tour-fini-donne
+    attempt: 1
+    answer:
+      stitches: 138
+    rejection: null
+    finished_cm: '53.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 483
+      output_tokens: 52
+      latency_ms: 1968
+      attempts: 1
+      at: '2026-11-20T18:14:59.261042+01:00'
+  - case_id: bonnet-tour-fini-donne
+    attempt: 2
+    answer:
+      stitches: 138
+    rejection: null
+    finished_cm: '53.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 483
+      output_tokens: 54
+      latency_ms: 2022
+      attempts: 1
+      at: '2026-11-20T18:15:01.284674+01:00'
+  - case_id: bonnet-tour-fini-donne
+    attempt: 3
+    answer:
+      stitches: 138
+    rejection: null
+    finished_cm: '53.07692307692307692307692308'
+    verdict: correct
+    run:
+      provider: anthropic
+      model: claude-opus-5-5
+      prompt_id: baseline-cast-on-v1
+      prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+      reading:
+        provider: anthropic
+        model: claude-opus-5-5
+        model_version: claude-opus-5-5
+        prompt_id: baseline-cast-on-v1
+        prompt_sha256: dcdf725c3f1ef38cce49c1e045b1894cf7c4755926e44dc87a232d9c79f3e303
+        host: null
+      temperature: null
+      output_mode: tool
+      input_tokens: 483
+      output_tokens: 56
+      latency_ms: 2113
+      attempts: 1
+      at: '2026-11-20T18:15:03.399582+01:00'
