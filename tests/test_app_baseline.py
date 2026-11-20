@@ -357,6 +357,37 @@ def test_an_endless_429_stops_the_measure_naming_the_provider_and_the_attempts()
         _run(_answering(endless), entries=("anthropic",), environ=RETRYING)
 
 
+# Plafond de dépense d’Anthropic : https://platform.claude.com/docs/en/api/rate-limits
+_SPEND_CAP: dict[str, object] = {
+    "type": "error",
+    "error": {
+        "type": "rate_limit_error",
+        "message": "You have reached your specified API usage limits.",
+        "details": {"error_code": "enforced_spend_limit_reached"},
+    },
+}
+
+
+def test_an_exhausted_quota_stops_the_measure_naming_the_provider() -> None:
+    quota = ModelHTTPError(429, "claude", body=_SPEND_CAP)
+
+    with pytest.raises(BaselineError, match=r"anthropic.*quota épuisé") as raised:
+        _run(_answering(quota), entries=("anthropic",), environ=RETRYING)
+
+    assert "--resume" not in str(raised.value)
+
+
+def test_an_exhausted_quota_after_a_pass_tells_how_to_resume(tmp_path: Path) -> None:
+    quota = ModelHTTPError(429, "claude", body=_SPEND_CAP)
+    ok: dict[str, object] = {"stitches": 88}
+
+    with pytest.raises(BaselineError, match=r"anthropic.*quota épuisé") as raised:
+        _measure_into(tmp_path, _answering(ok, quota), entries=("anthropic",), environ=RETRYING)
+
+    assert "reprise : --resume" in str(raised.value)
+    assert list(tmp_path.glob("*.yaml")) == []
+
+
 def test_a_400_is_called_once_even_with_retries_allowed() -> None:
     calls: list[int] = []
 

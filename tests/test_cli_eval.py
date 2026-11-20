@@ -223,6 +223,28 @@ def test_an_endless_429_exits_3_naming_the_attempts_without_a_file(
     assert len(calls) == 3
 
 
+def test_an_exhausted_quota_exits_3_naming_the_provider_without_a_result(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    calls: list[int] = []
+    body = {
+        "error": {
+            "type": "rate_limit_error",
+            "details": {"error_code": "enforced_spend_limit_reached"},
+        }
+    }
+    _install_failing(monkeypatch, calls, ModelHTTPError(429, "claude", body=body), times=None)
+
+    code = main(["eval", "--split", "dev", "--models", "anthropic", "--results", str(tmp_path)])
+
+    assert code == 3
+    err = capsys.readouterr().err
+    assert "anthropic" in err
+    assert "quota épuisé" in err
+    assert list(tmp_path.glob("*.yaml")) == []
+    assert len(calls) == 1
+
+
 def test_a_400_exits_3_after_a_single_call(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[int] = []
     _install_failing(monkeypatch, calls, ModelHTTPError(400, "claude", body="refusé"), times=None)

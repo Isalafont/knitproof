@@ -43,7 +43,12 @@ from knitproof.engine.cast_on import check_cast_on
 from knitproof.engine.gauge import resolve_gauge as resolve_swatch
 from knitproof.llm.agents import agent_for
 from knitproof.llm.config import ModelConfig, load_config
-from knitproof.llm.errors import ExtractionRejectedError, LlmError, TransientCallError
+from knitproof.llm.errors import (
+    ExtractionRejectedError,
+    LlmError,
+    QuotaExhaustedError,
+    TransientCallError,
+)
 from knitproof.llm.extract import Prompt, extract
 
 TOLERANCE_CM = Decimal(1)
@@ -399,7 +404,7 @@ def _pass(
         rejection = str(error)
         latency_ms = error.latency_ms
         attempts = error.attempts
-    except TransientCallError as error:
+    except (TransientCallError, QuotaExhaustedError) as error:
         raise BaselineError(f"{config.provider} : {error}") from error
     except ModelAPIError as error:
         raise BaselineError(f"{config.provider} : {error}") from error
