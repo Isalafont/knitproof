@@ -425,7 +425,7 @@ def test_the_sleep_is_the_one_given_to_the_measure() -> None:
 
 def test_the_runs_of_a_measure_before_cla_197_still_validate() -> None:
     folder = Path(__file__).resolve().parents[1] / "evals" / "results"
-    paths = sorted(folder.glob("*.yaml"))
+    paths = sorted(folder.glob("*-dev.yaml"))
 
     assert len(paths) == 6
     for path in paths:

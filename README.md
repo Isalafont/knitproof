@@ -232,6 +232,20 @@ Pour aller plus loin : [l’architecture](docs/architecture.md) (qui décide quo
 
 Parce qu’on le mesure. Sur les mêmes demandes, on compare un LLM seul et knitproof. Le calcul ne dépend d’aucun modèle : à demande identique, le résultat est identique. Ce qui varie d’un modèle à l’autre, c’est la lecture de la demande ou de l’étiquette, et c’est cela qu’on évalue, sur un jeu de cas dans lesquels des erreurs ont été injectées volontairement (taille confondue, échantillon non bloqué, répétition qui ne tombe pas juste, information absente) :
 
+### Ligne de base « LLM seul » sur le jeu `test`
+
+Mesure du 20/11/2026, 15 cas, 3 passages (N = 45), même prompt, température 0 (« non envoyée » pour Claude Opus 5.5). Intervalle de Wilson à 95 %.
+
+| Modèle (`fournisseur:modèle@hébergeur`) | Correct | Faux | Abstention | k/N [bas ; haut] | Résultat |
+|---|---|---|---|---|---|
+| `anthropic:claude-opus-5-5` | 45 | 0 | 0 | 45/45 [0,9213 ; 1,0000] | [YAML](evals/results/2026-11-20T1813-test.yaml) |
+| `openrouter:moonshotai/kimi-k3.1-pro@moonshotai` | 45 | 0 | 0 | 45/45 [0,9213 ; 1,0000] | [YAML](evals/results/2026-11-20T1820-test.yaml) |
+| `openrouter:mistralai/mistral-large-2512@mistral/eu` | 37 | 8 | 0 | 37/45 [0,6867 ; 0,9071] | [YAML](evals/results/2026-11-20T1815-test.yaml) |
+| `openrouter:mistralai/mistral-small-3.2-24b-instruct@parasail/bf16` (hors UE possible) | 12 | 33 | 0 | 12/45 [0,1596 ; 0,4104] | [YAML](evals/results/2026-11-20T1817-test.yaml) |
+| `ollama:qwen3:8b` | mesure interrompue : un passage dépasse 10 minutes | | | | ticket de suite |
+
+Claude Opus 5.5 et Kimi K3.1 Pro rendent 45 réponses justes sur 45 ; Mistral Large en rend 37, Mistral Small 12. Sur les quatre mesures, aucune abstention ni aucun refus de sortie n’a été enregistré. Un 45/45 sur 45 réponses ne borne la justesse qu’à 92 % au plus bas (Wilson). Pour `qwen3:8b`, la mesure `test` s’est arrêtée au 3e passage de `bonnet-ado-fille-cotes-2-2` : le délai HTTP de 600 s est dépassé, sans score ni intervalle ; elle reprendra après un ticket de suite. Cette ligne de base ne mesure ni la lecture d’étiquette ni la colonne knitproof (CLA-200) ; le comparatif reste à venir.
+
 | Modèle | Montage correct, LLM seul | Montage correct, knitproof | Lecture juste | Champs inventés | Stabilité | Coût et temps |
 |---|---|---|---|---|---|---|
 | à venir (M2) | | | | | | |
