@@ -78,7 +78,7 @@ def _parser() -> argparse.ArgumentParser:
     verify.add_argument("pattern", type=Path, help="fichier de patron YAML")
     calc = commands.add_parser("calc", help="calculer un bonnet depuis une demande YAML")
     calc.add_argument("request", type=Path, help="fichier de demande YAML")
-    measure = commands.add_parser("eval", help="mesurer la ligne de base « LLM seul »")
+    measure = commands.add_parser("eval", help="mesurer « LLM seul » et « knitproof »")
     measure.add_argument("--split", choices=[split.value for split in Split], required=True)
     measure.add_argument(
         "--models",

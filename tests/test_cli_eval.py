@@ -83,7 +83,7 @@ def test_one_line_per_model_and_a_dated_result(
     assert len(written) == 1
     assert "anthropic" in out
     assert "ollama" in out
-    assert out.count("/18") == 2  # 6 cas dev, 3 passages
+    assert out.count("/18  [") == 4  # 6 cas dev, 3 passages, deux colonnes par entrée
     assert str(written[0]) in out
     saved = yaml.safe_load(written[0].read_text(encoding="utf-8"))
     assert [item["provider"] for item in saved["providers"]] == ["anthropic", "ollama"]
@@ -102,7 +102,8 @@ def test_two_openrouter_entries_are_wired_with_their_hosts(
     written = list(tmp_path.glob("*-dev.yaml"))
     saved = yaml.safe_load(written[0].read_text(encoding="utf-8"))
     assert code == 0
-    assert out.count("/18") == 2
+    assert out.count("LLM seul") == 2
+    assert out.count("  knitproof ") == 2
     assert [(item["model"], item["host"]) for item in saved["providers"]] == [
         ("mistralai/m", "mistral/eu"),
         ("moonshotai/k", "moonshotai"),
@@ -157,7 +158,7 @@ def test_an_abstaining_model_is_shown_with_its_abstentions(
 
     out = capsys.readouterr().out
     assert code == 0
-    assert out.count("0/18") == 1
+    assert out.count("LLM seul 0/18") == 1
     assert "abstentions : 18" in out
 
 
@@ -344,7 +345,7 @@ def test_a_stopped_measure_keeps_its_journal_and_a_resume_finishes_it(
     assert len(calls) == 17  # 18 passages, 1 acquis
     assert len(list(tmp_path.glob("*-dev.yaml"))) == 1
     assert list(tmp_path.glob("*.partial.jsonl")) == []
-    assert "0/18" not in out
+    assert "LLM seul 0/18" not in out
 
 
 def test_the_stop_message_names_the_resume_option(
