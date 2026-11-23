@@ -102,7 +102,17 @@ Le code de sortie dit le résultat, et ne se lit pas comme celui de `verify` :
 
 Pour `verify`, `1` veut dire « au moins un constat ».
 
-Les tailles d’aiguilles s’écrivent « 4 mm », « US 6 » ou « US 6 (4 mm) » ; le texte rendu garde la notation saisie et donne les mm de la table, « À VÉRIFIER » sur l’emballage. L’âge, le fil et la fibre ne sont pas lus : leur résolution revient à un ticket de suite et à CLA-121. La jauge se résout : échantillon bloqué, puis non bloqué (« À VÉRIFIER »), puis étiquette (`label_gauge`, « À VÉRIFIER ») ; un échantillon d’état de blocage inconnu (`unknown_blocking`) pose la question « l’as-tu bloqué ? » et la réponse se donne en renommant la clé.
+Les tailles d’aiguilles s’écrivent « 4 mm », « US 6 » ou « US 6 (4 mm) » ; le texte rendu garde la notation saisie et donne les mm de la table, « À VÉRIFIER » sur l’emballage. L’âge, le fil et la fibre ne sont pas lus : leur résolution revient à un ticket de suite et à CLA-121. La jauge se résout : échantillon bloqué, puis non bloqué (« À VÉRIFIER »), puis étiquette (`label_gauge`, « À VÉRIFIER ») ; un échantillon d’état de blocage inconnu (`unknown_blocking`) pose la question « Ton échantillon a-t-il été mesuré après lavage (blocage) ou avant ? » (code et choix affichés sous la question) ; on y répond par une décision de la demande ([ADR 0039](adr/0039-repondre-a-une-question-par-une-decision.md)), ou en renommant la clé.
+
+```yaml
+decisions:
+  - question: gauge_blocking_unknown
+    choice: après lavage        # ou : avant lavage
+    decided_on: 2026-11-23      # la date est saisie, jamais lue sur l’horloge
+    reason: mesuré après un lavage   # facultatif
+```
+
+« après lavage » compte la mesure comme bloquée ; « avant lavage » la compte comme non bloquée, « À VÉRIFIER ». Le rapport cite la décision (bloc « CHOIX », date au format jj/mm/aaaa, « Décidé par : votre choix », « source : votre choix » sur la ligne « Échantillon »). Une option inconnue, une décision sans question posée et une décision sur une question qui ne se répond pas par une décision (par exemple `crown_odd_stitches`) sortent en code 3, en nommant la question.
 
 ## Vérifier un patron YAML
 

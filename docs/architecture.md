@@ -62,7 +62,7 @@ Trois acteurs, trois responsabilités qui ne se recouvrent pas :
 | Étape | Modèle | Moteur | Personne |
 |---|---|---|---|
 | Comprendre une demande, lire une étiquette (M2) | propose une structure | valide le schéma, pose la provenance | corrige si besoin |
-| Résoudre les paramètres (échantillon, tour de tête, aisance, hauteur) | — | applique la table de résolution | répond aux questions en attente |
+| Résoudre les paramètres (échantillon, tour de tête, aisance, hauteur) | — | applique la table de résolution | répond aux questions en attente, par une décision ou en remplissant la demande |
 | Calculer montage, hauteur, calotte | — | calcule | — |
 | Vérifier un patron | — | simule rang par rang, compare | — |
 | Contrôler un nombre proposé par un LLM | — | accepte ou rejette, avec le calcul | — |
@@ -150,7 +150,7 @@ Une flèche signifie « dépend de ».
 | `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source ; fichiers dans `library/data/`, format dans son `README.md` ; le chargeur type chaque fichier par un registre explicite (nom de fichier → modèle d’entrée), un fichier absent du registre est refusé |
 | `llm` | Objets d’extraction, appels aux modèles (réessai sur 429 et 5xx, [ADR 0036](adr/0036-reessai-sur-erreur-passagere.md) ; arrêt sur quota Anthropic épuisé, [ADR 0038](adr/0038-arret-sur-quota-epuise.md)), conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
-| `app` | Cas d’usage : `verify_pattern`, `plan_beanie`, `run_baseline` et `measure_baseline` (ligne de base « LLM seul », journal et reprise dans `baseline_journal.py`, [ADR 0037](adr/0037-reprise-d-une-mesure-interrompue.md)) ; lecture des entrées de `--models` (`model_entries.py`) ; modèles de cas et de manifeste d’évaluation (`eval_cases.py`) | Seul point d’entrée pour `cli`, `api` et `web` |
+| `app` | Cas d’usage : `verify_pattern`, `plan_beanie`, application des décisions de la demande (`decisions.py`, [ADR 0039](adr/0039-repondre-a-une-question-par-une-decision.md)), `run_baseline` et `measure_baseline` (ligne de base « LLM seul », journal et reprise dans `baseline_journal.py`, [ADR 0037](adr/0037-reprise-d-une-mesure-interrompue.md)) ; lecture des entrées de `--models` (`model_entries.py`) ; modèles de cas et de manifeste d’évaluation (`eval_cases.py`) | Seul point d’entrée pour `cli`, `api` et `web` |
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
 | `evals` | Données d’évaluation | Voir [`evaluation.md`](evaluation.md) ; cas et manifestes hachés dans `evals/data/<split>/` ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)) ; les modèles de cas et la mesure vivent dans `app`, car `BeanieRequest` y vit ; `cli` résout le chemin des données et le passe à `app` ([ADR 0035](adr/0035-ligne-de-base-llm-seul.md)) |
 
@@ -226,8 +226,8 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `BeaniePlan`, `BeanieReview` | `BeaniePlan` : `worked`, `cast_on`, `rows`, `body`, `crown`, `depth_cm`, `finished_height`, `pattern` ; `BeanieReview` : `plan` ou `None`, `notices`, `questions` | le corps est la différence de deux entiers (`rows.total` − bord − calotte) ; à plat, `body` se règle de ± 1 rang pour que la calotte commence à l’endroit, règle tracée ; `cast_on` compte les lisières ; `needle_change` ne porte que sur la dernière aiguille saisie, celle de la calotte ; le `Pattern` passe dans `verify` ; corps sans rang : `needs_review`, sans plan |
 | `FlatCastOn` | `body: CastOnResult`, `selvedges`, `total` dérivé | montage calculé sur le point, plus une maille de lisière à chaque bord (88 m donnent 90) ; tour fini mesuré sur `body` |
 | `Finding` | `status` (`error` en tranche 1 ; `ok` à venir), `code`, `round`, `expected`, `actual`, `location` ; à venir : `provenance` | `error` ⇒ moteur ; `warning` et `needs_review` sont portés par `Notice` (`status`, `code`, `text`, `round`), rapprochée de `Finding` dans `ReportEntry` ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) ; `needs_review` ⇒ une question en attente |
-| `PendingQuestion`, `Decision` | question, options ; choix, date, motif | toute décision répond à une question |
-| `ReportEntry`, `Report` | `ReportEntry` : `status` (`error`, `warning`, `needs_review`, `rejected`), `code`, `round`, `lines`, `decided_by` (`engine`, `entered`, `library`) ; `Report` : `entries`, `questions`, `result` ; à venir : `inputs`, `decisions`, `engine_version`, `library_version` | déterministe : même entrée, même rapport ; entrées dans l’ordre d’arrivée, sans tri par statut ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) |
+| `PendingQuestion`, `Decision` | question, options ; `question`, `choice`, `decided_on`, `reason` facultatif | toute décision répond à une question ; `decided_on` est saisie, jamais lue sur l’horloge ([ADR 0039](adr/0039-repondre-a-une-question-par-une-decision.md)) ; `ResolvedGauge.decision` garde celle qui a placé la mesure |
+| `ReportEntry`, `Report` | `ReportEntry` : `status` (`error`, `warning`, `needs_review`, `rejected`), `code`, `round`, `lines`, `decided_by` (`engine`, `entered`, `library`, `person` n’est porté par aucune entrée : il donne le libellé « votre choix » du bloc CHOIX et de la source de l’échantillon, la provenance `person_decision`) ; `Report` : `entries`, `questions`, `result`, `decisions` (celles qu’une étape a consommées, absentes de la sortie sérialisée quand elles sont vides) ; à venir : `inputs`, `engine_version`, `library_version` | déterministe : même entrée, même rapport ; entrées dans l’ordre d’arrivée, sans tri par statut ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) |
 
 Les modèles d’évaluation (`EvalManifest`, `EvalCase`, `ModelRun`, `FieldScore`, `BaselineRun`) sont décrits dans [`evaluation.md`](evaluation.md).
 
@@ -245,7 +245,7 @@ L’ordre de confiance dépend de la grandeur :
 
 | Grandeur | Ordre de confiance | Si rien n’est disponible |
 |---|---|---|
-| Échantillon | échantillon bloqué > échantillon non bloqué, « À VÉRIFIER », avec le conseil de le bloquer (laver puis sécher) > échantillon d’état de blocage inconnu : question « l’as-tu bloqué ? », sans plan > jauge de l’étiquette, « À VÉRIFIER : jauge du fabricant, état de blocage inconnu » (une fourchette sans échantillon fait demander la valeur à retenir, aucun milieu) | question en attente |
+| Échantillon | échantillon bloqué > échantillon non bloqué, « À VÉRIFIER », avec le conseil de le bloquer (laver puis sécher) > échantillon d’état de blocage inconnu : question « Ton échantillon a-t-il été mesuré après lavage (blocage) ou avant ? », sans plan ; une décision « après lavage » ou « avant lavage » y répond (source : votre choix) > jauge de l’étiquette, « À VÉRIFIER : jauge du fabricant, état de blocage inconnu » (une fourchette sans échantillon fait demander la valeur à retenir, aucun milieu) | question en attente |
 | Tour de tête | mesure > mesure de référence par âge ou par taille nommée, proposée puis décidée par la personne (`needs_review`, [ADR 0018](adr/0018-tour-de-tete-par-age.md), [ADR 0026](adr/0026-grille-de-tailles-du-tour-de-tete.md)) | question en attente |
 | Aisance | saisie > patrons sources par (ajustement, point du bord, point de l’échantillon, famille de la laine), puis base −5 % si aucun ne correspond, proposée puis décidée par la personne (`needs_review`, [ADR 0024](adr/0024-aisance-du-bonnet.md), [ADR 0031](adr/0031-aisance-d-apres-les-patrons-et-la-laine.md)) | question en attente |
 | Hauteur | saisie > mesure de référence par âge (hypothèse « À VÉRIFIER », `warning` ; `needs_review` si l’âge a deux valeurs ou aucune ligne) | question en attente |
@@ -291,8 +291,9 @@ Format de la demande de bonnet (figé par CLA-69), lu par `knitproof calc` dans 
 | Clé | Contenu |
 |---|---|
 | `head_circumference`, `ease` | valeur, unité (`cm`, ou `percent` pour l’aisance) et `provenance` (`measured` ou `entered`) ; le tour visé en découle (43,2 cm = 48 × (100 − 10) / 100) |
-| `swatch` | facultatif. `needle`, `stitch`, puis au moins une mesure parmi `after_blocking`, `before_blocking` et `unknown_blocking` (échantillon d’état de blocage inconnu, exclusif des deux autres : on répond à la question « l’as-tu bloqué ? » en renommant la clé en `after_blocking` ou `before_blocking`) : mailles et largeur, rangs et hauteur facultatifs (sans rangs, le plan manque et la commande pose la question), et `rows_source` (`reference`, `to_verify`) pour une jauge en rangs tirée d’un patron, affichée sur la ligne « Hauteur » |
+| `swatch` | facultatif. `needle`, `stitch`, puis au moins une mesure parmi `after_blocking`, `before_blocking` et `unknown_blocking` (échantillon d’état de blocage inconnu, exclusif des deux autres : on répond à la question du blocage par une décision, ou en renommant la clé en `after_blocking` ou `before_blocking`) : mailles et largeur, rangs et hauteur facultatifs (sans rangs, le plan manque et la commande pose la question), et `rows_source` (`reference`, `to_verify`) pour une jauge en rangs tirée d’un patron, affichée sur la ligne « Hauteur » |
 | `label_gauge` | facultatif : la jauge de l’étiquette. `stitches` en valeur ou en fourchette (`low`, `high`), `width`, et `rows` en valeur ou en fourchette avec `height`, facultatifs. Sans `swatch`, le calcul la suit, « À VÉRIFIER » ; avec `swatch`, elle ne sert qu’à la comparaison |
+| `decisions` | facultatif. Liste de `question` (code de la question en attente), `choice` (une de ses options), `decided_on` (date `AAAA-MM-JJ`, obligatoire) et `reason` (facultatif) ; seule `gauge_blocking_unknown` se répond ainsi, aux choix « après lavage » et « avant lavage » ; une option inconnue ou une décision sans question est refusée (code 3) |
 | `needles` | aiguilles du projet : `size` et `kind` ; « 4 mm », « US 6 » ou « US 6 (4 mm) » (le `mm` entre parenthèses est saisi, jamais déduit) |
 | `stitch_multiple` | `repeat_multiple`, `repeat_offset`, `provenance` : saisi, aucune valeur non sourcée |
 | `total_height`, `brim_height`, `folded_brim`, `worked` | hauteurs finies, revers replié, méthode (`round` par défaut) |
@@ -385,6 +386,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0036 — Réessai sur erreur passagère](adr/0036-reessai-sur-erreur-passagere.md)
 - [ADR 0037 — Reprise d’une mesure interrompue](adr/0037-reprise-d-une-mesure-interrompue.md)
 - [ADR 0038 — Arrêt sur quota épuisé](adr/0038-arret-sur-quota-epuise.md)
+- [ADR 0039 — Répondre à une question par une décision](adr/0039-repondre-a-une-question-par-une-decision.md)
 
 ## 13. Projets proches
 
