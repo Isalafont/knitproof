@@ -159,12 +159,12 @@ L’aisance est une valeur saisie. Le moteur compare le montage sur l’échanti
 Le moteur ne calcule qu’avec des valeurs dont il connaît l’origine, dans cet ordre de confiance :
 
 1. **Votre échantillon**, mesuré avant et après blocage, avec la composition du fil et la taille des aiguilles. C’est la seule mesure qui reflète votre fil, vos aiguilles et votre main.
-2. **L’étiquette du fil** : composition, échantillon et aiguilles conseillés par le fabricant, métrage, consignes de lavage. Une photo de l’étiquette suffit : le modèle la lit, le moteur s’en sert.
+2. **L’étiquette du fil** : composition, échantillon et aiguilles conseillés par le fabricant, métrage, consignes de lavage. Lecture d’une photo de l’étiquette par un modèle : prévu (M2).
 3. **La bibliothèque de fibres**, un vocabulaire qui dit quels noms désignent une même fibre ; le comportement au lavage ne vient pas de la fibre mais de l’échantillon tricoté de la laine ([ADR 0030](docs/adr/0030-laines-de-reference.md)).
 4. **Les mesures de référence** par âge et par taille, quand la personne n’a pas pu être mesurée. Pour un tour de tête, la plage par âge vient de patrons (DROPS Children, Julie Taylor) jusqu’à 14 ans, puis du [Craft Yarn Council](https://www.craftyarncouncil.com/standards/head-circumference-chart), femme et homme, dès 15 ans ; elle reste « À VÉRIFIER », sans valeur proposée (à 3 ans : 50 à 52 cm) ([ADR 0027](docs/adr/0027-tour-de-tete-par-age-d-apres-les-patrons.md)). Les tableaux du tricot divergent : 19 in (environ 48 cm) pour « 12 mois à 3 ans » selon [Knit Picks](https://tutorials.knitpicks.com/hat-size-charts/). D’où l’intérêt de mesurer. La grille de tailles nommées reste décrite dans l’[ADR 0026](docs/adr/0026-grille-de-tailles-du-tour-de-tete.md).
 5. **Rien d’autre.** Une valeur manquante est demandée, jamais inventée.
 
-Vos échantillons sont enregistrés et réutilisables d’un projet à l’autre.
+Garder vos échantillons d’un projet à l’autre, dans un compte : prévu.
 
 ### Vérifier un patron existant
 
