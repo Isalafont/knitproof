@@ -7,6 +7,7 @@ from pathlib import Path
 
 from knitproof.app.baseline import BaselineResult, ProviderResult
 from knitproof.app.eval_cases import Split
+from knitproof.app.knitproof_column import ColumnResult
 from knitproof.cli.report import render as render_report
 from knitproof.cli.report import render_baseline
 from knitproof.domain.finding import Finding, FindingCode, FindingStatus
@@ -122,3 +123,42 @@ def test_a_baseline_line_is_named_by_provider_model_and_host() -> None:
     assert lines[1].startswith("anthropic:claude-opus-5-5")
     assert lines[2].startswith("ollama ")
     assert len({line.index("18/18") for line in lines[:3]}) == 1
+
+
+def _with_knitproof(item: ProviderResult) -> ProviderResult:
+    return item.model_copy(
+        update={
+            "knitproof": ColumnResult(
+                correct=15,
+                wrong=1,
+                abstentions=2,
+                total=18,
+                low=Decimal("0.6094"),
+                high=Decimal("0.9455"),
+                fields_exact=130,
+                fields_expected=144,
+                invented=3,
+                correct_abstentions=40,
+            )
+        }
+    )
+
+
+def test_a_measure_with_the_knitproof_column_shows_both_columns_and_the_reading() -> None:
+    result = BaselineResult(
+        split=Split.DEV,
+        prompt_id="p",
+        prompt_sha256="0" * 64,
+        passes=3,
+        measured_on=datetime.datetime(2026, 11, 23, 9, 30, tzinfo=datetime.UTC),
+        providers=(_with_knitproof(_line("anthropic", "claude-opus-5-5", None)),),
+    )
+
+    (line, written) = render_baseline(result, Path("r.yaml")).splitlines()
+
+    assert "LLM seul 18/18  [0,8247 ; 1]" in line
+    assert "knitproof 15/18  [0,6094 ; 0,9455]" in line
+    assert "lecture 130/144" in line
+    assert "inventés 3" in line
+    assert "abstentions : 0 ; knitproof 2" in line
+    assert written == "Résultat : r.yaml"

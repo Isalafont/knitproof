@@ -5,6 +5,7 @@ from importlib.resources import files
 import pytest
 
 from knitproof.app.baseline import CastOnAnswer, Verdict, resolve_gauge, score
+from knitproof.app.beanie_reading import ReadingInputs, reading_inputs
 from knitproof.app.eval_cases import EvalCase, Split, load_eval_sets
 from knitproof.domain.notice import NoticeCode
 from knitproof.engine.cast_on import cast_on
@@ -59,3 +60,44 @@ def test_the_expected_cast_on_is_judged_correct(case: EvalCase) -> None:
     answer = CastOnAnswer(stitches=case.expected.cast_on_stitches)
 
     assert score(case, answer).verdict is Verdict.CORRECT, case.id
+
+
+def _read_inputs(case: EvalCase) -> ReadingInputs:
+    inputs = reading_inputs(case.expected_reading)
+    assert isinstance(inputs, ReadingInputs), f"{case.id} : {inputs}"
+    return inputs
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda case: case.id)
+def test_the_expected_reading_gives_the_target_of_the_request(case: EvalCase) -> None:
+    assert _read_inputs(case).target.in_cm == case.request.circumference.in_cm, case.id
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda case: case.id)
+def test_the_expected_reading_gives_the_multiple_of_the_request(case: EvalCase) -> None:
+    assert _read_inputs(case).multiple == case.request.multiple, case.id
+
+
+@pytest.mark.parametrize("case", ANSWERED, ids=lambda case: case.id)
+def test_the_expected_reading_gives_the_cast_on_of_the_request(case: EvalCase) -> None:
+    inputs = _read_inputs(case)
+    resolved = resolve_swatch(
+        blocked=inputs.blocked,
+        unblocked=inputs.unblocked,
+        unknown=inputs.unknown,
+        label=inputs.label,
+    )
+
+    assert resolved.gauge is not None, case.id
+    result = cast_on(inputs.target, resolved.gauge, inputs.multiple)
+    assert result.stitches == case.expected.cast_on_stitches, case.id
+
+
+@pytest.mark.parametrize("case", ABSTAINING, ids=lambda case: case.id)
+def test_an_abstaining_case_reads_no_gauge(case: EvalCase) -> None:
+    inputs = _read_inputs(case)
+
+    assert inputs.blocked is None, case.id
+    assert inputs.unblocked is None, case.id
+    assert inputs.unknown is None, case.id
+    assert inputs.label is None, case.id

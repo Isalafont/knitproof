@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 
 from knitproof.app.baseline_models import BaselineRun
 from knitproof.app.eval_cases import Split
+from knitproof.app.knitproof_column import KnitproofRun
 
 
 class JournalError(Exception):
@@ -45,6 +46,7 @@ class JournalHeader(BaseModel):
 
     split: Split
     prompt_sha256: str
+    reading_prompt_sha256: str | None = None
     passes: int
     measured_on: datetime.datetime
     cases: tuple[CaseHash, ...]
@@ -58,6 +60,7 @@ class JournalLine(BaseModel):
 
     identity: EntryIdentity
     run: BaselineRun
+    knitproof: KnitproofRun | None = None
 
 
 _SHOWN_MAX = 80
@@ -67,10 +70,17 @@ type _Key = tuple[EntryIdentity, str, int]
 class Journal:
     """Le fichier de passages d’une mesure."""
 
-    def __init__(self, path: Path, header: JournalHeader, known: dict[_Key, BaselineRun]) -> None:
+    def __init__(
+        self,
+        path: Path,
+        header: JournalHeader,
+        known: dict[_Key, BaselineRun],
+        known_knitproof: dict[_Key, KnitproofRun] | None = None,
+    ) -> None:
         self._path = path
         self._header = header
         self._known = known
+        self._known_knitproof = known_knitproof if known_knitproof is not None else {}
         self._born = bool(known) or path.exists()
 
     @classmethod
@@ -83,7 +93,7 @@ class Journal:
     @classmethod
     def resume(cls, path: Path, expected: JournalHeader) -> Self:
         """Rouvre un journal pour le même `expected` ; coupe une ligne finale inachevée."""
-        header, known, valid_size = cls._read(path)
+        header, known, known_knitproof, valid_size = cls._read(path)
         for name in JournalHeader.model_fields:
             if name == "measured_on":
                 continue
@@ -94,7 +104,7 @@ class Journal:
                     f"{_shown(getattr(expected, name))})"
                 )
         os.truncate(path, valid_size)
-        return cls(path, header, known)
+        return cls(path, header, known, known_knitproof)
 
     @classmethod
     def read_header(cls, path: Path) -> JournalHeader:
@@ -109,9 +119,17 @@ class Journal:
         """Le passage déjà enregistré, ou `None`."""
         return self._known.get((identity, case_id, attempt))
 
-    def record(self, identity: EntryIdentity, run: BaselineRun) -> None:
-        """Ajoute le passage et le vide sur disque avant de rendre la main."""
-        line = JournalLine(identity=identity, run=run)
+    def recorded_knitproof(
+        self, identity: EntryIdentity, case_id: str, attempt: int
+    ) -> KnitproofRun | None:
+        """Le passage « knitproof » déjà enregistré avec le passage « LLM seul », ou `None`."""
+        return self._known_knitproof.get((identity, case_id, attempt))
+
+    def record(
+        self, identity: EntryIdentity, run: BaselineRun, knitproof: KnitproofRun | None = None
+    ) -> None:
+        """Ajoute le passage (les deux appels ensemble) et le vide sur disque."""
+        line = JournalLine(identity=identity, run=run, knitproof=knitproof)
         self._path.parent.mkdir(parents=True, exist_ok=True)
         try:
             if not self._born:
@@ -122,6 +140,8 @@ class Journal:
             raise JournalError(f"{self._path} : le journal existe déjà") from error
         self._born = True
         self._known[(identity, run.case_id, run.attempt)] = run
+        if knitproof is not None:
+            self._known_knitproof[(identity, run.case_id, run.attempt)] = knitproof
 
     def discard(self) -> None:
         """Supprime le journal, une fois le résultat daté écrit."""
@@ -134,7 +154,9 @@ class Journal:
             os.fsync(handle.fileno())
 
     @staticmethod
-    def _read(path: Path) -> tuple[JournalHeader, dict[_Key, BaselineRun], int]:
+    def _read(
+        path: Path,
+    ) -> tuple[JournalHeader, dict[_Key, BaselineRun], dict[_Key, KnitproofRun], int]:
         try:
             data = path.read_bytes()
         except FileNotFoundError as error:
@@ -149,6 +171,7 @@ class Journal:
                 "sans --resume"
             ) from error
         known: dict[_Key, BaselineRun] = {}
+        known_knitproof: dict[_Key, KnitproofRun] = {}
         size = len(lines[0]) + 1
         for number, raw in enumerate(lines[1:], start=2):
             try:
@@ -157,9 +180,12 @@ class Journal:
                 if number == len(lines) and len(data) == sum(len(item) + 1 for item in lines):
                     break  # dernière ligne illisible : arrêt brutal pendant l’écriture
                 raise JournalError(f"{path} : ligne {number} illisible") from error
-            known[(line.identity, line.run.case_id, line.run.attempt)] = line.run
+            key = (line.identity, line.run.case_id, line.run.attempt)
+            known[key] = line.run
+            if line.knitproof is not None:
+                known_knitproof[key] = line.knitproof
             size += len(raw) + 1
-        return header, known, size
+        return header, known, known_knitproof, size
 
 
 def _shown(value: object) -> str:

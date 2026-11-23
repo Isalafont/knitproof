@@ -236,16 +236,31 @@ def _number(value: Decimal, places: int = 2) -> str:
 
 
 def render_baseline(result: BaselineResult, written: Path) -> str:
-    """Une ligne par entrée (k/N, Wilson à 95 %, abstentions), puis le chemin écrit."""
+    """Une ligne par entrée : « LLM seul » et, s’il est mesuré, « knitproof » avec la lecture."""
     labels = [_entry_label(item) for item in result.providers]
     width = max(map(len, labels), default=0) + 2
     lines = [
-        f"{label:<{width}}{item.correct}/{item.total}  "
-        f"[{_comma(item.low)} ; {_comma(item.high)}]  abstentions : {item.abstentions}"
+        f"{label:<{width}}{_entry_columns(item)}"
         for label, item in zip(labels, result.providers, strict=True)
     ]
     lines.append(f"Résultat : {written}")
     return "\n".join(lines)
+
+
+def _entry_columns(item: ProviderResult) -> str:
+    column = item.knitproof
+    if column is None:
+        return (
+            f"{item.correct}/{item.total}  "
+            f"[{_comma(item.low)} ; {_comma(item.high)}]  abstentions : {item.abstentions}"
+        )
+    return (
+        f"LLM seul {item.correct}/{item.total}  [{_comma(item.low)} ; {_comma(item.high)}]  "
+        f"knitproof {column.correct}/{column.total}  "
+        f"[{_comma(column.low)} ; {_comma(column.high)}]  "
+        f"lecture {column.fields_exact}/{column.fields_expected}  inventés {column.invented}  "
+        f"abstentions : {item.abstentions} ; knitproof {column.abstentions}"
+    )
 
 
 def _entry_label(item: ProviderResult) -> str:

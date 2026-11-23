@@ -14,9 +14,9 @@ Figé le 12/11/2026 ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)). Toute
 | Évaluation | Entrée | Sortie attendue |
 |---|---|---|
 | Ligne de base « LLM seul » | Demande complète de bonnet (tour de tête, échantillon, fil, bord) | Nombre de mailles à monter |
-| knitproof | Même demande | Montage calculé par le moteur, après lecture par le modèle |
+| knitproof | Même demande | Montage calculé par le moteur depuis la `BeanieReading` lue par le modèle (prompt `request-reading-v1`) |
 | Lecture d’étiquette | Photo d’étiquette | `YarnLabel` champ par champ |
-| Compréhension de la demande | Demande en texte libre | `BeanieSpecification` champ par champ |
+| Compréhension de la demande | Demande en texte libre | `BeanieReading` champ par champ, contre l’attendu de lecture du cas |
 | Signal de désaccord | Plusieurs modèles ou plusieurs passages | Points marqués « À VÉRIFIER » |
 
 ## Jeux de données
@@ -50,7 +50,7 @@ Chaque cas peut porter une erreur volontaire, décrite par un type :
 | Mesure | Définition |
 |---|---|
 | Montage correct | Ligne de base et knitproof : le tour fini obtenu est à ±1 cm du tour visé (tête et aisance comprises) |
-| Lecture juste | Par champ : exactement la valeur de la source ; nombres tels qu’imprimés, texte comparé sans casse ni espaces superflus ; aucune tolérance ; champ absent de la source : attendu vide (voir Abstention correcte) |
+| Lecture juste | Par champ, contre l’attendu de lecture du cas (`expected_reading`) : exactement la valeur de la source ; nombres comparés par valeur (10 et 10,0 sont égaux), texte comparé sans casse ni espaces superflus ; aucune tolérance ; champ absent de la source : attendu vide (voir Abstention correcte) |
 | Champ inventé | Valeur produite alors qu’elle est absente de la source : l’erreur qui contredit « jamais inventée » |
 | Abstention correcte | Champ laissé vide quand la source ne le contient pas |
 | Erreur détectée | Erreur injectée signalée et localisée |
@@ -58,6 +58,8 @@ Chaque cas peut porter une erreur volontaire, décrite par un type :
 | Stabilité | Accord entre plusieurs passages du même modèle |
 | Valeur du désaccord | Erreurs attrapées par le signal « À VÉRIFIER », et nombre de questions qu’il pose à la personne |
 | Coût, latence | Par cas, avec une grille de prix datée |
+
+Lecture juste : un champ attendu compte pour une lecture exacte (égalité de `Decimal` : la valeur, pas son écriture) ; un champ lu alors que l’attendu est vide est « inventé » et compté à part. Une lecture refusée manque tous ses champs attendus.
 
 Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais en pourcentage seul : les jeux sont petits.
 
@@ -79,10 +81,11 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 | Modèle | Champs clés |
 |---|---|
 | `EvalManifest` | `version`, `split` (`dev` / `test`), et par entrée : `id` du cas, hachage SHA-256, annotatrice, date |
-| `EvalCase` | `id`, `input`, `request` (demande au format de `knitproof calc`), `expected` (tour visé, et montage du moteur ou `abstain`), `injected_error`, `absent_fields` |
+| `EvalCase` | `id`, `input`, `request` (demande au format de `knitproof calc`), `expected` (tour visé, et montage du moteur ou `abstain`), `expected_reading` (`BeanieReading` : ce que le texte dit), `injected_error`, `absent_fields` |
 | `ModelRun` | modèle, version, prompt, température, mode de sortie structurée, jetons, latence, essais, date (le coût viendra avec le rejeu en CI) |
 | `FieldScore`, `EvalResult` | exact, inventé, abstention ; erreur détectée et localisée |
 | `BaselineRun` | réponse du LLM seul, comparée au moteur |
+| `KnitproofRun` | lecture du modèle et sa provenance, montage du moteur, verdict, `FieldScore` par champ |
 
 ## Tableau publié
 
@@ -105,3 +108,5 @@ Les résultats sont publiés en **k/N** avec un intervalle de confiance, jamais 
 - 20/11/2026 — Une mesure s’arrête sans réessai dès que le plafond de dépense d’Anthropic est atteint (429 `enforced_spend_limit_reached`) ; les autres 429 restent réessayés (CLA-204, ADR 0038) ; motif : aucune mesure `test` faite.
 - 20/11/2026 — Première mesure `test` (CLA-205) : quatre modèles mesurés, Mistral Small servi par `parasail/bf16` au lieu de `mistral/eu` (`dev`) ; motif : `mistral/eu` n’est plus servi par OpenRouter pour ce modèle, et `deepinfra/fp8` rendait un 429 `engine_overloaded` au contrôle.
 - 20/11/2026 — Mesure `test` de `qwen3:8b` interrompue au 3e passage de `bonnet-ado-fille-cotes-2-2` (délai HTTP de 600 s de pydanticAI, deux fois) ; son journal reste local pour une reprise `--resume` ; motif : un ticket de suite décide comment compter ce cas (abstention ou délai plus long).
+- 23/11/2026 — Forme du cas : `EvalCase` porte l’attendu de lecture `expected_reading`, ce que le texte dit et seulement cela, brouillon par l’agent puis signé par Isabelle ; les 21 cas sont re-hachés (CLA-200) ; motif : la colonne « knitproof » compte la lecture juste champ par champ, aucune mesure « knitproof » faite. Le texte de `dev/bonnet-ado-cotes-2-2` dit « lavé » au lieu de « mouillé » puis séché à plat, choix de mot d’Isabelle ; les attendus ne changent pas, et les mesures `dev` antérieures portent sur l’ancien texte.
+- 23/11/2026 — La colonne « knitproof » se mesure par un second appel à chaque passage (prompt `request-reading-v1`, `BeanieReading`), le moteur calculant le montage depuis la lecture ; la lecture juste se compte contre `expected_reading`, nombres comparés par valeur (10 et 10,0 sont égaux) au lieu de « tels qu’imprimés » (CLA-200, [ADR 0040](adr/0040-lecture-de-la-demande-et-colonne-knitproof.md)) ; motif : aucune mesure `test` faite, le prompt de lecture se met au point sur `dev` seulement.

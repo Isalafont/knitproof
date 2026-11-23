@@ -31,3 +31,19 @@ request:
 expected:
   target_circumference_cm: '39'
   cast_on_stitches: 94
+expected_reading:
+  head_circumference:
+    value: '42'
+    unit: cm
+  smaller_than_head:
+    value: '3'
+    unit: cm
+  gauge_after_blocking:
+    stitches: '24'
+    width:
+      value: '10'
+      unit: cm
+  needle_mm:
+  - '3'
+  edge: rolled_stockinette
+  worked: round

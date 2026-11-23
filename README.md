@@ -11,7 +11,7 @@
 
 Knitting patterns computed and checked by a deterministic engine, not guessed by an AI.
 
-**knitproof** calcule et vérifie les mailles de patrons de tricot, en commençant par le bonnet. Aujourd’hui, `knitproof calc` calcule un bonnet depuis une demande YAML et `knitproof verify` contrôle les comptes de mailles d’un patron écrit en YAML ; `knitproof eval` mesure la ligne de base « LLM seul » ([commandes](docs/commandes.md)).
+**knitproof** calcule et vérifie les mailles de patrons de tricot, en commençant par le bonnet. Aujourd’hui, `knitproof calc` calcule un bonnet depuis une demande YAML et `knitproof verify` contrôle les comptes de mailles d’un patron écrit en YAML ; `knitproof eval` mesure « LLM seul » et « knitproof » ([commandes](docs/commandes.md)).
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Isalafont/knitproof/ci.yml?branch=develop&style=flat-square&label=CI)](https://github.com/Isalafont/knitproof/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FIsalafont%2Fknitproof%2Fdevelop%2Fpyproject.toml&style=flat-square)](pyproject.toml)
@@ -244,7 +244,7 @@ Mesure du 20/11/2026, 15 cas, 3 passages (N = 45), même prompt, température 0 
 | `openrouter:mistralai/mistral-small-3.2-24b-instruct@parasail/bf16` (hors UE possible) | 12 | 33 | 0 | 12/45 [0,1596 ; 0,4104] | [YAML](evals/results/2026-11-20T1817-test.yaml) |
 | `ollama:qwen3:8b` | mesure interrompue : un passage dépasse 10 minutes | | | | ticket de suite |
 
-Claude Opus 5.5 et Kimi K3.1 Pro rendent 45 réponses justes sur 45 ; Mistral Large en rend 37, Mistral Small 12. Sur les quatre mesures, aucune abstention ni aucun refus de sortie n’a été enregistré. Un 45/45 sur 45 réponses ne borne la justesse qu’à 92 % au plus bas (Wilson). Pour `qwen3:8b`, la mesure `test` s’est arrêtée au 3e passage de `bonnet-ado-fille-cotes-2-2` : le délai HTTP de 600 s est dépassé, sans score ni intervalle ; elle reprendra après un ticket de suite. Cette ligne de base ne mesure ni la lecture d’étiquette ni la colonne knitproof (CLA-200) ; le comparatif reste à venir.
+Claude Opus 5.5 et Kimi K3.1 Pro rendent 45 réponses justes sur 45 ; Mistral Large en rend 37, Mistral Small 12. Sur les quatre mesures, aucune abstention ni aucun refus de sortie n’a été enregistré. Un 45/45 sur 45 réponses ne borne la justesse qu’à 92 % au plus bas (Wilson). Pour `qwen3:8b`, la mesure `test` s’est arrêtée au 3e passage de `bonnet-ado-fille-cotes-2-2` : le délai HTTP de 600 s est dépassé, sans score ni intervalle ; elle reprendra après un ticket de suite. Cette ligne de base ne mesure pas la lecture d’étiquette ; la colonne knitproof se mesure désormais par `knitproof eval` (CLA-200), mesurée sur `dev` seulement à ce jour et le comparatif reste à venir tant que `test` n’est pas mesuré.
 
 | Modèle | Montage correct, LLM seul | Montage correct, knitproof | Lecture juste | Champs inventés | Stabilité | Coût et temps |
 |---|---|---|---|---|---|---|

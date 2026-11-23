@@ -21,6 +21,7 @@ from pydantic import (
     model_validator,
 )
 
+from knitproof.app.beanie_reading import BeanieReading
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import PlainDecimal
@@ -71,7 +72,10 @@ class BaselineExpected(BaseModel):
 
 
 class EvalCase(BaseModel):
-    """Une demande, ce qu’on en attend, et l’erreur volontaire qu’elle porte."""
+    """Une demande, ce qu’on en attend, et l’erreur volontaire qu’elle porte.
+
+    `expected_reading` est la lecture du texte, telle qu’il la dit, signée par Isabelle (CLA-200).
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -79,6 +83,7 @@ class EvalCase(BaseModel):
     input: Text
     request: BeanieRequest
     expected: BaselineExpected
+    expected_reading: BeanieReading
     injected_error: InjectedError | None = None
     absent_fields: tuple[str, ...] = ()
 

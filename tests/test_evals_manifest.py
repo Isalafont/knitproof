@@ -34,6 +34,7 @@ def _case(case_id: str = "cas-1", target: str = "44") -> dict[str, object]:
         "input": "Bonnet pour 3 ans.",
         "request": REQUEST,
         "expected": {"target_circumference_cm": target, "cast_on_stitches": 88},
+        "expected_reading": {},
     }
 
 
