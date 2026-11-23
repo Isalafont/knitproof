@@ -1,5 +1,6 @@
 """`calc_beanie` : la demande devient un rapport unique (CLA-69)."""
 
+import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -8,6 +9,7 @@ import yaml
 
 from knitproof.app.beanie import calc_beanie
 from knitproof.app.errors import InputFileError
+from knitproof.domain.decision import Decision
 from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.report import ReportEntry, ReportStatus
 from knitproof.library.loader import Library, load_library
@@ -206,7 +208,83 @@ def test_an_unknown_blocking_swatch_asks_and_gives_no_plan(tmp_path: Path) -> No
 
     assert calc.report.result is None
     assert [question.code for question in calc.report.questions] == ["gauge_blocking_unknown"]
-    assert calc.report.questions[0].options == ("oui", "non")
+    assert calc.report.questions[0].options == ("après lavage", "avant lavage")
+
+
+DECIDED_ON = datetime.date(2026, 11, 23)
+
+
+def _decided(choice: str, question: str = "gauge_blocking_unknown") -> dict[str, object]:
+    decision = {"question": question, "choice": choice, "decided_on": DECIDED_ON}
+    data = _swatch_only(unknown_blocking={**SWATCH_20, **ROWS_30})
+    data["decisions"] = [decision]
+    return data
+
+
+def test_a_decision_after_washing_gives_the_blocked_plan_and_cites_itself(tmp_path: Path) -> None:
+    calc = calc_beanie(_write(tmp_path, _decided("après lavage")))
+
+    assert calc.gauge.source is GaugeSource.BLOCKED
+    assert calc.report.result is not None
+    assert calc.report.result.cast_on == 88
+    assert calc.report.questions == ()
+    expected = Decision(
+        question="gauge_blocking_unknown", choice="après lavage", decided_on=DECIDED_ON
+    )
+    assert calc.report.decisions == (expected,)
+    assert calc.gauge.decision == expected
+
+
+def test_a_decision_before_washing_gives_the_unblocked_plan_to_verify(tmp_path: Path) -> None:
+    calc = calc_beanie(_write(tmp_path, _decided("avant lavage")))
+
+    assert calc.gauge.source is GaugeSource.UNBLOCKED
+    assert calc.gauge.decision is not None
+    assert calc.report.result is not None
+    assert calc.report.questions == ()
+    entry = _entry(calc.report.entries, "gauge_unblocked")
+    assert entry.lines[0].startswith("À VÉRIFIER")
+    assert calc.report.decisions == (calc.gauge.decision,)
+
+
+def test_the_decision_and_the_renamed_key_give_the_same_plan(tmp_path: Path) -> None:
+    decided = calc_beanie(_write(tmp_path, _decided("après lavage")))
+    renamed = calc_beanie(_write(tmp_path, _swatch_only(after_blocking={**SWATCH_20, **ROWS_30})))
+
+    assert decided.cast_on == renamed.cast_on
+    assert decided.report.result == renamed.report.result
+
+
+def test_a_decision_without_the_question_is_an_input_error(tmp_path: Path) -> None:
+    decision = {"question": "gauge_blocking_unknown", "choice": "après lavage"}
+    data = {**_data(), "decisions": [{**decision, "decided_on": DECIDED_ON}]}
+
+    with pytest.raises(InputFileError, match="gauge_blocking_unknown"):
+        calc_beanie(_write(tmp_path, data))
+
+
+def test_a_decision_without_the_question_is_refused_without_a_gauge_too(tmp_path: Path) -> None:
+    data = _without_swatch(
+        decisions=[{"question": "crown_odd_stitches", "choice": "x", "decided_on": DECIDED_ON}]
+    )
+
+    with pytest.raises(InputFileError, match="crown_odd_stitches"):
+        calc_beanie(_write(tmp_path, data))
+
+
+def test_a_decision_on_a_question_that_cannot_be_answered_is_refused(tmp_path: Path) -> None:
+    decision = {"question": "crown_odd_stitches", "choice": "x", "decided_on": DECIDED_ON}
+    data = {**_data(), "decisions": [decision]}
+
+    with pytest.raises(InputFileError, match="crown_odd_stitches"):
+        calc_beanie(_write(tmp_path, data))
+
+
+def test_an_unknown_option_cites_the_question(tmp_path: Path) -> None:
+    with pytest.raises(InputFileError, match="gauge_blocking_unknown") as raised:
+        calc_beanie(_write(tmp_path, _decided("bloqué")))
+
+    assert "après lavage, avant lavage" in raised.value.reason
 
 
 def test_an_unblocked_swatch_alone_is_followed_and_marked_to_verify(tmp_path: Path) -> None:
@@ -308,3 +386,14 @@ def test_a_request_without_gauge_loads_the_library_once(
     calc_beanie(_write(tmp_path, _three_needles(_without_swatch())))
 
     assert len(loads) == 1
+
+
+def test_a_decision_on_the_odd_crown_question_says_it_cannot_be_answered(tmp_path: Path) -> None:
+    decision = {"question": "crown_odd_stitches", "choice": "x", "decided_on": DECIDED_ON}
+    data = _data()
+    data["stitch_multiple"] = {"repeat_multiple": 2, "repeat_offset": 1, "provenance": "entered"}
+    data["decisions"] = [decision]
+    del data["proposed_cast_on"]
+
+    with pytest.raises(InputFileError, match="cette question ne se répond pas par une décision"):
+        calc_beanie(_write(tmp_path, data))

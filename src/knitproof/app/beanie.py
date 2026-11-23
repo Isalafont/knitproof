@@ -10,6 +10,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict
 
 from knitproof.app.beanie_request import BeanieRequest
+from knitproof.app.decisions import DecisionError, Decisions
 from knitproof.app.errors import InputFileError, load_model
 from knitproof.app.needles import NeedleInfo, describe_needle
 from knitproof.domain.beanie import BeanieReview, BeanieSpecification
@@ -24,7 +25,11 @@ from knitproof.domain.reference import ReferenceMeasurement
 from knitproof.domain.report import Report, ReportEntry
 from knitproof.engine.beanie import beanie_plan
 from knitproof.engine.cast_on import cast_on, check_cast_on, flat_cast_on
-from knitproof.engine.gauge import gauge_differs_from_label
+from knitproof.engine.gauge import (
+    AFTER_WASHING,
+    gauge_differs_from_label,
+    resolve_gauge,
+)
 from knitproof.engine.needle import check_needles
 from knitproof.engine.report import (
     build_report,
@@ -67,23 +72,31 @@ def calc_beanie(path: Path) -> BeanieCalc:
         return _calc(request, load_library())
     except (Rounded, Inexact) as error:
         raise InputFileError(path, _TOO_BIG) from error
+    except DecisionError as error:
+        raise InputFileError(path, str(error)) from error
 
 
 def _calc(request: BeanieRequest, library: Library) -> BeanieCalc:
     circumference, multiple = request.circumference, request.multiple
-    resolved = request.resolved_gauge
+    decisions = Decisions(request.decisions)
+    resolved = _resolve_gauge(request, decisions)
     gauge = resolved.gauge
     needles = tuple(
         describe_needle(needle.size, library) for needle in request.specification.needles
     )
     if gauge is None or resolved.source is None:
+        decisions.check_all_consumed()
         return BeanieCalc(
             request=request,
             circumference=circumference,
             gauge=resolved,
             cast_on=None,
             needles=needles,
-            report=build_report(_needle_entries(request, needles), resolved.questions),
+            report=build_report(
+                _needle_entries(request, needles),
+                resolved.questions,
+                decisions=decisions.consumed,
+            ),
         )
     swatch = request.swatch
     before = (
@@ -104,14 +117,34 @@ def _calc(request: BeanieRequest, library: Library) -> BeanieCalc:
     entries.extend(_proposal_entries(request, gauge, resolved.source))
     entries.extend(from_notice(notice) for notice in review.notices)
     entries.extend(_needle_entries(request, needles))
+    decisions.check_all_consumed()
     return BeanieCalc(
         request=request,
         circumference=circumference,
         gauge=resolved,
         cast_on=cast_on(circumference, gauge, multiple),
         needles=needles,
-        report=build_report(entries, review.questions, review.plan),
+        report=build_report(entries, review.questions, review.plan, decisions.consumed),
     )
+
+
+def _resolve_gauge(request: BeanieRequest, decisions: Decisions) -> ResolvedGauge:
+    """La jauge de la demande ; la décision sur le blocage place la mesure `unknown_blocking`."""
+    resolved = request.resolved_gauge
+    swatch = request.swatch
+    if swatch is None or swatch.unknown_blocking is None:
+        return resolved
+    decision = decisions.answer(resolved.questions[0])
+    if decision is None:
+        return resolved
+    after = decision.choice == AFTER_WASHING
+    unknown = swatch.unknown_blocking
+    again = resolve_gauge(
+        blocked=unknown if after else None,
+        unblocked=None if after else unknown,
+        label=request.label_gauge,
+    )
+    return again.model_copy(update={"decision": decision})
 
 
 def _gauge_entries(

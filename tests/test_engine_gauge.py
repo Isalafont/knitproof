@@ -46,8 +46,11 @@ def test_an_unknown_blocking_state_asks_and_gives_no_gauge() -> None:
     assert resolved.source is None
     (question,) = resolved.questions
     assert question.code == NoticeCode.GAUGE_BLOCKING_UNKNOWN
-    assert "L’as-tu bloqué (lavé puis séché) ?" in question.text
-    assert question.options == ("oui", "non")
+    assert question.text.startswith(
+        "Ton échantillon a-t-il été mesuré après lavage (blocage) ou avant ?"
+    )
+    assert question.options == ("après lavage", "avant lavage")
+    assert "decisions:" in question.text
     assert "unknown_blocking" in question.text
     assert "after_blocking" in question.text
     assert "before_blocking" in question.text

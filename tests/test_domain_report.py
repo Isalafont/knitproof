@@ -40,7 +40,11 @@ def test_statuses_and_deciders() -> None:
         "needs_review",
         "rejected",
     }
-    assert {decided.value for decided in DecidedBy} == {"engine", "entered", "library"}
+    assert {decided.value for decided in DecidedBy} == {"engine", "entered", "library", "person"}
+
+
+def test_decided_by_person_reads_as_your_choice() -> None:
+    assert DecidedBy.PERSON.label == "votre choix"
 
 
 def test_decided_by_engine_reads_as_a_verifiable_calculation() -> None:

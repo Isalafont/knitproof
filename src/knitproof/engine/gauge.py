@@ -11,6 +11,9 @@ from knitproof.domain.measure import DIVISION, EXACT, Length, SwatchMeasurement
 from knitproof.domain.notice import Notice, NoticeCode, NoticeStatus
 from knitproof.domain.question import PendingQuestion
 
+AFTER_WASHING = "après lavage"
+BEFORE_WASHING = "avant lavage"
+
 _BLOCK = "bloquer (laver puis sécher)"
 
 # Décision d’Isabelle, question 14 (27/10/2026) : un écart d’au moins 5 % avec l’étiquette est
@@ -95,11 +98,12 @@ def _unblocked_notice() -> Notice:
 
 def _blocking_question() -> PendingQuestion:
     text = (
-        "L’as-tu bloqué (lavé puis séché) ? Réponds dans le fichier : renomme `unknown_blocking` "
-        "en `after_blocking` si oui (mesures après blocage), ou en `before_blocking` si non."
+        "Ton échantillon a-t-il été mesuré après lavage (blocage) ou avant ? "
+        "Réponds dans la demande par une décision (`decisions:`), ou renomme `unknown_blocking` "
+        "en `after_blocking` (après lavage) ou `before_blocking` (avant lavage)."
     )
     return PendingQuestion(
-        code=NoticeCode.GAUGE_BLOCKING_UNKNOWN, text=text, options=("oui", "non")
+        code=NoticeCode.GAUGE_BLOCKING_UNKNOWN, text=text, options=(AFTER_WASHING, BEFORE_WASHING)
     )
 
 

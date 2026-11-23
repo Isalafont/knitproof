@@ -9,6 +9,7 @@ from typing import Annotated, Self
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, model_validator
 
+from knitproof.domain.decision import Decision
 from knitproof.domain.measure import Length, PositiveDecimal, SwatchMeasurement, _refuse_float
 from knitproof.domain.notice import Notice
 from knitproof.domain.question import PendingQuestion
@@ -62,7 +63,10 @@ class GaugeSource(StrEnum):
 
 
 class ResolvedGauge(BaseModel):
-    """La jauge retenue et sa source ; sans jauge, des questions et pas de source."""
+    """La jauge retenue et sa source ; sans jauge, des questions et pas de source.
+
+    `decision` est la réponse de la personne à la question du blocage, si elle a servi.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -70,6 +74,7 @@ class ResolvedGauge(BaseModel):
     source: GaugeSource | None
     notices: tuple[Notice, ...] = ()
     questions: tuple[PendingQuestion, ...] = ()
+    decision: Decision | None = None
 
     @model_validator(mode="after")
     def _source_goes_with_gauge(self) -> Self:

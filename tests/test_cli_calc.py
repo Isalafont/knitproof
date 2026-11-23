@@ -162,7 +162,7 @@ def test_an_unknown_blocking_swatch_exits_1_with_the_question_and_no_summary(
     code, out, _ = _run(tmp_path, data, capsys)
 
     assert code == 1
-    assert "L’as-tu bloqué (lavé puis séché) ?" in out
+    assert "Ton échantillon a-t-il été mesuré après lavage (blocage) ou avant ?" in out
     assert "Échantillon" not in out
     assert "Calotte" not in out
 
