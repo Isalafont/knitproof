@@ -150,7 +150,7 @@ Une flèche signifie « dépend de ».
 | `library` | Chargement des bibliothèques YAML sourcées | Toute valeur a une source ; fichiers dans `library/data/`, format dans son `README.md` ; le chargeur type chaque fichier par un registre explicite (nom de fichier → modèle d’entrée), un fichier absent du registre est refusé |
 | `llm` | Objets d’extraction, appels aux modèles (réessai sur 429 et 5xx, [ADR 0036](adr/0036-reessai-sur-erreur-passagere.md) ; arrêt sur quota Anthropic épuisé, [ADR 0038](adr/0038-arret-sur-quota-epuise.md)), conversion vers `domain` | Jamais importé par `engine` |
 | `sources` | Données externes (API Ravelry) | Optionnel : knitproof fonctionne sans |
-| `app` | Cas d’usage : `verify_pattern`, `plan_beanie`, application des décisions de la demande (`decisions.py`, [ADR 0039](adr/0039-repondre-a-une-question-par-une-decision.md)), `run_baseline` et `measure_baseline` (ligne de base « LLM seul », journal et reprise dans `baseline_journal.py`, [ADR 0037](adr/0037-reprise-d-une-mesure-interrompue.md)) ; lecture des entrées de `--models` (`model_entries.py`) ; modèles de cas et de manifeste d’évaluation (`eval_cases.py`) | Seul point d’entrée pour `cli`, `api` et `web` |
+| `app` | Cas d’usage : `verify_pattern`, `plan_beanie`, application des décisions de la demande (`decisions.py`, [ADR 0039](adr/0039-repondre-a-une-question-par-une-decision.md)), `run_baseline` et `measure_baseline` (ligne de base « LLM seul », journal et reprise dans `baseline_journal.py`, [ADR 0037](adr/0037-reprise-d-une-mesure-interrompue.md)) ; lecture des entrées de `--models` (`model_entries.py`) ; modèles de cas et de manifeste d’évaluation (`eval_cases.py`) ; lecture de la demande par un modèle et sa conversion en entrées du moteur (`beanie_reading.py`), colonne « knitproof » (`knitproof_column.py`, [ADR 0040](adr/0040-lecture-de-la-demande-et-colonne-knitproof.md)) | Seul point d’entrée pour `cli`, `api` et `web` |
 | `cli`, `api`, `web` | Portes d’entrée | Aucune logique métier ; rendu uniquement |
 | `evals` | Données d’évaluation | Voir [`evaluation.md`](evaluation.md) ; cas et manifestes hachés dans `evals/data/<split>/` ([ADR 0032](adr/0032-protocole-d-evaluation-fige.md)) ; les modèles de cas et la mesure vivent dans `app`, car `BeanieRequest` y vit ; `cli` résout le chemin des données et le passe à `app` ([ADR 0035](adr/0035-ligne-de-base-llm-seul.md)) |
 
@@ -229,7 +229,7 @@ Modèles Pydantic dans `domain/`. Chacun naît d’un test qui échoue : la list
 | `PendingQuestion`, `Decision` | question, options ; `question`, `choice`, `decided_on`, `reason` facultatif | toute décision répond à une question ; `decided_on` est saisie, jamais lue sur l’horloge ([ADR 0039](adr/0039-repondre-a-une-question-par-une-decision.md)) ; `ResolvedGauge.decision` garde celle qui a placé la mesure |
 | `ReportEntry`, `Report` | `ReportEntry` : `status` (`error`, `warning`, `needs_review`, `rejected`), `code`, `round`, `lines`, `decided_by` (`engine`, `entered`, `library`, `person` n’est porté par aucune entrée : il donne le libellé « votre choix » du bloc CHOIX et de la source de l’échantillon, la provenance `person_decision`) ; `Report` : `entries`, `questions`, `result`, `decisions` (celles qu’une étape a consommées, absentes de la sortie sérialisée quand elles sont vides) ; à venir : `inputs`, `engine_version`, `library_version` | déterministe : même entrée, même rapport ; entrées dans l’ordre d’arrivée, sans tri par statut ([ADR 0029](adr/0029-rapport-unique-du-moteur.md)) |
 
-Les modèles d’évaluation (`EvalManifest`, `EvalCase`, `ModelRun`, `FieldScore`, `BaselineRun`) sont décrits dans [`evaluation.md`](evaluation.md).
+Les modèles d’évaluation (`EvalManifest`, `EvalCase`, `BeanieReading`, `ModelRun`, `FieldScore`, `BaselineRun`, `KnitproofRun`) sont décrits dans [`evaluation.md`](evaluation.md).
 
 **Repoussés** : profil de la personne au-delà de l’âge, autres vêtements, comportement des fibres (il vient de l’échantillon de la laine, ADR 0030), quantité de fil, persistance des échantillons (fichiers YAML en M1), lecture de patrons PDF.
 
@@ -387,6 +387,7 @@ Les décisions structurantes font l’objet d’un ADR dans [adr/](adr/) :
 - [ADR 0037 — Reprise d’une mesure interrompue](adr/0037-reprise-d-une-mesure-interrompue.md)
 - [ADR 0038 — Arrêt sur quota épuisé](adr/0038-arret-sur-quota-epuise.md)
 - [ADR 0039 — Répondre à une question par une décision](adr/0039-repondre-a-une-question-par-une-decision.md)
+- [ADR 0040 — Lecture de la demande et colonne « knitproof »](adr/0040-lecture-de-la-demande-et-colonne-knitproof.md)
 
 ## 13. Projets proches
 

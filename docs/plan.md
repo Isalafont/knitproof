@@ -34,7 +34,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 2. Adaptateur `llm` sur pydanticAI ([ADR 0005](adr/0005-acces-aux-modeles-via-pydanticai.md)), dont au moins un modèle ouvert ou souverain. Fait (CLA-127). Accès souverain local et autres fournisseurs : CLA-62.
 3. Ligne de base « LLM seul » sur les demandes de bonnet. Faite (CLA-188, [ADR 0035](adr/0035-ligne-de-base-llm-seul.md)) : commande `knitproof eval`, prompt figé, 5 cas `dev` et 15 cas `test` ; mesures `dev` faites (CLA-188, CLA-199, `evals/results/`), réessai sur erreur passagère (CLA-197, [ADR 0036](adr/0036-reessai-sur-erreur-passagere.md)), reprise d’une mesure interrompue par journal de passages (CLA-203, [ADR 0037](adr/0037-reprise-d-une-mesure-interrompue.md)), arrêt sur quota Anthropic épuisé (CLA-204, [ADR 0038](adr/0038-arret-sur-quota-epuise.md)) ; mesure `test` faite pour quatre modèles (CLA-205), `qwen3:8b` à reprendre (ticket de suite).
 4. Étiquette en photo → `YarnLabel` (photos personnelles, sans EXIF).
-5. Demande en texte → `BeanieSpecification`.
+5. Demande en texte → `BeanieReading`, convertie par le code en entrées du moteur ; colonne « knitproof » de l’évaluation (CLA-200, [ADR 0040](adr/0040-lecture-de-la-demande-et-colonne-knitproof.md)).
 6. Source Ravelry : recherche d’un fil, fiche pré-remplie, divergence avec l’étiquette signalée.
 7. Plusieurs modèles, plusieurs passages ; désaccord ⇒ « À VÉRIFIER », avec mesure de ce que ce signal attrape.
 8. Cas d’injection de prompt.
