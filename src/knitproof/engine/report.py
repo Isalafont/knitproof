@@ -6,6 +6,7 @@ from typing import assert_never
 
 from knitproof.domain.beanie import BeaniePlan
 from knitproof.domain.cast_on import CastOnCheck, CastOnRejection
+from knitproof.domain.decision import Decision
 from knitproof.domain.finding import Finding, FindingCode
 from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.measure import SwatchMeasurement
@@ -27,9 +28,15 @@ def build_report(
     entries: Iterable[ReportEntry],
     questions: Iterable[PendingQuestion] = (),
     result: BeaniePlan | None = None,
+    decisions: Iterable[Decision] = (),
 ) -> Report:
     """Rapport dans l’ordre d’entrée, sans tri par statut."""
-    return Report(entries=tuple(entries), questions=tuple(questions), result=result)
+    return Report(
+        entries=tuple(entries),
+        questions=tuple(questions),
+        result=result,
+        decisions=tuple(decisions),
+    )
 
 
 def from_finding(finding: Finding) -> ReportEntry:

@@ -65,7 +65,7 @@ Chaque valeur dit d’où elle vient : votre échantillon, l’étiquette, la bi
 <td valign="top">
 
 **Votre échantillon d’abord**<br>
-Le calcul part de votre jauge, de préférence mesurée après blocage ; sans échantillon, il suit l’étiquette, « À VÉRIFIER » ; avec un échantillon, il signale l’écart à l’étiquette dès 5 %. `knitproof calc` calcule le bonnet depuis une demande YAML et contrôle le montage proposé. Disponible.
+Le calcul part de votre jauge, de préférence mesurée après blocage ; sans échantillon, il suit l’étiquette, « À VÉRIFIER » ; avec un échantillon, il signale l’écart à l’étiquette dès 5 %. `knitproof calc` calcule le bonnet depuis une demande YAML et contrôle le montage proposé ; si vous ne savez pas si l’échantillon a été lavé, la question se règle par une décision datée dans la demande, citée dans le rapport. Disponible.
 
 </td>
 <td valign="top">

@@ -14,6 +14,7 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, ValidationEr
 from knitproof.app.errors import condense
 from knitproof.domain.beanie import BeanieSpecification
 from knitproof.domain.cast_on import StitchMultiple
+from knitproof.domain.decision import Decision
 from knitproof.domain.ease import Ease, EaseUnit, EdgeStitch
 from knitproof.domain.gauge import LabelGauge, ResolvedGauge
 from knitproof.domain.integers import StrictPositiveInt
@@ -101,7 +102,7 @@ class RequestSwatch(BaseModel):
     """L’échantillon : après blocage, avant blocage, ou d’état de blocage inconnu.
 
     Au moins une mesure ; `unknown_blocking` est exclusif des deux autres : on répond à la
-    question « l’as-tu bloqué ? » en renommant la clé (CLA-66).
+    question du blocage par une décision, ou en renommant la clé (CLA-66, CLA-206).
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -143,6 +144,7 @@ class BeanieRequest(BaseModel):
     folded_brim: bool = False
     worked: KnittingMethod = KnittingMethod.ROUND
     proposed_cast_on: ProposedCastOn | None = None
+    decisions: tuple[Decision, ...] = Field(default=(), exclude_if=lambda value: not value)
 
     @model_validator(mode="after")
     def _is_computable(self) -> Self:

@@ -1,5 +1,6 @@
 """`BeanieRequest` : la demande de bonnet en YAML (CLA-69, CLA-104)."""
 
+import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -231,3 +232,32 @@ def test_a_number_with_too_many_digits_is_refused_at_validation() -> None:
 
     with pytest.raises(ValidationError, match="nombre trop grand ou trop précis"):
         BeanieRequest.model_validate(data)
+
+
+def test_decisions_default_to_none() -> None:
+    assert BeanieRequest.model_validate(_data()).decisions == ()
+
+
+def test_two_decisions_on_two_codes_are_read() -> None:
+    decisions = [
+        {
+            "question": "gauge_blocking_unknown",
+            "choice": "après lavage",
+            "decided_on": datetime.date(2026, 11, 23),
+        },
+        {
+            "question": "other_question",
+            "choice": "oui",
+            "decided_on": datetime.date(2026, 11, 24),
+            "reason": "x",
+        },
+    ]
+    data = {**_data(), "decisions": decisions}
+
+    request = BeanieRequest.model_validate(data)
+
+    assert [decision.question for decision in request.decisions] == [
+        "gauge_blocking_unknown",
+        "other_question",
+    ]
+    assert request.decisions[1].reason == "x"
