@@ -5,7 +5,11 @@ celles de la question, ou une décision jamais consommée, est une erreur de sai
 """
 
 from knitproof.domain.decision import Decision
+from knitproof.domain.notice import NoticeCode
 from knitproof.domain.question import PendingQuestion
+
+# Les questions qui se répondent par une décision : celles qu’une étape de `app` consomme.
+ANSWERABLE_QUESTIONS = frozenset({NoticeCode.GAUGE_BLOCKING_UNKNOWN})
 
 
 class DecisionError(Exception):

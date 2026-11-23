@@ -1,5 +1,6 @@
 """`knitproof calc` : sortie de référence, codes de sortie 0, 1, 2 et 3 (CLA-69)."""
 
+import datetime
 from pathlib import Path
 
 import pytest
@@ -396,3 +397,98 @@ def test_the_cast_on_line_shows_the_offset_of_the_stitch_multiple_when_flat(
     _, out, _ = _run(tmp_path, _flat("20"), capsys)
 
     assert f"Montage     86,4 m calculées (43,2 {TIMES} 20 / 10) → 86 m, multiple de 4 + 2\n" in out
+
+
+def _unknown_blocking(data: dict[str, object], choice: str | None) -> dict[str, object]:
+    swatch = _swatch(data)
+    swatch["unknown_blocking"] = swatch.pop("after_blocking")
+    del swatch["before_blocking"]
+    del data["proposed_cast_on"]
+    if choice is not None:
+        data["decisions"] = [
+            {
+                "question": "gauge_blocking_unknown",
+                "choice": choice,
+                "decided_on": datetime.date(2026, 11, 23),
+                "reason": "mesuré après un lavage",
+            }
+        ]
+    return data
+
+
+def test_a_decision_after_washing_answers_the_question_and_is_shown(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _unknown_blocking(_data(), "après lavage")
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert "20 m / 10 cm, après blocage (source : votre choix)" in out
+    assert "CHOIX       gauge_blocking_unknown : après lavage" in out
+    assert "Le 23/11/2026" in out
+    assert "mesuré après un lavage" in out
+    assert "Décidé par : votre choix" in out
+    assert "QUESTION" not in out
+    assert "(30 rangs / 10 cm, À VÉRIFIER, d’après DROPS Children 49-25)" in out
+
+
+def test_a_decision_before_washing_follows_the_unblocked_swatch_to_verify(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _unknown_blocking(_data(), "avant lavage")
+
+    code, out, _ = _run(tmp_path, data, capsys)
+
+    assert code == 0
+    assert "avant blocage, À VÉRIFIER (source : votre choix)" in out
+    assert "CHOIX       gauge_blocking_unknown : avant lavage" in out
+
+
+def test_a_decision_with_an_unknown_option_exits_3_and_names_the_question(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _unknown_blocking(_data(), "oui")
+
+    code, out, err = _run(tmp_path, data, capsys)
+
+    assert code == 3
+    assert "gauge_blocking_unknown" in err
+    assert out == ""
+
+
+def test_the_blocking_question_shows_its_code_and_choices(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _unknown_blocking(_data(), None)
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Code : gauge_blocking_unknown" in out
+    assert "Choix : après lavage, avant lavage" in out
+
+
+def test_a_question_that_cannot_be_answered_by_a_decision_shows_no_code(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    _swatch(data)["after_blocking"] = {"stitches": "20", "width": {"value": "10", "unit": "cm"}}
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "Combien de rangs" in out
+    assert "Code :" not in out
+    assert "Choix :" not in out
+
+
+def test_the_odd_crown_question_is_shown_without_a_code(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = _data()
+    data["stitch_multiple"] = {"repeat_multiple": 2, "repeat_offset": 1, "provenance": "entered"}
+    del data["proposed_cast_on"]
+
+    _, out, _ = _run(tmp_path, data, capsys)
+
+    assert "QUESTION" in out
+    assert "Code :" not in out

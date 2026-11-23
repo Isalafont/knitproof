@@ -134,7 +134,8 @@ def _resolve_gauge(request: BeanieRequest, decisions: Decisions) -> ResolvedGaug
     swatch = request.swatch
     if swatch is None or swatch.unknown_blocking is None:
         return resolved
-    decision = decisions.answer(resolved.questions[0])
+    question = next(q for q in resolved.questions if q.code == NoticeCode.GAUGE_BLOCKING_UNKNOWN)
+    decision = decisions.answer(question)
     if decision is None:
         return resolved
     after = decision.choice == AFTER_WASHING

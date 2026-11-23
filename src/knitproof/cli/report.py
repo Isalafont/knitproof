@@ -7,12 +7,15 @@ from typing import assert_never
 from knitproof.app.baseline import BaselineResult, ProviderResult
 from knitproof.app.beanie import BeanieCalc
 from knitproof.app.beanie_request import BeanieRequest
+from knitproof.app.decisions import ANSWERABLE_QUESTIONS
 from knitproof.domain.beanie import BeaniePlan, RowRounding
 from knitproof.domain.cast_on import CastOnResult
+from knitproof.domain.decision import Decision
 from knitproof.domain.ease import EaseUnit
 from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.measure import Length, LengthUnit, SwatchMeasurement
-from knitproof.domain.report import Report, ReportEntry, ReportStatus
+from knitproof.domain.question import PendingQuestion
+from knitproof.domain.report import DecidedBy, Report, ReportEntry, ReportStatus
 
 _TIMES = "\N{MULTIPLICATION SIGN}"
 _MINUS = "\N{MINUS SIGN}"
@@ -53,18 +56,34 @@ def _status_label(status: ReportStatus) -> str:
 
 
 def render_calc(calc: BeanieCalc) -> str:
-    """Le résumé du plan, puis les entrées du rapport, puis les questions en attente."""
+    """Le résumé du plan, les entrées du rapport, les choix, puis les questions en attente."""
     report = calc.report
     blocks = []
     if report.result is not None and calc.cast_on is not None and calc.gauge.gauge is not None:
         blocks.append(_summary(calc, report.result, calc.cast_on, calc.gauge.gauge))
     blocks.extend(_describe(entry) for entry in report.entries)
-    blocks.extend(_ask(question.text) for question in report.questions)
+    blocks.extend(_decided(decision) for decision in report.decisions)
+    blocks.extend(_ask(question) for question in report.questions)
     return "\n\n".join(blocks)
 
 
-def _ask(text: str) -> str:
-    return f"{'QUESTION':<{_COLUMN}}{text}"
+def _decided(decision: Decision) -> str:
+    """Le choix de la personne : question, option, date, motif, puis qui a décidé."""
+    lines = [f"Le {decision.decided_on:%d/%m/%Y}"]
+    if decision.reason is not None:
+        lines.append(f"Motif : {decision.reason}")
+    lines.append(f"Décidé par : {DecidedBy.PERSON.label}")
+    head = f"{'CHOIX':<{_COLUMN}}{decision.question} : {decision.choice}"
+    return "\n".join([head, *(f"{_INDENT}{line}" for line in lines)])
+
+
+def _ask(question: PendingQuestion) -> str:
+    """La question ; son code et ses choix seulement si une décision peut y répondre."""
+    lines = [f"{'QUESTION':<{_COLUMN}}{question.text}"]
+    if question.code in ANSWERABLE_QUESTIONS:
+        lines.append(f"{_INDENT}Code : {question.code}")
+        lines.append(f"{_INDENT}Choix : {', '.join(question.options)}")
+    return "\n".join(lines)
 
 
 def _summary(
@@ -130,11 +149,12 @@ def _body(plan: BeaniePlan) -> str:
 
 
 def _gauge_source(calc: BeanieCalc) -> str:
+    origin = DecidedBy.PERSON.label if calc.gauge.decision else "votre échantillon"
     match calc.gauge.source:
         case GaugeSource.BLOCKED:
-            return "après blocage (source : votre échantillon)"
+            return f"après blocage (source : {origin})"
         case GaugeSource.UNBLOCKED:
-            return "avant blocage, À VÉRIFIER (source : votre échantillon)"
+            return f"avant blocage, À VÉRIFIER (source : {origin})"
         case GaugeSource.LABEL:
             return "étiquette, À VÉRIFIER (source : fabricant)"
         case None:
@@ -163,6 +183,8 @@ def _rows_source(calc: BeanieCalc) -> str:
     measure = None
     if swatch is not None:
         match calc.gauge.source:
+            case _ if calc.gauge.decision is not None:
+                measure = swatch.unknown_blocking
             case GaugeSource.BLOCKED:
                 measure = swatch.after_blocking
             case GaugeSource.UNBLOCKED:
