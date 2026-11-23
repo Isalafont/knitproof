@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping, Sequence
 from decimal import Decimal
 from importlib.resources.abc import Traversable
 from pathlib import Path
+from typing import Protocol
 
 import yaml
 from pydantic import BaseModel, ConfigDict
@@ -45,7 +46,15 @@ from knitproof.app.baseline_models import (
 from knitproof.app.baseline_models import (
     Verdict as Verdict,
 )
+from knitproof.app.beanie_reading import BeanieReading
 from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash, load_split
+from knitproof.app.knitproof_column import (
+    READING_PROMPT,
+    ColumnResult,
+    KnitproofRun,
+    column_result,
+    knitproof_pass,
+)
 from knitproof.app.model_entries import ModelEntry, ModelEntryError, parse_entry
 from knitproof.domain.reading import ModelReading
 from knitproof.llm.agents import agent_for
@@ -69,7 +78,13 @@ BASELINE_PROMPT = Prompt(
 )
 _GLOBAL_TEMPERATURE = "KNITPROOF_LLM_TEMPERATURE"
 
-type AgentFactory = Callable[[ModelConfig], Agent[None, CastOnAnswer]]
+
+class AgentFactory(Protocol):
+    """Fabrique d’agents : un agent à sortie typée par appel (« LLM seul » et lecture)."""
+
+    def __call__[T: BaseModel](
+        self, config: ModelConfig, output_type: type[T], /
+    ) -> Agent[None, T]: ...
 
 
 class ProviderResult(BaseModel):
@@ -90,6 +105,8 @@ class ProviderResult(BaseModel):
     low: Decimal
     high: Decimal
     runs: tuple[BaselineRun, ...]
+    knitproof: ColumnResult | None = None
+    knitproof_runs: tuple[KnitproofRun, ...] = ()
 
 
 class BaselineResult(BaseModel):
@@ -103,11 +120,13 @@ class BaselineResult(BaseModel):
     passes: int
     measured_on: datetime.datetime
     providers: tuple[ProviderResult, ...]
+    reading_prompt_id: str | None = None
+    reading_prompt_sha256: str | None = None
 
 
-def build_agent(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+def build_agent[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
     """L’agent réel du fournisseur ; les tests remplacent cette fabrique."""
-    return agent_for(config, CastOnAnswer)
+    return agent_for(config, output_type)
 
 
 def run_baseline(
@@ -172,6 +191,7 @@ def measure_baseline(
         header = JournalHeader(
             split=split,
             prompt_sha256=BASELINE_PROMPT.sha256,
+            reading_prompt_sha256=READING_PROMPT.sha256,
             passes=PASSES,
             measured_on=started,
             cases=tuple(CaseHash(case_id=case.id, sha256=case_hash(case)) for case in cases),
@@ -216,7 +236,17 @@ def _run(
     factory = agent_factory or build_agent
     started = measured_on or now()
     results = tuple(
-        _measure(config, factory(config), cases, clock, sleep, now, journal) for config in configs
+        _measure(
+            config,
+            factory(config, CastOnAnswer),
+            factory(config, BeanieReading),
+            cases,
+            clock,
+            sleep,
+            now,
+            journal,
+        )
+        for config in configs
     )
     return BaselineResult(
         split=split,
@@ -225,6 +255,8 @@ def _run(
         passes=PASSES,
         measured_on=started,
         providers=results,
+        reading_prompt_id=READING_PROMPT.id,
+        reading_prompt_sha256=READING_PROMPT.sha256,
     )
 
 
@@ -309,6 +341,7 @@ def _config_of(entry: ModelEntry, environ: Mapping[str, str]) -> ModelConfig:
 def _measure(
     config: ModelConfig,
     agent: Agent[None, CastOnAnswer],
+    reading_agent: Agent[None, BeanieReading],
     cases: Sequence[EvalCase],
     clock: Callable[[], float],
     sleep: Callable[[float], None],
@@ -317,14 +350,23 @@ def _measure(
 ) -> ProviderResult:
     identity = _identity(config)
     runs: list[BaselineRun] = []
+    knitproof_runs: list[KnitproofRun] = []
     for case in cases:
         for attempt in range(1, PASSES + 1):
             kept = journal.recorded(identity, case.id, attempt) if journal else None
-            if kept is None:
+            kept_knitproof = (
+                journal.recorded_knitproof(identity, case.id, attempt) if journal else None
+            )
+            if kept is None or kept_knitproof is None:
+                # Un passage s’écrit entier : si le 2e appel échoue, le 1er est refait à la reprise.
                 kept = _pass(config, agent, case, attempt, clock, sleep, now)
+                kept_knitproof = knitproof_pass(
+                    config, reading_agent, case, attempt, clock=clock, sleep=sleep, now=now
+                )
                 if journal:
-                    journal.record(identity, kept)
+                    journal.record(identity, kept, kept_knitproof)
             runs.append(kept)
+            knitproof_runs.append(kept_knitproof)
     verdicts = [run.verdict for run in runs]
     correct = verdicts.count(Verdict.CORRECT)
     low, high = wilson(correct, len(runs))
@@ -340,6 +382,8 @@ def _measure(
         low=low.quantize(precision),
         high=high.quantize(precision),
         runs=tuple(runs),
+        knitproof=column_result(knitproof_runs),
+        knitproof_runs=tuple(knitproof_runs),
     )
 
 

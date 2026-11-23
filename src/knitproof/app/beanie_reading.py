@@ -4,6 +4,7 @@ Le modèle lit ; le code convertit en entrées du moteur, en calcul exact. Aucun
 requis : ce que le texte ne dit pas reste vide, et `reading_inputs` nomme ce qui manque.
 """
 
+import datetime
 from decimal import Decimal, Inexact, Rounded
 from enum import StrEnum
 from typing import Annotated, Self
@@ -115,6 +116,21 @@ class ReadingRecord(BaseModel):
 
     reading: BeanieReading
     provenance: Provenance
+
+    @model_validator(mode="before")
+    @classmethod
+    def _read_the_date_of_a_journal(cls, data: object) -> object:
+        """Un journal JSON rend la date en chaîne ISO ; `Provenance` n’accepte qu’une date."""
+        if not isinstance(data, dict):
+            return data
+        provenance = data.get("provenance")
+        if isinstance(provenance, dict) and isinstance(provenance.get("read_on"), str):
+            try:
+                read_on = datetime.date.fromisoformat(provenance["read_on"])
+            except ValueError:
+                return data
+            return {**data, "provenance": {**provenance, "read_on": read_on}}
+        return data
 
     @model_validator(mode="after")
     def _is_a_model_inference(self) -> Self:

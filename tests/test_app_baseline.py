@@ -4,7 +4,7 @@ import datetime
 import hashlib
 import itertools
 import tempfile
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from decimal import Decimal
 from fractions import Fraction
 from importlib.resources import files
@@ -15,6 +15,7 @@ import pytest
 import yaml
 from hypothesis import given
 from hypothesis import strategies as st
+from pydantic import BaseModel
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
@@ -39,11 +40,34 @@ from knitproof.app.baseline import (
 from knitproof.app.baseline_journal import JournalHeader, JournalLine
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash, load_split
+from knitproof.app.knitproof_column import READING_PROMPT
 from knitproof.app.model_entries import PROVIDER_NAMES, ModelEntry, parse_entry
 from knitproof.llm.agents import agent_on
 from knitproof.llm.config import ModelConfig
 
 _EXAMPLE = files("knitproof") / "evals" / "data" / "dev" / "exemple-bonnet-3-ans.yaml"
+
+
+_READING: dict[str, object] = {
+    "head_circumference": {"value": 48, "unit": "cm"},
+    "smaller_than_head": {"value": 5, "unit": "cm"},
+    "gauge_after_blocking": {"stitches": 20, "width": {"value": 10, "unit": "cm"}},
+    "edge": "rib_2x2",
+}
+
+
+def _reading_reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+    return ModelResponse(parts=[ToolCallPart("final_result", _READING)])
+
+
+def _agent_for[T: BaseModel](
+    config: ModelConfig,
+    output_type: type[T],
+    baseline: Callable[[Sequence[ModelMessage], AgentInfo], ModelResponse],
+) -> Agent[None, T]:
+    """Un agent de test : `baseline` répond au calcul du « LLM seul », la lecture est fixe."""
+    reply = baseline if output_type is CastOnAnswer else _reading_reply
+    return agent_on(FunctionModel(reply), output_type, config.retries)
 
 
 def _request(**changes: object) -> BeanieRequest:
@@ -244,7 +268,10 @@ def _answering(*replies: dict[str, object] | Exception) -> AgentFactory:
             usage=RequestUsage(input_tokens=51, output_tokens=4),
         )
 
-    return lambda config: agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
+        return _agent_for(config, output_type, reply)
+
+    return factory
 
 
 def _run(
@@ -392,12 +419,12 @@ def test_an_exhausted_quota_after_a_pass_tells_how_to_resume(tmp_path: Path) -> 
 def test_a_400_is_called_once_even_with_retries_allowed() -> None:
     calls: list[int] = []
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
             calls.append(1)
             raise ModelHTTPError(400, "claude", body="refusé")
 
-        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+        return _agent_for(config, output_type, reply)
 
     with pytest.raises(BaselineError, match="anthropic"):
         _run(factory, entries=("anthropic",), environ=RETRYING)
@@ -444,9 +471,9 @@ def test_an_unknown_provider_is_refused_with_the_known_names() -> None:
 def test_a_missing_setting_is_named_before_any_call() -> None:
     calls: list[int] = []
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         calls.append(1)
-        return _answering({"stitches": 88})(config)
+        return _answering({"stitches": 88})(config, output_type)
 
     environ = {k: v for k, v in ENVIRONMENT.items() if k != "ANTHROPIC_API_KEY"}
 
@@ -520,22 +547,22 @@ def test_one_model_on_two_hosts_makes_two_lines() -> None:
     }
     seen: list[ModelConfig] = []
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         seen.append(config)
-        return _answering({"stitches": 88})(config)
+        return _answering({"stitches": 88})(config, output_type)
 
     result = _run(factory, entries=("openrouter:x@a", "openrouter:x@b"), environ=environ)
 
     assert len(result.providers) == 2
-    assert [(c.model, c.host) for c in seen] == [("x", "a"), ("x", "b")]
+    assert [(c.model, c.host) for c in seen] == [("x", "a")] * 2 + [("x", "b")] * 2
 
 
 def test_a_malformed_entry_is_refused_before_any_call() -> None:
     calls: list[int] = []
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         calls.append(1)
-        return _answering({"stitches": 88})(config)
+        return _answering({"stitches": 88})(config, output_type)
 
     with pytest.raises(BaselineError, match="ollama:"):
         _run(factory, entries=("anthropic", "ollama:"))
@@ -643,14 +670,14 @@ def test_each_pass_is_written_with_its_reading_before_the_next_call(tmp_path: Pa
     written_at_each_call: list[int] = []
     last_readings: list[bool] = []
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
             lines = _journal_lines(tmp_path) if list(tmp_path.glob("*.partial.jsonl")) else []
             written_at_each_call.append(len(lines))
             last_readings.append(bool(lines) and lines[-1].run.run.reading is not None)
             return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
 
-        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+        return _agent_for(config, output_type, reply)
 
     _measure_into(tmp_path, factory)
 
@@ -689,12 +716,12 @@ def test_an_existing_result_is_refused_before_any_call(tmp_path: Path) -> None:
     calls: list[int] = []
     (tmp_path / "2026-11-17T0930-dev.yaml").write_text("déjà là", encoding="utf-8")
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
             calls.append(1)
             return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
 
-        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+        return _agent_for(config, output_type, reply)
 
     with pytest.raises(BaselineError, match="existe déjà"):
         _measure_into(tmp_path, factory)
@@ -725,12 +752,12 @@ def _counting(reply: dict[str, object]) -> tuple[AgentFactory, list[int]]:
     """Une fabrique dont l’agent rend toujours `reply` et compte ses appels."""
     calls: list[int] = []
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         def answer(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
             calls.append(1)
             return ModelResponse(parts=[ToolCallPart("final_result", reply)])
 
-        return agent_on(FunctionModel(answer), CastOnAnswer, config.retries)
+        return _agent_for(config, output_type, answer)
 
     return factory, calls
 
@@ -875,3 +902,103 @@ def test_a_measure_prepares_the_cases_and_the_entries_once(
 
     assert len(splits) == 1
     assert len(parsed) == len(entries)
+
+
+def test_both_columns_read_the_same_cases_for_the_same_number_of_passes() -> None:
+    result = _run(_answering({"stitches": 88}))
+
+    for item in result.providers:
+        assert item.knitproof is not None
+        assert item.knitproof.total == item.total == PASSES
+        assert [(run.case_id, run.attempt) for run in item.knitproof_runs] == [
+            (run.case_id, run.attempt) for run in item.runs
+        ]
+        assert (item.knitproof.correct, item.knitproof.wrong) == (3, 0)
+    assert result.reading_prompt_id == "request-reading-v1"
+    assert result.reading_prompt_sha256 == READING_PROMPT.sha256
+    assert result.prompt_id == "baseline-cast-on-v1"
+
+
+def test_the_two_columns_are_independent() -> None:
+    result = _run(_answering({"stitches": 96}))
+
+    for item in result.providers:
+        assert item.knitproof is not None
+        assert (item.correct, item.knitproof.correct) == (0, 3)
+
+
+def test_a_provider_error_on_the_reading_call_stops_the_measure() -> None:
+    failing = ModelHTTPError(400, "claude", body="refusé")
+
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
+        def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            raise failing
+
+        if output_type is CastOnAnswer:
+            return _agent_for(config, output_type, _answer_88)
+        return agent_on(FunctionModel(reply), output_type, config.retries)
+
+    with pytest.raises(BaselineError, match="anthropic"):
+        _run(factory, entries=("anthropic",))
+
+
+def _answer_88(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+    return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
+
+
+def test_a_pass_is_recorded_with_both_calls_and_a_stop_between_them_redoes_the_first(
+    tmp_path: Path,
+) -> None:
+    reading_calls: list[int] = []
+    baseline_calls: list[int] = []
+
+    def stopping[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
+        def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            reading_calls.append(1)
+            if len(reading_calls) == 2:
+                raise ModelHTTPError(400, "claude", body="refusé")
+            return _reading_reply(messages, info)
+
+        def counted(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+            baseline_calls.append(1)
+            return _answer_88(messages, info)
+
+        if output_type is CastOnAnswer:
+            return _agent_for(config, output_type, counted)
+        return agent_on(FunctionModel(reply), output_type, config.retries)
+
+    with pytest.raises(BaselineError, match="reprise : --resume"):
+        _measure_into(tmp_path, stopping, entries=("ollama",))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    assert len(_journal_lines(tmp_path)) == 1
+    assert _journal_lines(tmp_path)[0].knitproof is not None
+    assert len(baseline_calls) == 2  # la 2e passe : « LLM seul » appelé, lecture refusée
+    factory, calls = _counting(_OK)
+
+    result, _ = _measure_into(tmp_path, factory, entries=("ollama",), resume=journal)
+
+    assert len(calls) == 2  # 3 passes, 1 acquise : la 2e est refaite en entier
+    assert result.providers[0].knitproof is not None
+    assert result.providers[0].knitproof.total == PASSES
+
+
+def test_a_journal_of_another_reading_prompt_is_refused(tmp_path: Path) -> None:
+    failing = ModelHTTPError(400, "claude", body="refusé")
+    with pytest.raises(BaselineError):
+        _measure_into(tmp_path, _answering(_OK, failing), entries=("ollama",))
+    (journal,) = tmp_path.glob("*.partial.jsonl")
+    lines = journal.read_text(encoding="utf-8").split("\n")
+    header = JournalHeader.model_validate_json(lines[0])
+    other = header.model_copy(update={"reading_prompt_sha256": "0" * 64})
+    journal.write_text("\n".join([other.model_dump_json(), *lines[1:]]), encoding="utf-8")
+
+    with pytest.raises(BaselineError, match="reading_prompt_sha256"):
+        _measure_into(tmp_path, _answering(_OK), entries=("ollama",), resume=journal)
+
+
+@pytest.mark.parametrize("path", sorted(_RESULTS.glob("*.yaml")), ids=lambda path: path.name)
+def test_every_result_already_written_still_validates(path: Path) -> None:
+    result = BaselineResult.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+    assert result.reading_prompt_sha256 is None
+    assert all(item.knitproof is None for item in result.providers)

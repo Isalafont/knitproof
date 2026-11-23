@@ -2,11 +2,12 @@
 
 import datetime
 import os
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import pytest
 import yaml
+from pydantic import BaseModel
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
@@ -32,14 +33,36 @@ ENVIRONMENT = {
 }
 
 
+_READING: dict[str, object] = {
+    "head_circumference": {"value": 48, "unit": "cm"},
+    "smaller_than_head": {"value": 5, "unit": "cm"},
+    "gauge_after_blocking": {"stitches": 20, "width": {"value": 10, "unit": "cm"}},
+    "edge": "rib_2x2",
+}
+
+
+def _reading_reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
+    return ModelResponse(parts=[ToolCallPart("final_result", _READING)])
+
+
+def _agent_for[T: BaseModel](
+    config: ModelConfig,
+    output_type: type[T],
+    baseline: Callable[[Sequence[ModelMessage], AgentInfo], ModelResponse],
+) -> Agent[None, T]:
+    """Un agent de test : `baseline` répond au calcul du « LLM seul », la lecture est fixe."""
+    reply = baseline if output_type is CastOnAnswer else _reading_reply
+    return agent_on(FunctionModel(reply), output_type, config.retries)
+
+
 def _install(monkeypatch: pytest.MonkeyPatch, *, stitches: int | None, fail: bool = False) -> None:
     def reply(messages: Sequence[ModelMessage], info: AgentInfo) -> ModelResponse:
         if fail:
             raise ModelHTTPError(400, "claude", body="temperature is not supported")
         return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": stitches})])
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
-        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
+        return _agent_for(config, output_type, reply)
 
     monkeypatch.setattr("knitproof.app.baseline.build_agent", factory)
     monkeypatch.setattr(os, "environ", dict(ENVIRONMENT))
@@ -92,16 +115,14 @@ def test_a_model_given_in_the_entry_reaches_the_agent_factory(
     _install(monkeypatch, stitches=88)
     seen: list[ModelConfig] = []
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
         seen.append(config)
-        return agent_on(
-            FunctionModel(
-                lambda messages, info: ModelResponse(
-                    parts=[ToolCallPart("final_result", {"stitches": 88})]
-                )
+        return _agent_for(
+            config,
+            output_type,
+            lambda messages, info: ModelResponse(
+                parts=[ToolCallPart("final_result", {"stitches": 88})]
             ),
-            CastOnAnswer,
-            config.retries,
         )
 
     monkeypatch.setattr("knitproof.app.baseline.build_agent", factory)
@@ -111,7 +132,7 @@ def test_a_model_given_in_the_entry_reaches_the_agent_factory(
     )
 
     assert code == 0
-    assert [config.model for config in seen] == ["llama3.2:3b"]
+    assert {config.model for config in seen} == {"llama3.2:3b"}
 
 
 def test_malformed_entries_exit_3_naming_the_entry_without_a_result(
@@ -182,8 +203,8 @@ def _install_failing(
             raise error
         return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
-        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
+        return _agent_for(config, output_type, reply)
 
     environ = {**ENVIRONMENT, "KNITPROOF_LLM_HTTP_RETRIES": "2", "KNITPROOF_LLM_HTTP_WAIT": "0"}
     monkeypatch.setattr("knitproof.app.baseline.build_agent", factory)
@@ -294,8 +315,8 @@ def _install_failing_at(
             raise ModelHTTPError(400, "claude", body="refusé")
         return ModelResponse(parts=[ToolCallPart("final_result", {"stitches": 88})])
 
-    def factory(config: ModelConfig) -> Agent[None, CastOnAnswer]:
-        return agent_on(FunctionModel(reply), CastOnAnswer, config.retries)
+    def factory[T: BaseModel](config: ModelConfig, output_type: type[T]) -> Agent[None, T]:
+        return _agent_for(config, output_type, reply)
 
     monkeypatch.setattr("knitproof.app.baseline.build_agent", factory)
     monkeypatch.setattr(os, "environ", dict(ENVIRONMENT))
