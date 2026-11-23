@@ -85,6 +85,15 @@ Chaque valeur est relue dans le YAML du résultat, sauf l’hébergeur demandé,
 
 Les lignes `test` sont quatre mesures, une par modèle. La mesure `test` de `ollama : qwen3:8b` est interrompue (délai HTTP de 600 s dépassé au 3e passage de `bonnet-ado-fille-cotes-2-2`) : son journal `evals/results/2026-11-20T1834-test.partial.jsonl` reste local, pour une reprise par `--resume` après le ticket de suite.
 
+Première mesure des deux colonnes sur `dev` (23/11/2026, CLA-200, prompt de lecture `request-reading-v1` figé sans mise au point, N = 18 par colonne, `evals/results/2026-11-23T1547-dev.yaml`) :
+
+| Entrée | LLM seul | knitproof | Lecture juste | Inventés | Abstentions (knitproof) |
+|---|---|---|---|---|---|
+| anthropic : claude-opus-5-5 | 18/18 | 18/18 | 183/183 | 0 | 0 |
+| openrouter : mistralai/mistral-large-2512 (mistral/eu) | 15/18 | 14/18 | 173/183 | 6 | 4 |
+| openrouter : mistralai/mistral-small-3.2-24b-instruct (parasail/bf16) | 9/18 | 17/18 | 171/183 | 0 | 1 |
+| openrouter : moonshotai/kimi-k3.1-pro (moonshotai) | 18/18 | 18/18 | 183/183 | 0 | 0 |
+
 ## Calculer un bonnet
 
 La commande `knitproof calc` lit une demande YAML (format décrit dans [`docs/architecture.md`](architecture.md), section 9), applique l’aisance, calcule le plan du bonnet, contrôle le montage proposé et les aiguilles, puis rend un rapport unique sur stdout.

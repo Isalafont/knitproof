@@ -453,7 +453,7 @@ def test_the_sleep_is_the_one_given_to_the_measure() -> None:
 
 def test_the_runs_of_a_measure_before_cla_197_still_validate() -> None:
     folder = Path(__file__).resolve().parents[1] / "evals" / "results"
-    paths = sorted(folder.glob("*-dev.yaml"))
+    paths = sorted(folder.glob("2026-11-17*-dev.yaml"))
 
     assert len(paths) == 6
     for path in paths:
@@ -996,9 +996,24 @@ def test_a_journal_of_another_reading_prompt_is_refused(tmp_path: Path) -> None:
         _measure_into(tmp_path, _answering(_OK), entries=("ollama",), resume=journal)
 
 
-@pytest.mark.parametrize("path", sorted(_RESULTS.glob("*.yaml")), ids=lambda path: path.name)
-def test_every_result_already_written_still_validates(path: Path) -> None:
+@pytest.mark.parametrize(
+    "path",
+    sorted(path for path in _RESULTS.glob("*.yaml") if path.name < "2026-11-23"),
+    ids=lambda path: path.name,
+)
+def test_every_result_written_before_cla_200_still_validates(path: Path) -> None:
     result = BaselineResult.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
 
     assert result.reading_prompt_sha256 is None
     assert all(item.knitproof is None for item in result.providers)
+
+
+def test_a_result_with_both_columns_validates() -> None:
+    path = _RESULTS / "2026-11-23T1547-dev.yaml"
+
+    result = BaselineResult.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+    assert result.reading_prompt_id == "request-reading-v1"
+    assert all(
+        item.knitproof is not None and item.knitproof.total == 18 for item in result.providers
+    )
