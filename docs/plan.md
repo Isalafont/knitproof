@@ -52,7 +52,7 @@ Ce plan découpe knitproof en jalons, puis en tranches verticales : chaque tranc
 
 ## Après M3
 
-Lecture de patrons texte et PDF libres de droits, bibliothèque de points complète et RAG, reconnaissance des points par photo, génération de patrons et constructions multiples, raglan, gradation multi-tailles.
+Lecture de patrons texte et PDF libres de droits, bibliothèque de points complète et RAG, reconnaissance des points par photo, génération de patrons et constructions multiples, raglan, gradation multi-tailles, compte utilisateur qui garde ses échantillons.
 
 ## Questions d’expertise tricot
 

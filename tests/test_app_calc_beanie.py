@@ -10,6 +10,7 @@ from knitproof.app.beanie import calc_beanie
 from knitproof.app.errors import InputFileError
 from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.report import ReportEntry, ReportStatus
+from knitproof.library.loader import Library, load_library
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "bonnet-3-ans.yaml"
 
@@ -270,3 +271,40 @@ def test_without_a_swatch_the_needles_are_not_compared(tmp_path: Path) -> None:
     calc = calc_beanie(_write(tmp_path, _without_swatch(label_gauge=label)))
 
     assert "swatch_needle_mismatch" not in {entry.code for entry in calc.report.entries}
+
+
+def _three_needles(data: dict[str, object]) -> dict[str, object]:
+    sizes = ("US 6", "UK 8", "JP 6")
+    return {**data, "needles": [{"size": size, "kind": "double_pointed"} for size in sizes]}
+
+
+def _count_library_loads(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    loads: list[int] = []
+
+    def counted() -> Library:
+        loads.append(1)
+        return load_library()
+
+    monkeypatch.setattr("knitproof.app.beanie.load_library", counted)
+    monkeypatch.setattr("knitproof.app.needles.load_library", counted)
+    return loads
+
+
+def test_a_full_plan_loads_the_library_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    loads = _count_library_loads(monkeypatch)
+
+    calc_beanie(_write(tmp_path, _three_needles(_data())))
+
+    assert len(loads) == 1
+
+
+def test_a_request_without_gauge_loads_the_library_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    loads = _count_library_loads(monkeypatch)
+
+    calc_beanie(_write(tmp_path, _three_needles(_without_swatch())))
+
+    assert len(loads) == 1

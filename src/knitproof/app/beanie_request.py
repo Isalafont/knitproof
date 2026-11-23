@@ -15,10 +15,11 @@ from knitproof.app.errors import condense
 from knitproof.domain.beanie import BeanieSpecification
 from knitproof.domain.cast_on import StitchMultiple
 from knitproof.domain.ease import Ease, EaseUnit, EdgeStitch
-from knitproof.domain.gauge import LabelGauge
+from knitproof.domain.gauge import LabelGauge, ResolvedGauge
 from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import EXACT, Length, LengthUnit, SwatchMeasurement
 from knitproof.domain.needle import KnittingMethod, Needle
+from knitproof.engine.gauge import resolve_gauge
 
 _NEEDLE_FORMS = "« 4 mm », « US 6 » ou « US 6 (4 mm) »"
 _NEEDLE_SIZE = re.compile(
@@ -146,13 +147,12 @@ class BeanieRequest(BaseModel):
     @model_validator(mode="after")
     def _is_computable(self) -> Self:
         """Le tour visé et la spécification se construisent : sinon, une erreur de saisie."""
-        for build in (lambda: self.circumference, lambda: self.specification):
-            try:
-                build()
-            except ValidationError as error:
-                raise ValueError(_reasons(error)) from error
-            except (Inexact, Rounded) as error:
-                raise ValueError("nombre trop grand ou trop précis") from error
+        try:
+            _ = (self.circumference, self.specification)
+        except ValidationError as error:
+            raise ValueError(_reasons(error)) from error
+        except (Inexact, Rounded) as error:
+            raise ValueError("nombre trop grand ou trop précis") from error
         return self
 
     @property
@@ -163,6 +163,17 @@ class BeanieRequest(BaseModel):
             value = EXACT.divide(EXACT.multiply(head.value, _PERCENT + ease.value), _PERCENT)
             return Length(value=value, unit=head.unit)
         return Length(value=EXACT.add(head.in_cm, ease.value), unit=LengthUnit.CM)
+
+    @property
+    def resolved_gauge(self) -> ResolvedGauge:
+        """La jauge, par l’ordre de confiance du moteur (ADR 0008) ; sans jauge, des questions."""
+        swatch = self.swatch
+        return resolve_gauge(
+            blocked=None if swatch is None else swatch.after_blocking,
+            unblocked=None if swatch is None else swatch.before_blocking,
+            unknown=None if swatch is None else swatch.unknown_blocking,
+            label=self.label_gauge,
+        )
 
     @property
     def multiple(self) -> StitchMultiple:

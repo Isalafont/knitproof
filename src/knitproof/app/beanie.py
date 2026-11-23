@@ -24,7 +24,7 @@ from knitproof.domain.reference import ReferenceMeasurement
 from knitproof.domain.report import Report, ReportEntry
 from knitproof.engine.beanie import beanie_plan
 from knitproof.engine.cast_on import cast_on, check_cast_on, flat_cast_on
-from knitproof.engine.gauge import gauge_differs_from_label, resolve_gauge
+from knitproof.engine.gauge import gauge_differs_from_label
 from knitproof.engine.needle import check_needles
 from knitproof.engine.report import (
     build_report,
@@ -64,22 +64,18 @@ def calc_beanie(path: Path) -> BeanieCalc:
     """
     request = load_model(path, BeanieRequest, _INVALID_REQUEST)
     try:
-        return _calc(request)
+        return _calc(request, load_library())
     except (Rounded, Inexact) as error:
         raise InputFileError(path, _TOO_BIG) from error
 
 
-def _calc(request: BeanieRequest) -> BeanieCalc:
+def _calc(request: BeanieRequest, library: Library) -> BeanieCalc:
     circumference, multiple = request.circumference, request.multiple
-    swatch = request.swatch
-    resolved = resolve_gauge(
-        blocked=None if swatch is None else swatch.after_blocking,
-        unblocked=None if swatch is None else swatch.before_blocking,
-        unknown=None if swatch is None else swatch.unknown_blocking,
-        label=request.label_gauge,
-    )
+    resolved = request.resolved_gauge
     gauge = resolved.gauge
-    needles = tuple(describe_needle(needle.size) for needle in request.specification.needles)
+    needles = tuple(
+        describe_needle(needle.size, library) for needle in request.specification.needles
+    )
     if gauge is None or resolved.source is None:
         return BeanieCalc(
             request=request,
@@ -89,6 +85,7 @@ def _calc(request: BeanieRequest) -> BeanieCalc:
             needles=needles,
             report=build_report(_needle_entries(request, needles), resolved.questions),
         )
+    swatch = request.swatch
     before = (
         None
         if swatch is None or resolved.source is not GaugeSource.BLOCKED
@@ -101,27 +98,10 @@ def _calc(request: BeanieRequest) -> BeanieCalc:
         gauge=gauge,
         source=resolved.source,
         before_blocking=before,
+        library=library,
     )
-    entries: list[ReportEntry] = [from_notice(notice) for notice in resolved.notices]
-    if before is not None:
-        unblocked = check_cast_on(
-            cast_on(circumference, before, multiple).stitches, circumference, gauge, multiple
-        )
-        notice = unblocked_swatch_notice(unblocked, before)
-        if notice is not None:
-            entries.append(from_notice(notice))
-    if request.label_gauge is not None and resolved.source is not GaugeSource.LABEL:
-        entries.extend(from_notice(n) for n in gauge_differs_from_label(gauge, request.label_gauge))
-    if request.proposed_cast_on is not None:
-        proposal = request.proposed_cast_on.stitches
-        rejected = from_cast_on_check(
-            check_cast_on(proposal, circumference, gauge, multiple),
-            gauge,
-            title=f"Proposition d’un LLM seul : {proposal} m",
-            source=resolved.source,
-        )
-        if rejected is not None:
-            entries.append(rejected)
+    entries = _gauge_entries(request, resolved, gauge, before)
+    entries.extend(_proposal_entries(request, gauge, resolved.source))
     entries.extend(from_notice(notice) for notice in review.notices)
     entries.extend(_needle_entries(request, needles))
     return BeanieCalc(
@@ -132,6 +112,43 @@ def _calc(request: BeanieRequest) -> BeanieCalc:
         needles=needles,
         report=build_report(entries, review.questions, review.plan),
     )
+
+
+def _gauge_entries(
+    request: BeanieRequest,
+    resolved: ResolvedGauge,
+    gauge: SwatchMeasurement,
+    before: SwatchMeasurement | None,
+) -> list[ReportEntry]:
+    """Les avis de résolution, l’échantillon avant blocage et l’écart à l’étiquette."""
+    circumference, multiple = request.circumference, request.multiple
+    entries: list[ReportEntry] = [from_notice(notice) for notice in resolved.notices]
+    if before is not None:
+        unblocked = check_cast_on(
+            cast_on(circumference, before, multiple).stitches, circumference, gauge, multiple
+        )
+        notice = unblocked_swatch_notice(unblocked, before)
+        if notice is not None:
+            entries.append(from_notice(notice))
+    if request.label_gauge is not None and resolved.source is not GaugeSource.LABEL:
+        entries.extend(from_notice(n) for n in gauge_differs_from_label(gauge, request.label_gauge))
+    return entries
+
+
+def _proposal_entries(
+    request: BeanieRequest, gauge: SwatchMeasurement, source: GaugeSource
+) -> list[ReportEntry]:
+    """Le contrôle du montage proposé par un LLM seul, s’il y en a un et s’il est refusé."""
+    if request.proposed_cast_on is None:
+        return []
+    proposal = request.proposed_cast_on.stitches
+    rejected = from_cast_on_check(
+        check_cast_on(proposal, request.circumference, gauge, request.multiple),
+        gauge,
+        title=f"Proposition d’un LLM seul : {proposal} m",
+        source=source,
+    )
+    return [] if rejected is None else [rejected]
 
 
 def _needle_entries(request: BeanieRequest, needles: tuple[NeedleInfo, ...]) -> list[ReportEntry]:

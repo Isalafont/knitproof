@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from knitproof.app.beanie_request import BeanieRequest
 from knitproof.app.errors import condense
 from knitproof.domain.cast_on import StitchMultiple
+from knitproof.domain.gauge import GaugeSource
 from knitproof.domain.measure import EXACT, Length, LengthUnit
 from knitproof.domain.needle import KnittingMethod, NeedleKind, NeedleSize, NeedleSystem
 
@@ -204,3 +205,29 @@ def test_a_float_in_the_label_gauge_gives_a_readable_message() -> None:
     assert "float refusé" in message
     assert "label_gauge.stitches" in message
     assert "Input should be" not in message
+
+
+def test_the_resolved_gauge_of_the_example_is_the_blocked_swatch() -> None:
+    request = BeanieRequest.model_validate(_data())
+
+    resolved = request.resolved_gauge
+
+    assert resolved.source is GaugeSource.BLOCKED
+
+
+def test_a_request_without_swatch_nor_label_has_no_resolved_gauge() -> None:
+    data = {key: value for key, value in _data().items() if key not in ("swatch", "label_gauge")}
+
+    resolved = BeanieRequest.model_validate(data).resolved_gauge
+
+    assert resolved.gauge is None
+    assert resolved.questions
+
+
+def test_a_number_with_too_many_digits_is_refused_at_validation() -> None:
+    head = {"value": "99999", "unit": "cm", "provenance": "entered"}
+    ease = {"value": "99999", "unit": "percent", "provenance": "entered"}
+    data = {**_data(), "head_circumference": head, "ease": ease}
+
+    with pytest.raises(ValidationError, match="nombre trop grand ou trop précis"):
+        BeanieRequest.model_validate(data)
