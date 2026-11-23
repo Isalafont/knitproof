@@ -58,3 +58,16 @@ request:
 expected:
   target_circumference_cm: '43'
   cast_on_stitches: 84
+expected_reading:
+  head_circumference:
+    value: '48'
+    unit: cm
+  smaller_than_head:
+    value: '5'
+    unit: cm
+  gauge_after_blocking:
+    stitches: '20'
+    width:
+      value: '10'
+      unit: cm
+  edge: rib_2x2

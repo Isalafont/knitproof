@@ -21,3 +21,14 @@ request:
 expected:
   target_circumference_cm: '50.5'
   abstain: true
+expected_reading:
+  head_circumference:
+    value: '54.5'
+    unit: cm
+  smaller_than_head:
+    value: '4'
+    unit: cm
+  needle_mm:
+  - '3'
+  edge: rib_1x1
+  worked: round
