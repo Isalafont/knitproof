@@ -8,6 +8,7 @@ from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from fractions import Fraction
 from importlib.resources import files
+from importlib.resources.abc import Traversable
 from pathlib import Path
 
 import pytest
@@ -37,8 +38,8 @@ from knitproof.app.baseline import (
 )
 from knitproof.app.baseline_journal import JournalHeader, JournalLine
 from knitproof.app.beanie_request import BeanieRequest
-from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash
-from knitproof.app.model_entries import PROVIDER_NAMES
+from knitproof.app.eval_cases import EvalCase, EvalDataError, Split, case_hash, load_split
+from knitproof.app.model_entries import PROVIDER_NAMES, ModelEntry, parse_entry
 from knitproof.llm.agents import agent_on
 from knitproof.llm.config import ModelConfig
 
@@ -850,3 +851,27 @@ def test_other_models_than_the_journal_are_refused_before_any_call(tmp_path: Pat
 
     assert calls == []
     assert journal.exists()
+
+
+def test_a_measure_prepares_the_cases_and_the_entries_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    entries = ("anthropic", "ollama")
+    splits: list[Split] = []
+    parsed: list[str] = []
+
+    def counted_split(split: Split, data: Traversable) -> tuple[EvalCase, ...]:
+        splits.append(split)
+        return load_split(split, data)
+
+    def counted_entry(text: str) -> ModelEntry:
+        parsed.append(text)
+        return parse_entry(text)
+
+    monkeypatch.setattr("knitproof.app.baseline.load_split", counted_split)
+    monkeypatch.setattr("knitproof.app.baseline.parse_entry", counted_entry)
+
+    _measure_into(tmp_path, _answering(_OK), entries=entries)
+
+    assert len(splits) == 1
+    assert len(parsed) == len(entries)

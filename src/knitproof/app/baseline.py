@@ -194,18 +194,16 @@ def run_baseline(
     écrit avant l’appel suivant, et les passages déjà écrits ne sont pas rappelés.
     """
     configs, cases = _prepared(split, data, entries, environ)
-    factory = agent_factory or build_agent
-    started = measured_on or now()
-    results = tuple(
-        _measure(config, factory(config), cases, clock, sleep, now, journal) for config in configs
-    )
-    return BaselineResult(
-        split=split,
-        prompt_id=BASELINE_PROMPT.id,
-        prompt_sha256=BASELINE_PROMPT.sha256,
-        passes=PASSES,
-        measured_on=started,
-        providers=results,
+    return _run(
+        split,
+        configs,
+        cases,
+        clock=clock,
+        sleep=sleep,
+        now=now,
+        agent_factory=agent_factory,
+        journal=journal,
+        measured_on=measured_on,
     )
 
 
@@ -247,11 +245,10 @@ def measure_baseline(
     except JournalError as error:
         raise BaselineError(str(error)) from error
     try:
-        result = run_baseline(
+        result = _run(
             split,
-            data,
-            entries,
-            environ,
+            configs,
+            cases,
             clock=clock,
             sleep=sleep,
             now=now,
@@ -266,6 +263,33 @@ def measure_baseline(
     written = write_result(result, results)
     journal.discard()
     return result, written
+
+
+def _run(
+    split: Split,
+    configs: Sequence[ModelConfig],
+    cases: Sequence[EvalCase],
+    *,
+    clock: Callable[[], float],
+    sleep: Callable[[float], None],
+    now: Callable[[], datetime.datetime],
+    agent_factory: AgentFactory | None,
+    journal: Journal | None,
+    measured_on: datetime.datetime | None,
+) -> BaselineResult:
+    factory = agent_factory or build_agent
+    started = measured_on or now()
+    results = tuple(
+        _measure(config, factory(config), cases, clock, sleep, now, journal) for config in configs
+    )
+    return BaselineResult(
+        split=split,
+        prompt_id=BASELINE_PROMPT.id,
+        prompt_sha256=BASELINE_PROMPT.sha256,
+        passes=PASSES,
+        measured_on=started,
+        providers=results,
+    )
 
 
 def write_result(result: BaselineResult, folder: Path) -> Path:
