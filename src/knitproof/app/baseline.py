@@ -40,7 +40,6 @@ from knitproof.domain.measure import SwatchMeasurement
 from knitproof.domain.needle import KnittingMethod
 from knitproof.domain.reading import ModelReading
 from knitproof.engine.cast_on import check_cast_on
-from knitproof.engine.gauge import resolve_gauge as resolve_swatch
 from knitproof.llm.agents import agent_for
 from knitproof.llm.config import ModelConfig, load_config
 from knitproof.llm.errors import (
@@ -84,13 +83,7 @@ def resolve_gauge(request: BeanieRequest) -> SwatchMeasurement:
     """
     if request.worked is KnittingMethod.FLAT:
         raise EvalDataError("cas à plat exclu de la ligne de base : 2 lisières en plus")
-    swatch = request.swatch
-    resolved = resolve_swatch(
-        blocked=None if swatch is None else swatch.after_blocking,
-        unblocked=None if swatch is None else swatch.before_blocking,
-        unknown=None if swatch is None else swatch.unknown_blocking,
-        label=request.label_gauge,
-    )
+    resolved = request.resolved_gauge
     if resolved.gauge is None:
         raise EvalDataError("cas sans jauge résolue")
     return resolved.gauge

@@ -15,10 +15,11 @@ from knitproof.app.errors import condense
 from knitproof.domain.beanie import BeanieSpecification
 from knitproof.domain.cast_on import StitchMultiple
 from knitproof.domain.ease import Ease, EaseUnit, EdgeStitch
-from knitproof.domain.gauge import LabelGauge
+from knitproof.domain.gauge import LabelGauge, ResolvedGauge
 from knitproof.domain.integers import StrictPositiveInt
 from knitproof.domain.measure import EXACT, Length, LengthUnit, SwatchMeasurement
 from knitproof.domain.needle import KnittingMethod, Needle
+from knitproof.engine.gauge import resolve_gauge
 
 _NEEDLE_FORMS = "« 4 mm », « US 6 » ou « US 6 (4 mm) »"
 _NEEDLE_SIZE = re.compile(
@@ -163,6 +164,17 @@ class BeanieRequest(BaseModel):
             value = EXACT.divide(EXACT.multiply(head.value, _PERCENT + ease.value), _PERCENT)
             return Length(value=value, unit=head.unit)
         return Length(value=EXACT.add(head.in_cm, ease.value), unit=LengthUnit.CM)
+
+    @property
+    def resolved_gauge(self) -> ResolvedGauge:
+        """La jauge, par l’ordre de confiance du moteur (ADR 0008) ; sans jauge, des questions."""
+        swatch = self.swatch
+        return resolve_gauge(
+            blocked=None if swatch is None else swatch.after_blocking,
+            unblocked=None if swatch is None else swatch.before_blocking,
+            unknown=None if swatch is None else swatch.unknown_blocking,
+            label=self.label_gauge,
+        )
 
     @property
     def multiple(self) -> StitchMultiple:
