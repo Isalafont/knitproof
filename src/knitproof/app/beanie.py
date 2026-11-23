@@ -64,16 +64,18 @@ def calc_beanie(path: Path) -> BeanieCalc:
     """
     request = load_model(path, BeanieRequest, _INVALID_REQUEST)
     try:
-        return _calc(request)
+        return _calc(request, load_library())
     except (Rounded, Inexact) as error:
         raise InputFileError(path, _TOO_BIG) from error
 
 
-def _calc(request: BeanieRequest) -> BeanieCalc:
+def _calc(request: BeanieRequest, library: Library) -> BeanieCalc:
     circumference, multiple = request.circumference, request.multiple
     resolved = request.resolved_gauge
     gauge = resolved.gauge
-    needles = tuple(describe_needle(needle.size) for needle in request.specification.needles)
+    needles = tuple(
+        describe_needle(needle.size, library) for needle in request.specification.needles
+    )
     if gauge is None or resolved.source is None:
         return BeanieCalc(
             request=request,
@@ -96,6 +98,7 @@ def _calc(request: BeanieRequest) -> BeanieCalc:
         gauge=gauge,
         source=resolved.source,
         before_blocking=before,
+        library=library,
     )
     entries = _gauge_entries(request, resolved, gauge, before)
     entries.extend(_proposal_entries(request, gauge, resolved.source))
