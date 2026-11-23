@@ -135,7 +135,7 @@ def _pattern(
         plain = (Work(work=1), *plain, Work(work=1))
     offset = brim + body
     rounds = [
-        Round(start=1, end=brim, ops=plain) if brim > 1 else Round(start=1, ops=plain),
+        _plain_range(1, brim, plain),
         _plain_range(brim + 1, body, plain),
         *(_shifted(round_, offset) for round_ in crown.rounds),
     ]

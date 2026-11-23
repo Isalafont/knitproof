@@ -147,13 +147,12 @@ class BeanieRequest(BaseModel):
     @model_validator(mode="after")
     def _is_computable(self) -> Self:
         """Le tour visé et la spécification se construisent : sinon, une erreur de saisie."""
-        for build in (lambda: self.circumference, lambda: self.specification):
-            try:
-                build()
-            except ValidationError as error:
-                raise ValueError(_reasons(error)) from error
-            except (Inexact, Rounded) as error:
-                raise ValueError("nombre trop grand ou trop précis") from error
+        try:
+            _ = (self.circumference, self.specification)
+        except ValidationError as error:
+            raise ValueError(_reasons(error)) from error
+        except (Inexact, Rounded) as error:
+            raise ValueError("nombre trop grand ou trop précis") from error
         return self
 
     @property

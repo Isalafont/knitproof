@@ -222,3 +222,12 @@ def test_a_request_without_swatch_nor_label_has_no_resolved_gauge() -> None:
 
     assert resolved.gauge is None
     assert resolved.questions
+
+
+def test_a_number_with_too_many_digits_is_refused_at_validation() -> None:
+    head = {"value": "99999", "unit": "cm", "provenance": "entered"}
+    ease = {"value": "99999", "unit": "percent", "provenance": "entered"}
+    data = {**_data(), "head_circumference": head, "ease": ease}
+
+    with pytest.raises(ValidationError, match="nombre trop grand ou trop précis"):
+        BeanieRequest.model_validate(data)
